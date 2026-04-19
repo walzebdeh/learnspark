@@ -96,6 +96,14 @@
       padding: 2px 8px; border-radius: 20px; margin-left: 6px;
     }
 
+    .grade-pill {
+      background: #667eea;
+      color: white;
+      font-size: .78rem;
+      padding: 2px 10px;
+      border-radius: 20px;
+    }
+
     .points-summary {
       background: linear-gradient(135deg, #667eea, #764ba2);
       border-radius: 12px;
@@ -211,6 +219,12 @@
     function getWordPoints(p)   { return Object.values(p.wordLevels  || {}).reduce((s,v) => s + v.sheetsCompleted * 10, 0); }
     function getChoicePoints(p) { return Object.values(p.choiceLevels|| {}).reduce((s,v) => s + v.sheetsCompleted *  5, 0); }
 
+    function gradeOfLevel(id) {
+      const grades = Object.keys(GRADE_STARTS).map(Number).sort((a,b) => b - a);
+      for (const g of grades) { if (id >= GRADE_STARTS[g]) return g; }
+      return 1;
+    }
+
     function buildPlayerCard(name, p, idx) {
       const avatar = AVATARS[idx % AVATARS.length];
       const mathPts   = getMathPoints(p);
@@ -222,6 +236,8 @@
       let mathHTML = '';
       if (p.placementDone) {
         const curLevel = LEVELS[p.currentLevelId];
+        const grade = gradeOfLevel(p.currentLevelId || 0);
+        mathHTML += `<div class="stat-row"><span class="stat-label">Grade</span><span class="stat-val grade-pill">Grade ${grade}</span></div>`;
         mathHTML += `<div class="stat-row"><span class="stat-label">Current level</span><span class="stat-val">${curLevel ? curLevel.name : 'Completed!'}</span></div>`;
         const completedLevels = Object.entries(p.levels || {}).filter(([,v]) => v.completed);
         mathHTML += `<div class="stat-row"><span class="stat-label">Levels completed</span><span class="stat-val">${completedLevels.length} / ${LEVELS.length}</span></div>`;
