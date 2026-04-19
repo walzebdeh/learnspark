@@ -8,10 +8,12 @@ const SHEETS_TO_COMPLETE = 100;
 const PASS_SCORE = 18; // out of 20 (90%)
 
 // ── Active player ─────────────────────────────────────────────
-let _activePlayer = null;
+let _activePlayer = sessionStorage.getItem('activePlayer') || null;
 
 function setActivePlayer(name) {
   _activePlayer = name;
+  if (name) sessionStorage.setItem('activePlayer', name);
+  else sessionStorage.removeItem('activePlayer');
 }
 
 function _key() {

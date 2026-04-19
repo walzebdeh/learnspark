@@ -415,7 +415,7 @@ function renderLevelMap(app) {
   app.appendChild(div);
 
   document.getElementById('btn-switch-player').onclick = () =>
-    setState({ screen: 'welcome', showNewPlayerForm: false });
+    { setActivePlayer(null); setState({ screen: 'welcome', showNewPlayerForm: false }); }
 
   document.getElementById('btn-redo-placement').onclick = () => {
     if (confirm('Redo the placement test? Your progress stays, but your starting level will be updated.')) {
@@ -715,7 +715,7 @@ function renderWordLevelMap(app) {
   app.appendChild(div);
 
   document.getElementById('btn-switch-player').onclick = () =>
-    setState({ screen: 'welcome', showNewPlayerForm: false });
+    { setActivePlayer(null); setState({ screen: 'welcome', showNewPlayerForm: false }); }
   document.getElementById('btn-redo-word-placement').onclick = () => {
     if (confirm('Redo the word placement test? Your progress stays, but your starting level will be updated.')) {
       const p = getProgress();
@@ -1135,7 +1135,7 @@ function renderChoiceLevelMap(app) {
 
     document.getElementById('tab-math').onclick   = () => setState({ screen: 'levelMap' });
     document.getElementById('tab-words').onclick  = () => setState({ screen: 'wordLevelMap' });
-    document.getElementById('btn-switch-player').onclick = () => setState({ screen: 'welcome', showNewPlayerForm: false });
+    document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', showNewPlayerForm: false }); }
     document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
 
     div.querySelectorAll('.topic-card').forEach(card => {
@@ -1435,5 +1435,10 @@ function wireAnswerInput(onSubmit) {
 // ── Boot ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   migrateIfNeeded();
+  // If a player was active before the refresh, go straight to their level map
+  const p = getProgress();
+  if (_activePlayer && p.placementDone) {
+    state.screen = 'levelMap';
+  }
   render();
 });
