@@ -411,8 +411,20 @@ function getWordPoints(p) {
 function getChoicePoints(p) {
   return Object.values(p.choiceLevels || {}).reduce((s, v) => s + v.sheetsCompleted * CHOICE_PTS_PER_SHEET, 0);
 }
-function scoreBadge(pts) {
-  return `<div class="score-badge">⭐ ${pts.toLocaleString()} pts</div>`;
+function totalScoreBadge(p) {
+  const math   = getMathPoints(p);
+  const words  = getWordPoints(p);
+  const choices = getChoicePoints(p);
+  const total  = math + words + choices;
+  return `
+    <div class="total-score-badge">
+      <div class="tsb-total">⭐ ${total.toLocaleString()} pts</div>
+      <div class="tsb-breakdown">
+        <span>🔢 ${math}</span>
+        <span>📝 ${words}</span>
+        <span>💡 ${choices}</span>
+      </div>
+    </div>`;
 }
 
 function renderLevelMap(app) {
@@ -486,7 +498,7 @@ function renderLevelMap(app) {
     <div class="levelmap-header">
       <h2>Hi, ${esc(progress.playerName)}! 👋</h2>
       <p>Choose a level to practice</p>
-      ${scoreBadge(getMathPoints(progress))}
+      ${totalScoreBadge(progress)}
       <button class="btn btn-ghost btn-sm" id="btn-switch-player">Switch Player</button>
       <button class="btn btn-ghost btn-sm" id="btn-redo-placement">↺ Redo Placement</button>
       <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
@@ -758,7 +770,7 @@ function renderWordLevelMap(app) {
     <div class="levelmap-header">
       <h2>Hi, ${esc(progress.playerName)}! 👋</h2>
       <p>Choose a word level to practice</p>
-      ${scoreBadge(getWordPoints(progress))}
+      ${totalScoreBadge(progress)}
       <button class="btn btn-ghost btn-sm" id="btn-switch-player">Switch Player</button>
       <button class="btn btn-ghost btn-sm" id="btn-redo-word-placement">↺ Redo Placement</button>
       <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
@@ -1162,7 +1174,7 @@ function renderChoiceLevelMap(app) {
       <div class="levelmap-header">
         <h2>${topic.emoji} ${esc(topic.name)}</h2>
         <p>Choose a level to practice</p>
-        ${scoreBadge(getChoicePoints(progress))}
+        ${totalScoreBadge(progress)}
         <button class="btn btn-ghost btn-sm" id="btn-back-topics">← All Topics</button>
         <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
           ${state.allUnlocked ? '🔓 Locks Off' : '🔒 Unlock All'}
@@ -1210,7 +1222,7 @@ function renderChoiceLevelMap(app) {
       <div class="levelmap-header">
         <h2>Hi, ${esc(progress.playerName)}! 👋</h2>
         <p>Choose a topic to practice</p>
-        ${scoreBadge(getChoicePoints(progress))}
+        ${totalScoreBadge(progress)}
         <button class="btn btn-ghost btn-sm" id="btn-switch-player">Switch Player</button>
         <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
           ${state.allUnlocked ? '🔓 Locks Off' : '🔒 Unlock All'}
