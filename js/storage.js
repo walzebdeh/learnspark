@@ -78,6 +78,9 @@ function defaultProgress() {
 
 function saveProgress(p) {
   localStorage.setItem(_key(), JSON.stringify(p));
+  if (typeof syncProgressToCloud === 'function' && _activePlayer) {
+    syncProgressToCloud(_activePlayer, p);
+  }
 }
 
 function setPlayerName(name) {

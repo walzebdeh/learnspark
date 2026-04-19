@@ -94,12 +94,15 @@ function renderWelcome(app) {
         if (e.target.closest('.pc-delete')) return; // handled below
         const name = card.dataset.name;
         setActivePlayer(name);
-        const p = getProgress();
-        if (p.placementDone) {
-          setState({ screen: 'levelMap', showNewPlayerForm: false });
-        } else {
-          setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
-        }
+        loadProgressFromCloud(name).then(cloudData => {
+          if (cloudData) saveProgress(cloudData);
+          const p = getProgress();
+          if (p.placementDone) {
+            setState({ screen: 'levelMap', showNewPlayerForm: false });
+          } else {
+            setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
+          }
+        });
       });
     });
 
