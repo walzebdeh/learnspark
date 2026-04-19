@@ -94,6 +94,7 @@ function renderWelcome(app) {
         if (e.target.closest('.pc-delete')) return; // handled below
         const name = card.dataset.name;
         setActivePlayer(name);
+        recordPlayerLogin(name);
         loadProgressFromCloud(name).then(cloudData => {
           if (cloudData) saveProgress(cloudData);
           const p = getProgress();

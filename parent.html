@@ -96,6 +96,24 @@
       padding: 2px 8px; border-radius: 20px; margin-left: 6px;
     }
 
+    .last-seen-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: .78rem;
+      color: #888;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .ip-badge {
+      font-family: monospace;
+      background: #f0f0f0;
+      padding: 2px 8px;
+      border-radius: 6px;
+      color: #555;
+    }
+
     .grade-pill {
       background: #667eea;
       color: white;
@@ -295,6 +313,11 @@
         choicesHTML = '<div class="stat-row"><span class="stat-label">Status</span><span class="stat-val">Not started</span></div>';
       }
 
+      const lastSeen = p.lastSeen
+        ? new Date(p.lastSeen).toLocaleString()
+        : 'Never';
+      const lastIp = p.lastIp || '—';
+
       return `
         <div class="player-card">
           <h2><span class="player-avatar">${avatar}</span>${name}</h2>
@@ -305,6 +328,10 @@
               <span>📝 ${wordPts} words</span>
               <span>💡 ${choicePts} choices</span>
             </div>
+          </div>
+          <div class="last-seen-row">
+            <span>🕐 Last seen: ${lastSeen}</span>
+            <span class="ip-badge">🌐 ${lastIp}</span>
           </div>
           <div class="section-title">Math</div>
           ${mathHTML}

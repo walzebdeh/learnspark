@@ -17,6 +17,21 @@ function loadProgressFromCloud(playerName) {
     .catch(() => null);
 }
 
+// Records IP, timestamp, and device info when a player logs in
+function recordPlayerLogin(playerName) {
+  if (!playerName) return;
+  fetch('https://api.ipify.org?format=json')
+    .then(r => r.json())
+    .then(data => {
+      db.collection('progress').doc(playerName).set({
+        lastIp:     data.ip,
+        lastSeen:   new Date().toISOString(),
+        lastDevice: navigator.userAgent
+      }, { merge: true });
+    })
+    .catch(() => {});
+}
+
 // Returns a Promise resolving to an array of { name, progress } objects
 function loadAllPlayersFromCloud() {
   return db.collection('progress').get()
