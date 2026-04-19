@@ -50,6 +50,36 @@ function render() {
   }
 }
 
+// ── Avatar picker overlay ─────────────────────────────────────
+function showAvatarPicker(playerName, currentAvatar) {
+  const overlay = document.createElement('div');
+  overlay.className = 'avatar-picker-overlay';
+  overlay.innerHTML = `
+    <div class="avatar-picker-modal">
+      <p>Choose an avatar for <strong>${esc(playerName)}</strong></p>
+      <div class="avatar-grid">
+        ${AVATARS.map(a => `<button class="avatar-opt ${a === currentAvatar ? 'selected' : ''}" data-avatar="${a}">${a}</button>`).join('')}
+      </div>
+      <button class="btn btn-ghost btn-sm" id="avatar-cancel">Cancel</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener('click', e => {
+    const btn = e.target.closest('.avatar-opt');
+    if (btn) {
+      setActivePlayer(playerName);
+      const p = getProgress();
+      p.avatar = btn.dataset.avatar;
+      saveProgress(p);
+      setActivePlayer(null);
+      overlay.remove();
+      render();
+      return;
+    }
+    if (e.target.closest('#avatar-cancel') || e.target === overlay) overlay.remove();
+  });
+}
+
 // ============================================================
 // WELCOME SCREEN
 // ============================================================
@@ -60,17 +90,16 @@ function renderWelcome(app) {
   if (profiles.length > 0 && !state.showNewPlayerForm) {
     // ── Profile picker ───────────────────────────────────────
     const cardsHTML = profiles.map((name, i) => {
-      const avatar = AVATARS[i % AVATARS.length];
-      // Peek at this player's progress for a subtitle
       setActivePlayer(name);
       const p = getProgress();
+      const avatar = p.avatar || AVATARS[i % AVATARS.length];
       const levelName = p.placementDone
         ? (LEVELS[p.currentLevelId] ? LEVELS[p.currentLevelId].name : 'All done!')
         : 'Not started';
       return `
         <div class="profile-card" data-name="${esc(name)}">
           <button class="pc-delete" data-name="${esc(name)}" title="Delete profile">✕</button>
-          <div class="pc-avatar">${avatar}</div>
+          <div class="pc-avatar" data-name="${esc(name)}" title="Change avatar">${avatar}</div>
           <div class="pc-name">${esc(name)}</div>
           <div class="pc-level">${esc(levelName)}</div>
         </div>`;
@@ -86,12 +115,11 @@ function renderWelcome(app) {
       </div>`;
     app.appendChild(div);
 
-    // Reset active player after peeking
     setActivePlayer(null);
 
     div.querySelectorAll('.profile-card').forEach(card => {
       card.addEventListener('click', e => {
-        if (e.target.closest('.pc-delete')) return; // handled below
+        if (e.target.closest('.pc-delete') || e.target.closest('.pc-avatar')) return;
         const name = card.dataset.name;
         setActivePlayer(name);
         recordPlayerLogin(name);
@@ -104,6 +132,13 @@ function renderWelcome(app) {
             setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
           }
         });
+      });
+    });
+
+    div.querySelectorAll('.pc-avatar').forEach(avatarEl => {
+      avatarEl.addEventListener('click', e => {
+        e.stopPropagation();
+        showAvatarPicker(avatarEl.dataset.name, avatarEl.textContent.trim());
       });
     });
 
@@ -124,11 +159,17 @@ function renderWelcome(app) {
   } else {
     // ── New player form ──────────────────────────────────────
     const hasProfiles = profiles.length > 0;
+    let selectedAvatar = AVATARS[0];
+    const avatarGridHTML = AVATARS.map(a =>
+      `<button class="avatar-opt ${a === selectedAvatar ? 'selected' : ''}" data-avatar="${a}">${a}</button>`
+    ).join('');
+
     div.innerHTML = `
       <div class="card welcome-card">
         <div class="big-emoji">🧮</div>
         <h1>LearnSpark ✨</h1>
-        <p class="subtitle">Learn math step by step — just like Kumon!</p>
+        <p class="subtitle">Choose your avatar and enter your name!</p>
+        <div class="avatar-grid" id="avatar-grid">${avatarGridHTML}</div>
         <div class="name-form">
           <label for="name-input">What's your name?</label>
           <input type="text" id="name-input" class="text-input" placeholder="Type your name…"
@@ -138,6 +179,14 @@ function renderWelcome(app) {
         ${hasProfiles ? `<button class="btn btn-ghost" id="btn-back-profiles">Back</button>` : ''}
       </div>`;
     app.appendChild(div);
+
+    document.getElementById('avatar-grid').addEventListener('click', e => {
+      const btn = e.target.closest('.avatar-opt');
+      if (!btn) return;
+      selectedAvatar = btn.dataset.avatar;
+      document.querySelectorAll('.avatar-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
 
     const nameInput = document.getElementById('name-input');
     const startBtn  = document.getElementById('btn-start');
@@ -153,6 +202,7 @@ function renderWelcome(app) {
         return;
       }
       setPlayerName(name);
+      const p = getProgress(); p.avatar = selectedAvatar; saveProgress(p);
       setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
     };
     if (backBtn) backBtn.onclick = () => setState({ showNewPlayerForm: false });

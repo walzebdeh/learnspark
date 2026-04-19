@@ -119,7 +119,53 @@ html, body {
   font-size: 2.8rem;
   line-height: 1;
   margin-bottom: 8px;
+  cursor: pointer;
+  transition: transform .15s;
 }
+.pc-avatar:hover { transform: scale(1.2); }
+
+/* ── Avatar picker grid (new player form + overlay) ── */
+.avatar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.avatar-opt {
+  font-size: 1.8rem;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  background: #f0f4ff;
+  cursor: pointer;
+  transition: transform .15s, border-color .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar-opt:hover { transform: scale(1.15); }
+.avatar-opt.selected {
+  border-color: var(--primary);
+  background: #ede9ff;
+  transform: scale(1.15);
+}
+
+/* ── Avatar picker overlay (change avatar) ── */
+.avatar-picker-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.avatar-picker-modal {
+  background: white;
+  border-radius: 20px;
+  padding: 32px 28px;
+  max-width: 340px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.3);
+}
+.avatar-picker-modal p { margin-bottom: 16px; font-size: 1rem; color: #555; }
 
 .pc-name {
   font-weight: 900;

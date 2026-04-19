@@ -244,7 +244,7 @@
     }
 
     function buildPlayerCard(name, p, idx) {
-      const avatar = AVATARS[idx % AVATARS.length];
+      const avatar = p.avatar || AVATARS[idx % AVATARS.length];
       const mathPts   = getMathPoints(p);
       const wordPts   = getWordPoints(p);
       const choicePts = getChoicePoints(p);
