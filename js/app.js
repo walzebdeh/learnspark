@@ -337,6 +337,7 @@ function renderLevelMap(app) {
       <p>Choose a level to practice</p>
       ${scoreBadge(getMathPoints(progress))}
       <button class="btn btn-ghost btn-sm" id="btn-switch-player">Switch Player</button>
+      <button class="btn btn-ghost btn-sm" id="btn-redo-placement">↺ Redo Placement</button>
       <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
         ${state.allUnlocked ? '🔓 Locks Off' : '🔒 Unlock All'}
       </button>
@@ -350,6 +351,15 @@ function renderLevelMap(app) {
 
   document.getElementById('btn-switch-player').onclick = () =>
     setState({ screen: 'welcome', showNewPlayerForm: false });
+
+  document.getElementById('btn-redo-placement').onclick = () => {
+    if (confirm('Redo the placement test? Your progress stays, but your starting level will be updated.')) {
+      const p = getProgress();
+      p.placementDone = false;
+      saveProgress(p);
+      setState({ screen: 'placement', placement: buildPlacement() });
+    }
+  };
 
   document.getElementById('btn-unlock-all').onclick = () =>
     setState({ allUnlocked: !state.allUnlocked });
@@ -599,6 +609,7 @@ function renderWordLevelMap(app) {
       <p>Choose a word level to practice</p>
       ${scoreBadge(getWordPoints(progress))}
       <button class="btn btn-ghost btn-sm" id="btn-switch-player">Switch Player</button>
+      <button class="btn btn-ghost btn-sm" id="btn-redo-word-placement">↺ Redo Placement</button>
       <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
         ${state.allUnlocked ? '🔓 Locks Off' : '🔒 Unlock All'}
       </button>
@@ -640,6 +651,14 @@ function renderWordLevelMap(app) {
 
   document.getElementById('btn-switch-player').onclick = () =>
     setState({ screen: 'welcome', showNewPlayerForm: false });
+  document.getElementById('btn-redo-word-placement').onclick = () => {
+    if (confirm('Redo the word placement test? Your progress stays, but your starting level will be updated.')) {
+      const p = getProgress();
+      p.wordPlacementDone = false;
+      saveProgress(p);
+      setState({ screen: 'wordPlacement', wordPlacement: buildWordPlacement() });
+    }
+  };
   document.getElementById('btn-unlock-all').onclick = () =>
     setState({ allUnlocked: !state.allUnlocked });
   document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
