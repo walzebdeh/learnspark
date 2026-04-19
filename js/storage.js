@@ -3,7 +3,7 @@
 // ============================================================
 
 const STORAGE_KEY = 'mathkids_v1';
-const PROFILES_KEY = 'mathkids_profiles';
+const PROFILES_KEY = 'mathkids_profiles_v2'; // v2: stores objects {name,pin,avatar}
 const SHEETS_TO_COMPLETE = 100;
 const PASS_SCORE = 18; // out of 20 (90%)
 
@@ -32,16 +32,31 @@ function getProfiles() {
   } catch(e) { return []; }
 }
 
-function addProfile(name) {
+function addProfile(name, pin, avatar) {
   const profiles = getProfiles();
-  if (!profiles.includes(name)) {
-    profiles.push(name);
+  const idx = profiles.findIndex(p => p.name === name);
+  const entry = { name, pin, avatar: avatar || '' };
+  if (idx >= 0) profiles[idx] = entry;
+  else profiles.push(entry);
+  localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+}
+
+function updateProfileField(name, fields) {
+  const profiles = getProfiles();
+  const idx = profiles.findIndex(p => p.name === name);
+  if (idx >= 0) {
+    Object.assign(profiles[idx], fields);
     localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
   }
 }
 
+function verifyPin(name, pin) {
+  const profile = getProfiles().find(p => p.name === name);
+  return profile && profile.pin === pin;
+}
+
 function deleteProfile(name) {
-  const profiles = getProfiles().filter(p => p !== name);
+  const profiles = getProfiles().filter(p => p.name !== name);
   localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
   localStorage.removeItem(`mathkids_v1_${name}`);
   if (_activePlayer === name) _activePlayer = null;
@@ -89,8 +104,8 @@ function saveProgress(p) {
   }
 }
 
-function setPlayerName(name) {
-  addProfile(name);
+function setPlayerName(name, pin, avatar) {
+  addProfile(name, pin, avatar);
   setActivePlayer(name);
   const p = getProgress();
   p.playerName = name;

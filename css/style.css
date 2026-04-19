@@ -149,6 +149,33 @@ html, body {
   transform: scale(1.15);
 }
 
+/* ── PIN boxes ── */
+.pin-boxes {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0 4px;
+}
+.pin-box {
+  width: 52px; height: 60px;
+  font-size: 1.6rem;
+  text-align: center;
+  border: 3px solid #e0e0e0;
+  border-radius: 12px;
+  outline: none;
+  transition: border-color .2s;
+  background: #f8f8ff;
+}
+.pin-box:focus { border-color: var(--primary); background: #fff; }
+.pin-error {
+  color: #e74c3c;
+  font-size: .85rem;
+  min-height: 1.2em;
+  margin-top: 6px;
+  text-align: center;
+}
+.pin-modal p { margin-bottom: 12px; }
+
 /* ── Avatar picker overlay (change avatar) ── */
 .avatar-picker-overlay {
   position: fixed; inset: 0;

@@ -67,6 +67,50 @@ function render() {
   }
 }
 
+// ── PIN entry overlay ─────────────────────────────────────────
+function showPinEntry(profileName, profileAvatar, onSuccess) {
+  const overlay = document.createElement('div');
+  overlay.className = 'avatar-picker-overlay';
+  overlay.innerHTML = `
+    <div class="avatar-picker-modal pin-modal">
+      <div style="font-size:3rem;margin-bottom:8px">${profileAvatar}</div>
+      <p>Hi <strong>${esc(profileName)}</strong>! Enter your PIN</p>
+      <div class="pin-boxes" id="pin-entry-boxes">
+        <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+        <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+        <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+        <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+      </div>
+      <div class="pin-error" id="pin-error"></div>
+      <button class="btn btn-ghost btn-sm" id="pin-cancel">Cancel</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const boxes = [...overlay.querySelectorAll('.pin-box')];
+  boxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g, '').slice(0, 1);
+      if (box.value && i < 3) boxes[i + 1].focus();
+      if (boxes.every(b => b.value)) {
+        const pin = boxes.map(b => b.value).join('');
+        if (verifyPin(profileName, pin)) {
+          overlay.remove();
+          onSuccess();
+        } else {
+          document.getElementById('pin-error').textContent = '❌ Wrong PIN, try again';
+          boxes.forEach(b => b.value = '');
+          boxes[0].focus();
+        }
+      }
+    });
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+    });
+  });
+  boxes[0].focus();
+  overlay.querySelector('#pin-cancel').onclick = () => overlay.remove();
+}
+
 // ── Avatar picker overlay ─────────────────────────────────────
 function showAvatarPicker(playerName, currentAvatar) {
   const overlay = document.createElement('div');
@@ -84,9 +128,11 @@ function showAvatarPicker(playerName, currentAvatar) {
   overlay.addEventListener('click', e => {
     const btn = e.target.closest('.avatar-opt');
     if (btn) {
+      const avatar = btn.dataset.avatar;
+      updateProfileField(playerName, { avatar });
       setActivePlayer(playerName);
       const p = getProgress();
-      p.avatar = btn.dataset.avatar;
+      p.avatar = avatar;
       saveProgress(p);
       setActivePlayer(null);
       overlay.remove();
@@ -106,19 +152,15 @@ function renderWelcome(app) {
 
   if (profiles.length > 0 && !state.showNewPlayerForm) {
     // ── Profile picker ───────────────────────────────────────
-    const cardsHTML = profiles.map((name, i) => {
-      setActivePlayer(name);
-      const p = getProgress();
-      const avatar = p.avatar || AVATARS[i % AVATARS.length];
-      const levelName = p.placementDone
-        ? (LEVELS[p.currentLevelId] ? LEVELS[p.currentLevelId].name : 'All done!')
-        : 'Not started';
+    const cardsHTML = profiles.map((profile, i) => {
+      const { name, avatar } = profile;
+      const displayAvatar = avatar || AVATARS[i % AVATARS.length];
       return `
         <div class="profile-card" data-name="${esc(name)}">
           <button class="pc-delete" data-name="${esc(name)}" title="Delete profile">✕</button>
-          <div class="pc-avatar" data-name="${esc(name)}" title="Change avatar">${avatar}</div>
+          <div class="pc-avatar" data-name="${esc(name)}" title="Change avatar">${displayAvatar}</div>
           <div class="pc-name">${esc(name)}</div>
-          <div class="pc-level">${esc(levelName)}</div>
+          <div class="pc-level">🔒 PIN required</div>
         </div>`;
     }).join('');
 
@@ -132,23 +174,25 @@ function renderWelcome(app) {
       </div>`;
     app.appendChild(div);
 
-    setActivePlayer(null);
-
     div.querySelectorAll('.profile-card').forEach(card => {
       card.addEventListener('click', e => {
         if (e.target.closest('.pc-delete') || e.target.closest('.pc-avatar')) return;
         const name = card.dataset.name;
-        setActivePlayer(name);
-        recordPlayerLogin(name);
-        setState({ screen: 'loading' });
-        loadProgressFromCloud(name).then(cloudData => {
-          if (cloudData) saveProgress(cloudData);
-          const p = getProgress();
-          if (p.placementDone) {
-            setState({ screen: 'levelMap', showNewPlayerForm: false });
-          } else {
-            setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
-          }
+        const profile = getProfiles().find(p => p.name === name);
+        const avatar = profile ? (profile.avatar || '🦊') : '🦊';
+        showPinEntry(name, avatar, () => {
+          setActivePlayer(name);
+          recordPlayerLogin(name);
+          setState({ screen: 'loading' });
+          loadProgressFromCloud(name).then(cloudData => {
+            if (cloudData) saveProgress(cloudData);
+            const p = getProgress();
+            if (p.placementDone) {
+              setState({ screen: 'levelMap', showNewPlayerForm: false });
+            } else {
+              setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
+            }
+          });
         });
       });
     });
@@ -186,12 +230,29 @@ function renderWelcome(app) {
       <div class="card welcome-card">
         <div class="big-emoji">🧮</div>
         <h1>LearnSpark ✨</h1>
-        <p class="subtitle">Choose your avatar and enter your name!</p>
+        <p class="subtitle">Choose your avatar, name, and a 4-digit PIN!</p>
         <div class="avatar-grid" id="avatar-grid">${avatarGridHTML}</div>
         <div class="name-form">
           <label for="name-input">What's your name?</label>
           <input type="text" id="name-input" class="text-input" placeholder="Type your name…"
                  maxlength="20" autocomplete="off" />
+        </div>
+        <div class="name-form">
+          <label>Choose a 4-digit PIN</label>
+          <div class="pin-boxes" id="pin-new-boxes">
+            <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+          </div>
+          <label style="margin-top:10px">Confirm PIN</label>
+          <div class="pin-boxes" id="pin-confirm-boxes">
+            <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+          </div>
+          <div class="pin-error" id="pin-form-error"></div>
         </div>
         <button class="btn btn-primary btn-large" id="btn-start">Let's Go! 🚀</button>
         ${hasProfiles ? `<button class="btn btn-ghost" id="btn-back-profiles">Back</button>` : ''}
@@ -202,24 +263,47 @@ function renderWelcome(app) {
       const btn = e.target.closest('.avatar-opt');
       if (!btn) return;
       selectedAvatar = btn.dataset.avatar;
-      document.querySelectorAll('.avatar-opt').forEach(b => b.classList.remove('selected'));
+      document.querySelectorAll('#avatar-grid .avatar-opt').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
     });
+
+    // Wire PIN boxes auto-advance
+    function wirePinBoxes(containerId) {
+      const boxes = [...document.querySelectorAll(`#${containerId} .pin-box`)];
+      boxes.forEach((box, i) => {
+        box.addEventListener('input', () => {
+          box.value = box.value.replace(/\D/g, '').slice(0, 1);
+          if (box.value && i < 3) boxes[i + 1].focus();
+        });
+        box.addEventListener('keydown', e => {
+          if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+        });
+      });
+      return () => boxes.map(b => b.value).join('');
+    }
+    const getPin     = wirePinBoxes('pin-new-boxes');
+    const getConfirm = wirePinBoxes('pin-confirm-boxes');
 
     const nameInput = document.getElementById('name-input');
     const startBtn  = document.getElementById('btn-start');
     const backBtn   = document.getElementById('btn-back-profiles');
     nameInput.focus();
-    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') startBtn.click(); });
+
     startBtn.onclick = () => {
       const name = nameInput.value.trim();
+      const pin  = getPin();
+      const conf = getConfirm();
+      const errEl = document.getElementById('pin-form-error');
+      errEl.textContent = '';
+
       if (!name) { shake(nameInput); return; }
-      if (getProfiles().includes(name)) {
-        shake(nameInput);
-        nameInput.placeholder = 'Name already taken!';
-        return;
+      if (getProfiles().find(p => p.name === name)) {
+        shake(nameInput); nameInput.placeholder = 'Name already taken!'; return;
       }
-      setPlayerName(name);
+      if (pin.length < 4) { errEl.textContent = '❌ Enter all 4 PIN digits'; return; }
+      if (pin !== conf)   { errEl.textContent = '❌ PINs don\'t match, try again'; return; }
+
+      setPlayerName(name, pin, selectedAvatar);
       const p = getProgress(); p.avatar = selectedAvatar; saveProgress(p);
       setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
     };
