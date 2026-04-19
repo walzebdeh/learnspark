@@ -10,7 +10,7 @@ function syncProgressToCloud(playerName, progressData) {
   if (!playerName || !_dbReady()) return;
   try {
     db.collection('progress').doc(playerName)
-      .set(progressData)
+      .set(progressData, { merge: true })
       .catch(e => console.warn('[sync] write failed:', e));
   } catch(e) {
     console.warn('[sync] error:', e);

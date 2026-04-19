@@ -122,6 +122,27 @@
       border-radius: 20px;
     }
 
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .card-header h2 { margin-bottom: 0; }
+    .btn-delete-player {
+      background: none;
+      border: 1.5px solid #e74c3c;
+      color: #e74c3c;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: .78rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s, color .15s;
+    }
+    .btn-delete-player:hover { background: #e74c3c; color: white; }
+
     .points-summary {
       background: linear-gradient(135deg, #667eea, #764ba2);
       border-radius: 12px;
@@ -230,6 +251,19 @@
           const p = doc.data();
           grid.innerHTML += buildPlayerCard(name, p, idx++);
         });
+
+        grid.querySelectorAll('.btn-delete-player').forEach(btn => {
+          btn.onclick = () => {
+            const name = btn.dataset.name;
+            if (!confirm(`Delete ${name}'s profile and all progress? This cannot be undone.`)) return;
+            db.collection('progress').doc(name).delete().then(() => {
+              btn.closest('.player-card').remove();
+              if (!grid.querySelector('.player-card')) {
+                grid.innerHTML = '<p class="no-players">No players yet — kids need to play first!</p>';
+              }
+            }).catch(e => alert('Delete failed: ' + e.message));
+          };
+        });
       });
     }
 
@@ -319,8 +353,11 @@
       const lastIp = p.lastIp || '—';
 
       return `
-        <div class="player-card">
-          <h2><span class="player-avatar">${avatar}</span>${name}</h2>
+        <div class="player-card" data-name="${name}">
+          <div class="card-header">
+            <h2><span class="player-avatar">${avatar}</span>${name}</h2>
+            <button class="btn-delete-player" data-name="${name}" title="Delete player">🗑 Delete</button>
+          </div>
           <div class="points-summary">
             <div class="pts-total">⭐ ${totalPts.toLocaleString()} total pts</div>
             <div class="pts-breakdown">
@@ -330,7 +367,7 @@
             </div>
           </div>
           <div class="last-seen-row">
-            <span>🕐 Last seen: ${lastSeen}</span>
+            <span>🕐 ${lastSeen}</span>
             <span class="ip-badge">🌐 ${lastIp}</span>
           </div>
           <div class="section-title">Math</div>
