@@ -31,11 +31,19 @@ function setState(partial) {
 }
 
 // ── Root render ──────────────────────────────────────────────
+function renderLoading(app) {
+  app.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#fff;font-size:1.5rem;font-weight:800;gap:14px">
+    <span style="animation:spin 1s linear infinite;display:inline-block">⭐</span> Loading…
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  </div>`;
+}
+
 function render() {
   const app = document.getElementById('app');
   app.innerHTML = '';
   try {
     switch (state.screen) {
+      case 'loading':          renderLoading(app);          break;
       case 'welcome':          renderWelcome(app);          break;
       case 'placement':        renderPlacement(app);        break;
       case 'levelMap':         renderLevelMap(app);         break;
@@ -132,22 +140,16 @@ function renderWelcome(app) {
         const name = card.dataset.name;
         setActivePlayer(name);
         recordPlayerLogin(name);
-        const localProgress = getProgress();
-        if (localProgress.placementDone) {
-          // Local data is good — go straight in
-          setState({ screen: 'levelMap', showNewPlayerForm: false });
-        } else {
-          // No local data yet — try cloud before deciding
-          loadProgressFromCloud(name).then(cloudData => {
-            if (cloudData) saveProgress(cloudData);
-            const p = getProgress();
-            if (p.placementDone) {
-              setState({ screen: 'levelMap', showNewPlayerForm: false });
-            } else {
-              setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
-            }
-          });
-        }
+        setState({ screen: 'loading' });
+        loadProgressFromCloud(name).then(cloudData => {
+          if (cloudData) saveProgress(cloudData);
+          const p = getProgress();
+          if (p.placementDone) {
+            setState({ screen: 'levelMap', showNewPlayerForm: false });
+          } else {
+            setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
+          }
+        });
       });
     });
 
@@ -1435,10 +1437,20 @@ function wireAnswerInput(onSubmit) {
 // ── Boot ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   migrateIfNeeded();
-  // If a player was active before the refresh, go straight to their level map
-  const p = getProgress();
-  if (_activePlayer && p.placementDone) {
-    state.screen = 'levelMap';
+  if (_activePlayer) {
+    // Always reload from cloud on boot — cloud is the source of truth
+    state.screen = 'loading';
+    render();
+    loadProgressFromCloud(_activePlayer).then(cloudData => {
+      if (cloudData) saveProgress(cloudData);
+      const p = getProgress();
+      if (p.placementDone) {
+        setState({ screen: 'levelMap' });
+      } else {
+        setState({ screen: 'welcome' });
+      }
+    });
+  } else {
+    render();
   }
-  render();
 });

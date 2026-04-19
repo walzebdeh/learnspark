@@ -11,6 +11,10 @@ const PASS_SCORE = 18; // out of 20 (90%)
 let _activePlayer = sessionStorage.getItem('activePlayer') || null;
 
 function setActivePlayer(name) {
+  // Clear previous player's local cache so cloud is always authoritative on next login
+  if (_activePlayer && _activePlayer !== name) {
+    localStorage.removeItem(`mathkids_v1_${_activePlayer}`);
+  }
   _activePlayer = name;
   if (name) sessionStorage.setItem('activePlayer', name);
   else sessionStorage.removeItem('activePlayer');
