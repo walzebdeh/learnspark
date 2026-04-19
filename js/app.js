@@ -34,19 +34,28 @@ function setState(partial) {
 function render() {
   const app = document.getElementById('app');
   app.innerHTML = '';
-  switch (state.screen) {
-    case 'welcome':          renderWelcome(app);          break;
-    case 'placement':        renderPlacement(app);        break;
-    case 'levelMap':         renderLevelMap(app);         break;
-    case 'sheet':            renderSheet(app);            break;
-    case 'sheetResults':     renderSheetResults(app);     break;
-    case 'wordLevelMap':     renderWordLevelMap(app);     break;
-    case 'wordPlacement':    renderWordPlacement(app);    break;
-    case 'wordSheet':        renderWordSheet(app);        break;
-    case 'wordSheetResults':   renderWordSheetResults(app);   break;
-    case 'choiceLevelMap':    renderChoiceLevelMap(app);    break;
-    case 'choiceSheet':       renderChoiceSheet(app);       break;
-    case 'choiceSheetResults':renderChoiceSheetResults(app);break;
+  try {
+    switch (state.screen) {
+      case 'welcome':          renderWelcome(app);          break;
+      case 'placement':        renderPlacement(app);        break;
+      case 'levelMap':         renderLevelMap(app);         break;
+      case 'sheet':            renderSheet(app);            break;
+      case 'sheetResults':     renderSheetResults(app);     break;
+      case 'wordLevelMap':     renderWordLevelMap(app);     break;
+      case 'wordPlacement':    renderWordPlacement(app);    break;
+      case 'wordSheet':        renderWordSheet(app);        break;
+      case 'wordSheetResults':   renderWordSheetResults(app);   break;
+      case 'choiceLevelMap':    renderChoiceLevelMap(app);    break;
+      case 'choiceSheet':       renderChoiceSheet(app);       break;
+      case 'choiceSheetResults':renderChoiceSheetResults(app);break;
+    }
+  } catch(e) {
+    console.error('Render error:', e);
+    app.innerHTML = `<div style="padding:40px;text-align:center;color:#fff">
+      <h2>Something went wrong 😕</h2>
+      <p style="margin:12px 0;opacity:.8">${e.message}</p>
+      <button onclick="setState({screen:'welcome'})" style="margin-top:16px;padding:12px 28px;border-radius:12px;border:none;background:#fff;font-weight:700;cursor:pointer">Go Home</button>
+    </div>`;
   }
 }
 
@@ -276,9 +285,8 @@ function submitPlacement() {
     const isLast  = pt.cpIndex >= PLACEMENT_CHECKPOINTS.length - 1;
 
     if (!passed || isLast) {
-      // Place the kid at this level
-      const placedLevel = passed ? PLACEMENT_CHECKPOINTS[pt.cpIndex] : PLACEMENT_CHECKPOINTS[pt.cpIndex];
-      setPlacementLevel(placedLevel);
+      const placedLevel = PLACEMENT_CHECKPOINTS[passed ? pt.cpIndex : Math.max(0, pt.cpIndex - 1)];
+      try { setPlacementLevel(placedLevel); } catch(e) { console.warn('setPlacementLevel error:', e); }
       setState({ screen: 'levelMap', placement: null });
     } else {
       pt.cpIndex++;
