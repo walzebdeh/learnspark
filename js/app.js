@@ -123,15 +123,22 @@ function renderWelcome(app) {
         const name = card.dataset.name;
         setActivePlayer(name);
         recordPlayerLogin(name);
-        loadProgressFromCloud(name).then(cloudData => {
-          if (cloudData) saveProgress(cloudData);
-          const p = getProgress();
-          if (p.placementDone) {
-            setState({ screen: 'levelMap', showNewPlayerForm: false });
-          } else {
-            setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
-          }
-        });
+        const localProgress = getProgress();
+        if (localProgress.placementDone) {
+          // Local data is good — go straight in
+          setState({ screen: 'levelMap', showNewPlayerForm: false });
+        } else {
+          // No local data yet — try cloud before deciding
+          loadProgressFromCloud(name).then(cloudData => {
+            if (cloudData) saveProgress(cloudData);
+            const p = getProgress();
+            if (p.placementDone) {
+              setState({ screen: 'levelMap', showNewPlayerForm: false });
+            } else {
+              setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
+            }
+          });
+        }
       });
     });
 
