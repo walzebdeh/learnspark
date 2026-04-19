@@ -96,6 +96,28 @@
       padding: 2px 8px; border-radius: 20px; margin-left: 6px;
     }
 
+    .points-summary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      text-align: center;
+      color: white;
+    }
+    .pts-total {
+      font-size: 1.4rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+    .pts-breakdown {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      font-size: .82rem;
+      font-weight: 700;
+      opacity: .9;
+    }
+
     .no-players {
       text-align: center; color: rgba(255,255,255,.8);
       font-size: 1.1rem; margin-top: 60px;
@@ -185,8 +207,16 @@
       });
     }
 
+    function getMathPoints(p)   { return Object.values(p.levels      || {}).reduce((s,v) => s + v.sheetsCompleted * 10, 0); }
+    function getWordPoints(p)   { return Object.values(p.wordLevels  || {}).reduce((s,v) => s + v.sheetsCompleted * 10, 0); }
+    function getChoicePoints(p) { return Object.values(p.choiceLevels|| {}).reduce((s,v) => s + v.sheetsCompleted *  5, 0); }
+
     function buildPlayerCard(name, p, idx) {
       const avatar = AVATARS[idx % AVATARS.length];
+      const mathPts   = getMathPoints(p);
+      const wordPts   = getWordPoints(p);
+      const choicePts = getChoicePoints(p);
+      const totalPts  = mathPts + wordPts + choicePts;
 
       // ── Math progress ──
       let mathHTML = '';
@@ -252,6 +282,14 @@
       return `
         <div class="player-card">
           <h2><span class="player-avatar">${avatar}</span>${name}</h2>
+          <div class="points-summary">
+            <div class="pts-total">⭐ ${totalPts.toLocaleString()} total pts</div>
+            <div class="pts-breakdown">
+              <span>🔢 ${mathPts} math</span>
+              <span>📝 ${wordPts} words</span>
+              <span>💡 ${choicePts} choices</span>
+            </div>
+          </div>
           <div class="section-title">Math</div>
           ${mathHTML}
           <div class="section-title">Words</div>
