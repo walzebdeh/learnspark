@@ -1,91 +1,23 @@
 // ============================================================
-// STORAGE — all localStorage read/write
+// STORAGE — in-memory cache only; Firestore is the source of truth
 // ============================================================
 
-const STORAGE_KEY = 'mathkids_v1';
-const PROFILES_KEY = 'mathkids_profiles_v2'; // v2: stores objects {name,pin,avatar}
 const SHEETS_TO_COMPLETE = 100;
 const PASS_SCORE = 18; // out of 20 (90%)
 
-// ── Active player ─────────────────────────────────────────────
+// ── Active player (session-scoped, survives refresh but not tab close) ──
 let _activePlayer = sessionStorage.getItem('activePlayer') || null;
+let _progressCache = null; // in-memory only — no localStorage
 
 function setActivePlayer(name) {
-  // Clear previous player's local cache so cloud is always authoritative on next login
-  if (_activePlayer && _activePlayer !== name) {
-    localStorage.removeItem(`mathkids_v1_${_activePlayer}`);
-  }
   _activePlayer = name;
   if (name) sessionStorage.setItem('activePlayer', name);
   else sessionStorage.removeItem('activePlayer');
 }
 
-function _key() {
-  return _activePlayer ? `mathkids_v1_${_activePlayer}` : STORAGE_KEY;
-}
-
-// ── Profile list ──────────────────────────────────────────────
-function getProfiles() {
-  try {
-    const raw = localStorage.getItem(PROFILES_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch(e) { return []; }
-}
-
-function addProfile(name, pin, avatar) {
-  const profiles = getProfiles();
-  const idx = profiles.findIndex(p => p.name === name);
-  const entry = { name, pin, avatar: avatar || '' };
-  if (idx >= 0) profiles[idx] = entry;
-  else profiles.push(entry);
-  localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
-}
-
-function updateProfileField(name, fields) {
-  const profiles = getProfiles();
-  const idx = profiles.findIndex(p => p.name === name);
-  if (idx >= 0) {
-    Object.assign(profiles[idx], fields);
-    localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
-  }
-}
-
-function verifyPin(name, pin) {
-  const profile = getProfiles().find(p => p.name === name);
-  return profile && profile.pin === pin;
-}
-
-function deleteProfile(name) {
-  const profiles = getProfiles().filter(p => p.name !== name);
-  localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
-  localStorage.removeItem(`mathkids_v1_${name}`);
-  if (_activePlayer === name) _activePlayer = null;
-}
-
-// Migrate legacy single-profile data (mathkids_v1) to named storage
-function migrateIfNeeded() {
-  if (getProfiles().length > 0) return; // already set up
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return;
-  try {
-    const p = JSON.parse(raw);
-    if (p.playerName) {
-      localStorage.setItem(`mathkids_v1_${p.playerName}`, raw);
-      addProfile(p.playerName);
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  } catch(e) {}
-}
-
 // ── Progress ──────────────────────────────────────────────────
 function getProgress() {
-  try {
-    const raw = localStorage.getItem(_key());
-    if (!raw) return defaultProgress();
-    return JSON.parse(raw);
-  } catch (e) {
-    return defaultProgress();
-  }
+  return _progressCache || defaultProgress();
 }
 
 function defaultProgress() {
@@ -98,17 +30,19 @@ function defaultProgress() {
 }
 
 function saveProgress(p) {
-  localStorage.setItem(_key(), JSON.stringify(p));
+  _progressCache = p;
   if (typeof syncProgressToCloud === 'function' && _activePlayer) {
     syncProgressToCloud(_activePlayer, p);
   }
 }
 
 function setPlayerName(name, pin, avatar) {
-  addProfile(name, pin, avatar);
   setActivePlayer(name);
-  const p = getProgress();
+  const p = defaultProgress();
   p.playerName = name;
+  p.pin        = pin;
+  p.avatar     = avatar || '';
+  _progressCache = p;
   saveProgress(p);
 }
 
@@ -129,7 +63,6 @@ function recordSheetResult(levelId, passed) {
     p.levels[levelId].sheetsCompleted += 1;
     if (p.levels[levelId].sheetsCompleted >= SHEETS_TO_COMPLETE) {
       p.levels[levelId].completed = true;
-      // Advance current level pointer if applicable
       if (p.currentLevelId === levelId && levelId < LEVELS.length - 1) {
         p.currentLevelId = levelId + 1;
       }
@@ -140,9 +73,8 @@ function recordSheetResult(levelId, passed) {
 }
 
 function resetProgress() {
-  localStorage.removeItem(_key());
-  if (_activePlayer) deleteProfile(_activePlayer);
-  _activePlayer = null;
+  _progressCache = null;
+  setActivePlayer(null);
 }
 
 // ── Word progress ─────────────────────────────────────────────

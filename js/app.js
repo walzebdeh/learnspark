@@ -18,7 +18,7 @@ let state = {
   wordPlacement: null,
   wordSheetResult: null,
   mathGrade: null,       // 1-4; null = auto-detect from current level
-  showNewPlayerForm: false,
+  welcomeMode: null,     // null | 'new' | 'returning'
   allUnlocked: false,    // review mode: bypass level locks
   choiceTopic: null,     // selected topic id in choices map
   choiceSheet: null,
@@ -68,7 +68,7 @@ function render() {
 }
 
 // ── PIN entry overlay ─────────────────────────────────────────
-function showPinEntry(profileName, profileAvatar, onSuccess) {
+function showPinEntry(profileName, profileAvatar, correctPin, onSuccess) {
   const overlay = document.createElement('div');
   overlay.className = 'avatar-picker-overlay';
   overlay.innerHTML = `
@@ -93,7 +93,7 @@ function showPinEntry(profileName, profileAvatar, onSuccess) {
       if (box.value && i < 3) boxes[i + 1].focus();
       if (boxes.every(b => b.value)) {
         const pin = boxes.map(b => b.value).join('');
-        if (verifyPin(profileName, pin)) {
+        if (pin === correctPin) {
           overlay.remove();
           onSuccess();
         } else {
@@ -112,12 +112,12 @@ function showPinEntry(profileName, profileAvatar, onSuccess) {
 }
 
 // ── Avatar picker overlay ─────────────────────────────────────
-function showAvatarPicker(playerName, currentAvatar) {
+function showAvatarPicker(currentAvatar) {
   const overlay = document.createElement('div');
   overlay.className = 'avatar-picker-overlay';
   overlay.innerHTML = `
     <div class="avatar-picker-modal">
-      <p>Choose an avatar for <strong>${esc(playerName)}</strong></p>
+      <p>Choose your avatar</p>
       <div class="avatar-grid">
         ${AVATARS.map(a => `<button class="avatar-opt ${a === currentAvatar ? 'selected' : ''}" data-avatar="${a}">${a}</button>`).join('')}
       </div>
@@ -129,12 +129,9 @@ function showAvatarPicker(playerName, currentAvatar) {
     const btn = e.target.closest('.avatar-opt');
     if (btn) {
       const avatar = btn.dataset.avatar;
-      updateProfileField(playerName, { avatar });
-      setActivePlayer(playerName);
       const p = getProgress();
       p.avatar = avatar;
       saveProgress(p);
-      setActivePlayer(null);
       overlay.remove();
       render();
       return;
@@ -146,81 +143,42 @@ function showAvatarPicker(playerName, currentAvatar) {
 // ============================================================
 // WELCOME SCREEN
 // ============================================================
+function wirePinBoxes(containerId) {
+  const boxes = [...document.querySelectorAll(`#${containerId} .pin-box`)];
+  boxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g, '').slice(0, 1);
+      if (box.value && i < 3) boxes[i + 1].focus();
+    });
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+    });
+  });
+  return () => boxes.map(b => b.value).join('');
+}
+
 function renderWelcome(app) {
-  const profiles = getProfiles();
+  const mode = state.welcomeMode; // null | 'new' | 'returning'
   const div = el('div', 'screen welcome-screen');
 
-  if (profiles.length > 0 && !state.showNewPlayerForm) {
-    // ── Profile picker ───────────────────────────────────────
-    const cardsHTML = profiles.map((profile, i) => {
-      const { name, avatar } = profile;
-      const displayAvatar = avatar || AVATARS[i % AVATARS.length];
-      return `
-        <div class="profile-card" data-name="${esc(name)}">
-          <button class="pc-delete" data-name="${esc(name)}" title="Delete profile">✕</button>
-          <div class="pc-avatar" data-name="${esc(name)}" title="Change avatar">${displayAvatar}</div>
-          <div class="pc-name">${esc(name)}</div>
-          <div class="pc-level">🔒 PIN required</div>
-        </div>`;
-    }).join('');
-
+  if (!mode) {
+    // ── Landing ──────────────────────────────────────────────
     div.innerHTML = `
       <div class="card welcome-card">
         <div class="big-emoji">🧮</div>
         <h1>LearnSpark ✨</h1>
-        <p class="subtitle">Who's playing today?</p>
-        <div class="profiles-grid">${cardsHTML}</div>
-        <button class="btn btn-ghost" id="btn-new-player">+ New Player</button>
+        <p class="subtitle">Ready to learn? Let's go!</p>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+          <button class="btn btn-primary btn-large" id="btn-new-user">🆕 New User</button>
+          <button class="btn btn-secondary btn-large" id="btn-returning-user">🔑 I Have an Account</button>
+        </div>
       </div>`;
     app.appendChild(div);
+    document.getElementById('btn-new-user').onclick      = () => setState({ welcomeMode: 'new' });
+    document.getElementById('btn-returning-user').onclick = () => setState({ welcomeMode: 'returning' });
 
-    div.querySelectorAll('.profile-card').forEach(card => {
-      card.addEventListener('click', e => {
-        if (e.target.closest('.pc-delete') || e.target.closest('.pc-avatar')) return;
-        const name = card.dataset.name;
-        const profile = getProfiles().find(p => p.name === name);
-        const avatar = profile ? (profile.avatar || '🦊') : '🦊';
-        showPinEntry(name, avatar, () => {
-          setActivePlayer(name);
-          recordPlayerLogin(name);
-          setState({ screen: 'loading' });
-          loadProgressFromCloud(name).then(cloudData => {
-            if (cloudData) saveProgress(cloudData);
-            const p = getProgress();
-            if (p.placementDone) {
-              setState({ screen: 'levelMap', showNewPlayerForm: false });
-            } else {
-              setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
-            }
-          });
-        });
-      });
-    });
-
-    div.querySelectorAll('.pc-avatar').forEach(avatarEl => {
-      avatarEl.addEventListener('click', e => {
-        e.stopPropagation();
-        showAvatarPicker(avatarEl.dataset.name, avatarEl.textContent.trim());
-      });
-    });
-
-    div.querySelectorAll('.pc-delete').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        const name = btn.dataset.name;
-        if (confirm(`Delete ${name}'s profile and all their progress?`)) {
-          deleteProfile(name);
-          render();
-        }
-      });
-    });
-
-    document.getElementById('btn-new-player').onclick = () =>
-      setState({ showNewPlayerForm: true });
-
-  } else {
-    // ── New player form ──────────────────────────────────────
-    const hasProfiles = profiles.length > 0;
+  } else if (mode === 'new') {
+    // ── New user form ────────────────────────────────────────
     let selectedAvatar = AVATARS[0];
     const avatarGridHTML = AVATARS.map(a =>
       `<button class="avatar-opt ${a === selectedAvatar ? 'selected' : ''}" data-avatar="${a}">${a}</button>`
@@ -255,7 +213,7 @@ function renderWelcome(app) {
           <div class="pin-error" id="pin-form-error"></div>
         </div>
         <button class="btn btn-primary btn-large" id="btn-start">Let's Go! 🚀</button>
-        ${hasProfiles ? `<button class="btn btn-ghost" id="btn-back-profiles">Back</button>` : ''}
+        <button class="btn btn-ghost" id="btn-back">← Back</button>
       </div>`;
     app.appendChild(div);
 
@@ -267,47 +225,107 @@ function renderWelcome(app) {
       btn.classList.add('selected');
     });
 
-    // Wire PIN boxes auto-advance
-    function wirePinBoxes(containerId) {
-      const boxes = [...document.querySelectorAll(`#${containerId} .pin-box`)];
-      boxes.forEach((box, i) => {
-        box.addEventListener('input', () => {
-          box.value = box.value.replace(/\D/g, '').slice(0, 1);
-          if (box.value && i < 3) boxes[i + 1].focus();
-        });
-        box.addEventListener('keydown', e => {
-          if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
-        });
-      });
-      return () => boxes.map(b => b.value).join('');
-    }
     const getPin     = wirePinBoxes('pin-new-boxes');
     const getConfirm = wirePinBoxes('pin-confirm-boxes');
-
-    const nameInput = document.getElementById('name-input');
-    const startBtn  = document.getElementById('btn-start');
-    const backBtn   = document.getElementById('btn-back-profiles');
+    const nameInput  = document.getElementById('name-input');
+    const startBtn   = document.getElementById('btn-start');
     nameInput.focus();
 
     startBtn.onclick = () => {
-      const name = nameInput.value.trim();
-      const pin  = getPin();
-      const conf = getConfirm();
+      const name  = nameInput.value.trim();
+      const pin   = getPin();
+      const conf  = getConfirm();
       const errEl = document.getElementById('pin-form-error');
       errEl.textContent = '';
 
       if (!name) { shake(nameInput); return; }
-      if (getProfiles().find(p => p.name === name)) {
-        shake(nameInput); nameInput.placeholder = 'Name already taken!'; return;
-      }
       if (pin.length < 4) { errEl.textContent = '❌ Enter all 4 PIN digits'; return; }
       if (pin !== conf)   { errEl.textContent = '❌ PINs don\'t match, try again'; return; }
 
-      setPlayerName(name, pin, selectedAvatar);
-      const p = getProgress(); p.avatar = selectedAvatar; saveProgress(p);
-      setState({ screen: 'placement', placement: buildPlacement(), showNewPlayerForm: false });
+      startBtn.disabled    = true;
+      startBtn.textContent = 'Checking…';
+
+      db.collection('progress').doc(name).get().then(doc => {
+        if (doc.exists) {
+          errEl.textContent    = '❌ That name is already taken — choose another';
+          shake(nameInput);
+          startBtn.disabled    = false;
+          startBtn.textContent = 'Let\'s Go! 🚀';
+          return;
+        }
+        setPlayerName(name, pin, selectedAvatar);
+        recordPlayerLogin(name);
+        setState({ screen: 'placement', placement: buildPlacement(), welcomeMode: null });
+      }).catch(() => {
+        // If uniqueness check fails, proceed anyway
+        setPlayerName(name, pin, selectedAvatar);
+        recordPlayerLogin(name);
+        setState({ screen: 'placement', placement: buildPlacement(), welcomeMode: null });
+      });
     };
-    if (backBtn) backBtn.onclick = () => setState({ showNewPlayerForm: false });
+
+    document.getElementById('btn-back').onclick = () => setState({ welcomeMode: null });
+
+  } else if (mode === 'returning') {
+    // ── Returning user ───────────────────────────────────────
+    div.innerHTML = `
+      <div class="card welcome-card">
+        <div class="big-emoji">🔑</div>
+        <h1>Welcome Back!</h1>
+        <p class="subtitle">Enter your name to sign in</p>
+        <div class="name-form">
+          <label for="name-input">Your name</label>
+          <input type="text" id="name-input" class="text-input" placeholder="Type your name…"
+                 maxlength="20" autocomplete="off" />
+        </div>
+        <div class="pin-error" id="login-error"></div>
+        <button class="btn btn-primary btn-large" id="btn-signin">Sign In 🔑</button>
+        <button class="btn btn-ghost" id="btn-back">← Back</button>
+      </div>`;
+    app.appendChild(div);
+
+    const nameInput = document.getElementById('name-input');
+    nameInput.focus();
+
+    const doSignIn = () => {
+      const name  = nameInput.value.trim();
+      const errEl = document.getElementById('login-error');
+      errEl.textContent = '';
+      if (!name) { shake(nameInput); return; }
+
+      const signinBtn      = document.getElementById('btn-signin');
+      signinBtn.disabled    = true;
+      signinBtn.textContent = 'Looking you up…';
+
+      loadProgressFromCloud(name).then(cloudData => {
+        if (!cloudData) {
+          errEl.textContent    = '❌ Name not found — are you a new user?';
+          signinBtn.disabled    = false;
+          signinBtn.textContent = 'Sign In 🔑';
+          shake(nameInput);
+          return;
+        }
+        const avatar     = cloudData.avatar || '🦊';
+        const correctPin = cloudData.pin    || '';
+        signinBtn.disabled    = false;
+        signinBtn.textContent = 'Sign In 🔑';
+        showPinEntry(name, avatar, correctPin, () => {
+          setActivePlayer(name);
+          saveProgress(cloudData); // load into cache + sync
+          recordPlayerLogin(name);
+          const p = getProgress();
+          if (p.placementDone) {
+            setState({ screen: 'levelMap', welcomeMode: null });
+          } else {
+            setState({ screen: 'placement', placement: buildPlacement(), welcomeMode: null });
+          }
+        });
+      });
+    };
+
+    document.getElementById('btn-signin').onclick = doSignIn;
+    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSignIn(); });
+    document.getElementById('btn-back').onclick = () => setState({ welcomeMode: null });
   }
 }
 
@@ -513,7 +531,7 @@ function renderLevelMap(app) {
   app.appendChild(div);
 
   document.getElementById('btn-switch-player').onclick = () =>
-    { setActivePlayer(null); setState({ screen: 'welcome', showNewPlayerForm: false }); }
+    { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); }
 
   document.getElementById('btn-redo-placement').onclick = () => {
     if (confirm('Redo the placement test? Your progress stays, but your starting level will be updated.')) {
@@ -813,7 +831,7 @@ function renderWordLevelMap(app) {
   app.appendChild(div);
 
   document.getElementById('btn-switch-player').onclick = () =>
-    { setActivePlayer(null); setState({ screen: 'welcome', showNewPlayerForm: false }); }
+    { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); }
   document.getElementById('btn-redo-word-placement').onclick = () => {
     if (confirm('Redo the word placement test? Your progress stays, but your starting level will be updated.')) {
       const p = getProgress();
@@ -1233,7 +1251,7 @@ function renderChoiceLevelMap(app) {
 
     document.getElementById('tab-math').onclick   = () => setState({ screen: 'levelMap' });
     document.getElementById('tab-words').onclick  = () => setState({ screen: 'wordLevelMap' });
-    document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', showNewPlayerForm: false }); }
+    document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); }
     document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
 
     div.querySelectorAll('.topic-card').forEach(card => {
@@ -1532,21 +1550,20 @@ function wireAnswerInput(onSubmit) {
 
 // ── Boot ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  migrateIfNeeded();
   if (_activePlayer) {
-    // Always reload from cloud on boot — cloud is the source of truth
+    // Session still active — reload from cloud
     state.screen = 'loading';
     render();
     loadProgressFromCloud(_activePlayer).then(cloudData => {
       if (cloudData) saveProgress(cloudData);
       const p = getProgress();
       if (p.placementDone) {
-        setState({ screen: 'levelMap' });
+        setState({ screen: 'levelMap', welcomeMode: null });
       } else {
-        setState({ screen: 'welcome' });
+        setState({ screen: 'welcome', welcomeMode: null });
       }
     });
   } else {
-    render();
+    render(); // shows welcome landing
   }
 });
