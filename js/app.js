@@ -517,7 +517,7 @@ function renderLevelMap(app) {
       <h2>Hi, ${esc(progress.playerName)}! 👋</h2>
       <p>Choose a level to practice</p>
       ${totalScoreBadge(progress)}
-      <button class="btn btn-ghost btn-sm" id="btn-switch-player">Switch Player</button>
+      <button class="btn btn-ghost btn-sm" id="btn-switch-player">Sign Out</button>
       <button class="btn btn-ghost btn-sm" id="btn-redo-placement">↺ Redo Placement</button>
       <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
         ${state.allUnlocked ? '🔓 Locks Off' : '🔒 Unlock All'}
@@ -789,7 +789,7 @@ function renderWordLevelMap(app) {
       <h2>Hi, ${esc(progress.playerName)}! 👋</h2>
       <p>Choose a word level to practice</p>
       ${totalScoreBadge(progress)}
-      <button class="btn btn-ghost btn-sm" id="btn-switch-player">Switch Player</button>
+      <button class="btn btn-ghost btn-sm" id="btn-switch-player">Sign Out</button>
       <button class="btn btn-ghost btn-sm" id="btn-redo-word-placement">↺ Redo Placement</button>
       <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
         ${state.allUnlocked ? '🔓 Locks Off' : '🔒 Unlock All'}
@@ -1241,7 +1241,7 @@ function renderChoiceLevelMap(app) {
         <h2>Hi, ${esc(progress.playerName)}! 👋</h2>
         <p>Choose a topic to practice</p>
         ${totalScoreBadge(progress)}
-        <button class="btn btn-ghost btn-sm" id="btn-switch-player">Switch Player</button>
+        <button class="btn btn-ghost btn-sm" id="btn-switch-player">Sign Out</button>
         <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
           ${state.allUnlocked ? '🔓 Locks Off' : '🔒 Unlock All'}
         </button>
