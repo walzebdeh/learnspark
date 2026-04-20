@@ -169,12 +169,10 @@ function renderWelcome(app) {
         <h1>LearnSpark ✨</h1>
         <p class="subtitle">Ready to learn? Let's go!</p>
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
-          <button class="btn btn-primary btn-large" id="btn-new-user">🆕 New User</button>
-          <button class="btn btn-secondary btn-large" id="btn-returning-user">🔑 I Have an Account</button>
+          <button class="btn btn-primary btn-large" id="btn-returning-user">🔑 Sign In</button>
         </div>
       </div>`;
     app.appendChild(div);
-    document.getElementById('btn-new-user').onclick      = () => setState({ welcomeMode: 'new' });
     document.getElementById('btn-returning-user').onclick = () => setState({ welcomeMode: 'returning' });
 
   } else if (mode === 'new') {
