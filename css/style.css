@@ -349,10 +349,6 @@ html, body {
 }
 
 /* ── Digit box answer entry ── */
-.digit-answer-row {
-  flex-direction: column;
-  gap: 16px;
-}
 .digit-boxes-wrap {
   display: flex;
   gap: 10px;

@@ -360,18 +360,20 @@ function renderPlacement(app) {
         ${problemHTML(problem)}
         ${isStacked(problem) || problem.type === 'equation' ? '' : '<div class="equals-row">= ?</div>'}
       </div>
-      <div class="answer-row digit-answer-row">
-        ${digitBoxesHTML()}
+      <div class="answer-row">
+        ${isStacked(problem) ? digitBoxesHTML() : `<input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />`}
         <button class="btn btn-primary" id="btn-check">Check ✓</button>
       </div>
     </div>`;
   app.appendChild(div);
-  wireDigitInput(() => submitPlacement());
+  if (isStacked(problem)) wireDigitInput(() => submitPlacement());
+  else                    wireAnswerInput(() => submitPlacement());
 }
 
 function submitPlacement() {
-  const val = getDigitAnswer();
-  if (isNaN(val)) { shake(document.getElementById('digit-boxes-wrap')); return; }
+  const useDigits = !!document.querySelector('.digit-box');
+  const val = useDigits ? getDigitAnswer() : parseInt(document.getElementById('answer-input').value, 10);
+  if (isNaN(val)) { shake(useDigits ? document.getElementById('digit-boxes-wrap') : document.getElementById('answer-input')); return; }
 
   const pt      = state.placement;
   const problem = pt.problems[pt.qIndex];
@@ -636,8 +638,8 @@ function renderSheet(app) {
         ${isStacked(problem) || problem.type === 'equation' ? '' : '<div class="equals-row">= ?</div>'}
       </div>
       ${feedbackHTML}
-      <div class="answer-row digit-answer-row" id="answer-row">
-        ${digitBoxesHTML()}
+      <div class="answer-row" id="answer-row">
+        ${isStacked(problem) ? digitBoxesHTML() : `<input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />`}
         <button class="btn btn-primary" id="btn-check">Check ✓</button>
       </div>
     </div>`;
@@ -654,13 +656,15 @@ function renderSheet(app) {
   };
 
   if (!s.feedback) {
-    wireDigitInput(() => submitSheet());
+    if (isStacked(problem)) wireDigitInput(() => submitSheet());
+    else                    wireAnswerInput(() => submitSheet());
   }
 }
 
 function submitSheet() {
-  const val = getDigitAnswer();
-  if (isNaN(val)) { shake(document.getElementById('digit-boxes-wrap')); return; }
+  const useDigits = !!document.querySelector('.digit-box');
+  const val = useDigits ? getDigitAnswer() : parseInt(document.getElementById('answer-input').value, 10);
+  if (isNaN(val)) { shake(useDigits ? document.getElementById('digit-boxes-wrap') : document.getElementById('answer-input')); return; }
 
   const s       = state.sheet;
   const problem = s.problems[s.currentIndex];
@@ -1533,8 +1537,18 @@ function shake(elem) {
   setTimeout(() => elem.classList.remove('shake'), 500);
 }
 
+function wireAnswerInput(onSubmit) {
+  const input = document.getElementById('answer-input');
+  const btn   = document.getElementById('btn-check');
+  if (!input || !btn) return;
+  input.focus();
+  btn.onclick = onSubmit;
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') onSubmit(); });
+}
+
+// Entry goes right-to-left (ones first, then tens, then hundreds)
 function wireDigitInput(onSubmit) {
-  const boxes = [...document.querySelectorAll('.digit-box')];
+  const boxes = [...document.querySelectorAll('.digit-box')]; // [100s, 10s, 1s]
   const btn   = document.getElementById('btn-check');
   if (!boxes.length || !btn) return;
 
@@ -1542,15 +1556,15 @@ function wireDigitInput(onSubmit) {
     box.addEventListener('input', () => {
       box.value = box.value.replace(/\D/g, '').slice(0, 1);
       box.classList.toggle('filled', !!box.value);
-      if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+      if (box.value && i > 0) boxes[i - 1].focus(); // advance left
     });
     box.addEventListener('keydown', e => {
-      if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+      if (e.key === 'Backspace' && !box.value && i < boxes.length - 1) boxes[i + 1].focus(); // back right
       if (e.key === 'Enter') onSubmit();
     });
   });
 
-  boxes[0].focus();
+  boxes[boxes.length - 1].focus(); // start at ones (rightmost)
   btn.onclick = onSubmit;
 }
 
@@ -1561,7 +1575,7 @@ function getDigitAnswer() {
 }
 
 function digitBoxesHTML() {
-  const labels = ['1000s', '100s', '10s', '1s'];
+  const labels = ['100s', '10s', '1s'];
   return `
     <div class="digit-boxes-wrap" id="digit-boxes-wrap">
       ${labels.map(l => `
