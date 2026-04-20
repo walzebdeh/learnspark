@@ -349,6 +349,17 @@ function renderPlacement(app) {
   const level   = LEVELS[cpId];
   const problem = pt.problems[pt.qIndex];
 
+  const stacked = isStacked(problem);
+  const cardBody = stacked ? stackedWithBoxesHTML(problem) : `
+    <div class="problem-display">
+      ${problemHTML(problem)}
+      ${problem.type === 'equation' ? '' : '<div class="equals-row">= ?</div>'}
+    </div>
+    <div class="answer-row">
+      <input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />
+      <button class="btn btn-primary" id="btn-check">Check ✓</button>
+    </div>`;
+
   const div = el('div', 'screen placement-screen');
   div.innerHTML = `
     <div class="card placement-card">
@@ -356,18 +367,11 @@ function renderPlacement(app) {
       <div class="placement-subtitle">
         Check ${pt.cpIndex + 1} of ${PLACEMENT_CHECKPOINTS.length} — <em>${esc(level.name)}</em>
       </div>
-      <div class="problem-display">
-        ${problemHTML(problem)}
-        ${isStacked(problem) || problem.type === 'equation' ? '' : '<div class="equals-row">= ?</div>'}
-      </div>
-      <div class="answer-row">
-        ${isStacked(problem) ? digitBoxesHTML() : `<input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />`}
-        <button class="btn btn-primary" id="btn-check">Check ✓</button>
-      </div>
+      ${cardBody}
     </div>`;
   app.appendChild(div);
-  if (isStacked(problem)) wireDigitInput(() => submitPlacement());
-  else                    wireAnswerInput(() => submitPlacement());
+  if (stacked) wireDigitInput(() => submitPlacement());
+  else         wireAnswerInput(() => submitPlacement());
 }
 
 function submitPlacement() {
@@ -633,15 +637,17 @@ function renderSheet(app) {
     <div class="sheet-counter">${s.currentIndex + 1} / ${total}</div>
 
     <div class="card problem-card">
-      <div class="problem-display">
-        ${problemHTML(problem)}
-        ${isStacked(problem) || problem.type === 'equation' ? '' : '<div class="equals-row">= ?</div>'}
-      </div>
-      ${feedbackHTML}
-      <div class="answer-row" id="answer-row">
-        ${isStacked(problem) ? digitBoxesHTML() : `<input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />`}
-        <button class="btn btn-primary" id="btn-check">Check ✓</button>
-      </div>
+      ${isStacked(problem) && !s.feedback
+        ? stackedWithBoxesHTML(problem)
+        : `<div class="problem-display">
+            ${problemHTML(problem)}
+            ${isStacked(problem) || problem.type === 'equation' ? '' : '<div class="equals-row">= ?</div>'}
+           </div>
+           ${feedbackHTML}
+           ${!s.feedback ? `<div class="answer-row" id="answer-row">
+             <input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />
+             <button class="btn btn-primary" id="btn-check">Check ✓</button>
+           </div>` : ''}`}
     </div>`;
   app.appendChild(div);
 
@@ -1574,16 +1580,34 @@ function getDigitAnswer() {
   return parseInt(boxes.map(b => b.value || '0').join(''), 10);
 }
 
-function digitBoxesHTML() {
-  const labels = ['100s', '10s', '1s'];
+function stackedWithBoxesHTML(problem) {
+  const m      = problem.question.match(/^(\d+)\s*([+−])\s*(\d+)$/);
+  const op     = m[2] === '+' ? '+' : '−';
+  const top    = m[1];
+  const bot    = m[3];
+  const ansLen = String(Math.abs(problem.answer)).length;
+  const cols   = Math.max(top.length, bot.length, ansLen);
+
+  function numCells(str) {
+    return str.padStart(cols, '\x00').split('').map(d =>
+      `<div class="sg-cell">${d === '\x00' ? '' : esc(d)}</div>`
+    ).join('');
+  }
+
+  const ansCells = Array(cols).fill(0).map((_, i) =>
+    i < cols - ansLen
+      ? `<div class="sg-cell"></div>`
+      : `<div class="sg-cell"><input class="digit-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off"></div>`
+  ).join('');
+
   return `
-    <div class="digit-boxes-wrap" id="digit-boxes-wrap">
-      ${labels.map(l => `
-        <div class="digit-box-col">
-          <span class="digit-label">${l}</span>
-          <input class="digit-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off">
-        </div>`).join('')}
-    </div>`;
+    <div class="stacked-grid" id="digit-boxes-wrap" style="--sg-cols:${cols}">
+      <div class="sg-op"></div>${numCells(top)}
+      <div class="sg-op">${op}</div>${numCells(bot)}
+      <div class="sg-line" style="grid-column:1/${cols + 2}"></div>
+      <div class="sg-op"></div>${ansCells}
+    </div>
+    <button class="btn btn-primary" id="btn-check" style="margin-top:16px">Check ✓</button>`;
 }
 
 // ── Boot ─────────────────────────────────────────────────────
