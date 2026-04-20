@@ -530,18 +530,21 @@
             submitBtn.textContent = 'Create Player';
             return;
           }
-          return db.collection('progress').doc(name).set({
-            playerName:    name,
-            pin:           pin,
-            avatar:        selectedAvatar,
-            placementDone: false,
+          db.collection('progress').doc(name).set({
+            playerName:     name,
+            pin:            pin,
+            avatar:         selectedAvatar,
+            placementDone:  false,
             currentLevelId: 0,
-            levels:        {}
+            levels:         {}
+          }).then(() => {
+            overlay.remove();
+            location.reload();
+          }).catch(e => {
+            errEl.textContent    = 'Error creating player: ' + e.message;
+            submitBtn.disabled    = false;
+            submitBtn.textContent = 'Create Player';
           });
-        }).then(result => {
-          if (result === undefined) return; // name taken, already handled
-          overlay.remove();
-          location.reload(); // refresh dashboard to show new player
         }).catch(e => {
           errEl.textContent    = 'Error: ' + e.message;
           submitBtn.disabled    = false;
