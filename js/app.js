@@ -1683,14 +1683,15 @@ function renderTypingSheet(app) {
   input.addEventListener('input', () => {
     if (!s.startTime) s.startTime = Date.now();
     s.typed = input.value;
-    renderTypingTarget(targetEl, s.typed, prompt);
+    const cur = s.prompts[s.currentIndex]; // always fresh — avoids stale closure
+    renderTypingTarget(targetEl, s.typed, cur);
 
     const elapsed = (Date.now() - s.startTime) / 60000;
     const words   = (s.totalChars + s.typed.length) / 5;
     s.wpm = elapsed > 0.01 ? Math.round(words / elapsed) : 0;
     wpmEl.textContent = `${s.wpm} WPM`;
 
-    if (s.typed.length >= prompt.length) advanceTypingPrompt();
+    if (s.typed.length >= cur.length) advanceTypingPrompt();
   });
 
   input.addEventListener('keydown', e => {
