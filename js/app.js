@@ -360,20 +360,18 @@ function renderPlacement(app) {
         ${problemHTML(problem)}
         ${isStacked(problem) || problem.type === 'equation' ? '' : '<div class="equals-row">= ?</div>'}
       </div>
-      <div class="answer-row">
-        <input type="number" id="answer-input" class="answer-input"
-               placeholder="?" autocomplete="off" inputmode="numeric" />
+      <div class="answer-row digit-answer-row">
+        ${digitBoxesHTML()}
         <button class="btn btn-primary" id="btn-check">Check ✓</button>
       </div>
     </div>`;
   app.appendChild(div);
-  wireAnswerInput(() => submitPlacement());
+  wireDigitInput(() => submitPlacement());
 }
 
 function submitPlacement() {
-  const input = document.getElementById('answer-input');
-  const val   = parseInt(input.value, 10);
-  if (isNaN(val)) { shake(input); return; }
+  const val = getDigitAnswer();
+  if (isNaN(val)) { shake(document.getElementById('digit-boxes-wrap')); return; }
 
   const pt      = state.placement;
   const problem = pt.problems[pt.qIndex];
@@ -638,9 +636,8 @@ function renderSheet(app) {
         ${isStacked(problem) || problem.type === 'equation' ? '' : '<div class="equals-row">= ?</div>'}
       </div>
       ${feedbackHTML}
-      <div class="answer-row" id="answer-row">
-        <input type="number" id="answer-input" class="answer-input"
-               placeholder="?" autocomplete="off" inputmode="numeric" />
+      <div class="answer-row digit-answer-row" id="answer-row">
+        ${digitBoxesHTML()}
         <button class="btn btn-primary" id="btn-check">Check ✓</button>
       </div>
     </div>`;
@@ -657,14 +654,13 @@ function renderSheet(app) {
   };
 
   if (!s.feedback) {
-    wireAnswerInput(() => submitSheet());
+    wireDigitInput(() => submitSheet());
   }
 }
 
 function submitSheet() {
-  const input = document.getElementById('answer-input');
-  const val   = parseInt(input.value, 10);
-  if (isNaN(val)) { shake(input); return; }
+  const val = getDigitAnswer();
+  if (isNaN(val)) { shake(document.getElementById('digit-boxes-wrap')); return; }
 
   const s       = state.sheet;
   const problem = s.problems[s.currentIndex];
@@ -1537,13 +1533,43 @@ function shake(elem) {
   setTimeout(() => elem.classList.remove('shake'), 500);
 }
 
-function wireAnswerInput(onSubmit) {
-  const input = document.getElementById('answer-input');
+function wireDigitInput(onSubmit) {
+  const boxes = [...document.querySelectorAll('.digit-box')];
   const btn   = document.getElementById('btn-check');
-  if (!input || !btn) return;
-  input.focus();
+  if (!boxes.length || !btn) return;
+
+  boxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g, '').slice(0, 1);
+      box.classList.toggle('filled', !!box.value);
+      if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+    });
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+      if (e.key === 'Enter') onSubmit();
+    });
+  });
+
+  boxes[0].focus();
   btn.onclick = onSubmit;
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') onSubmit(); });
+}
+
+function getDigitAnswer() {
+  const boxes = [...document.querySelectorAll('.digit-box')];
+  if (boxes.every(b => !b.value)) return NaN;
+  return parseInt(boxes.map(b => b.value || '0').join(''), 10);
+}
+
+function digitBoxesHTML() {
+  const labels = ['1000s', '100s', '10s', '1s'];
+  return `
+    <div class="digit-boxes-wrap" id="digit-boxes-wrap">
+      ${labels.map(l => `
+        <div class="digit-box-col">
+          <span class="digit-label">${l}</span>
+          <input class="digit-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off">
+        </div>`).join('')}
+    </div>`;
 }
 
 // ── Boot ─────────────────────────────────────────────────────

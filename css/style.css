@@ -348,6 +348,52 @@ html, body {
   box-shadow: 0 0 0 4px rgba(108,99,255,.18);
 }
 
+/* ── Digit box answer entry ── */
+.digit-answer-row {
+  flex-direction: column;
+  gap: 16px;
+}
+.digit-boxes-wrap {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: flex-end;
+}
+.digit-box-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.digit-label {
+  font-size: .7rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.digit-box {
+  width: 62px;
+  height: 70px;
+  border: 3px solid #dfe6e9;
+  border-radius: 14px;
+  font-size: 2rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  color: var(--primary);
+  text-align: center;
+  background: white;
+  transition: border-color .2s, box-shadow .2s;
+  outline: none;
+}
+.digit-box:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(108,99,255,.18);
+}
+.digit-box.filled {
+  background: #f0eeff;
+}
+
 /* ============================================================
    PLACEMENT SCREEN
    ============================================================ */
