@@ -216,3 +216,23 @@ function clearSavedSheet(levelId) {
   delete p.sheetsInProgress[levelId];
   saveProgress(p);
 }
+
+// ── Typing progress ───────────────────────────────────────────
+function recordTypingSheetResult(levelId, accuracy) {
+  const p = getProgress();
+  if (!p.typingLevels) p.typingLevels = {};
+  if (!p.typingLevels[levelId]) p.typingLevels[levelId] = { sheetsCompleted: 0, completed: false };
+  if (accuracy >= TYPING_PASS_ACCURACY) {
+    p.typingLevels[levelId].sheetsCompleted += 1;
+    if (p.typingLevels[levelId].sheetsCompleted >= TYPING_SHEETS_TO_COMPLETE) {
+      p.typingLevels[levelId].completed = true;
+      const next = levelId + 1;
+      if ((p.typingCurrentLevelId || 0) === levelId && next < TYPING_LEVELS.length) {
+        p.typingCurrentLevelId = next;
+      }
+    }
+  }
+  if (p.typingCurrentLevelId === undefined) p.typingCurrentLevelId = 0;
+  saveProgress(p);
+  return p;
+}

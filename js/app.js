@@ -23,6 +23,8 @@ let state = {
   choiceTopic: null,     // selected topic id in choices map
   choiceSheet: null,
   choiceSheetResult: null,
+  typingSheet: null,
+  typingSheetResult: null,
 };
 
 function setState(partial) {
@@ -53,9 +55,12 @@ function render() {
       case 'wordPlacement':    renderWordPlacement(app);    break;
       case 'wordSheet':        renderWordSheet(app);        break;
       case 'wordSheetResults':   renderWordSheetResults(app);   break;
-      case 'choiceLevelMap':    renderChoiceLevelMap(app);    break;
-      case 'choiceSheet':       renderChoiceSheet(app);       break;
-      case 'choiceSheetResults':renderChoiceSheetResults(app);break;
+      case 'choiceLevelMap':     renderChoiceLevelMap(app);     break;
+      case 'choiceSheet':        renderChoiceSheet(app);        break;
+      case 'choiceSheetResults': renderChoiceSheetResults(app); break;
+      case 'typingLevelMap':     renderTypingLevelMap(app);     break;
+      case 'typingSheet':        renderTypingSheet(app);        break;
+      case 'typingSheetResults': renderTypingSheetResults(app); break;
     }
   } catch(e) {
     console.error('Render error:', e);
@@ -422,20 +427,17 @@ const MATH_PTS_PER_SHEET   = 10;
 const WORDS_PTS_PER_SHEET  = 10;
 const CHOICE_PTS_PER_SHEET = 5;
 
-function getMathPoints(p) {
-  return Object.values(p.levels || {}).reduce((s, v) => s + v.sheetsCompleted * MATH_PTS_PER_SHEET, 0);
-}
-function getWordPoints(p) {
-  return Object.values(p.wordLevels || {}).reduce((s, v) => s + v.sheetsCompleted * WORDS_PTS_PER_SHEET, 0);
-}
-function getChoicePoints(p) {
-  return Object.values(p.choiceLevels || {}).reduce((s, v) => s + v.sheetsCompleted * CHOICE_PTS_PER_SHEET, 0);
-}
+function getMathPoints(p)   { return Object.values(p.levels       || {}).reduce((s,v) => s + v.sheetsCompleted * MATH_PTS_PER_SHEET,   0); }
+function getWordPoints(p)   { return Object.values(p.wordLevels  || {}).reduce((s,v) => s + v.sheetsCompleted * WORDS_PTS_PER_SHEET,  0); }
+function getChoicePoints(p) { return Object.values(p.choiceLevels|| {}).reduce((s,v) => s + v.sheetsCompleted * CHOICE_PTS_PER_SHEET, 0); }
+function getTypingPoints(p) { return Object.values(p.typingLevels|| {}).reduce((s,v) => s + v.sheetsCompleted * TYPING_PTS_PER_SHEET, 0); }
+
 function totalScoreBadge(p) {
-  const math   = getMathPoints(p);
-  const words  = getWordPoints(p);
+  const math    = getMathPoints(p);
+  const words   = getWordPoints(p);
   const choices = getChoicePoints(p);
-  const total  = math + words + choices;
+  const typing  = getTypingPoints(p);
+  const total   = math + words + choices + typing;
   return `
     <div class="total-score-badge">
       <div class="tsb-total">⭐ ${total.toLocaleString()} pts</div>
@@ -443,6 +445,7 @@ function totalScoreBadge(p) {
         <span>🔢 ${math}</span>
         <span>📝 ${words}</span>
         <span>💡 ${choices}</span>
+        <span>⌨️ ${typing}</span>
       </div>
     </div>`;
 }
@@ -513,6 +516,7 @@ function renderLevelMap(app) {
         <button class="mode-tab active" id="tab-math">🔢 Math</button>
         <button class="mode-tab" id="tab-words">📝 Words</button>
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
+        <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -547,11 +551,9 @@ function renderLevelMap(app) {
   document.getElementById('btn-unlock-all').onclick = () =>
     setState({ allUnlocked: !state.allUnlocked });
 
-  document.getElementById('tab-words').onclick = () =>
-    setState({ screen: 'wordLevelMap' });
-
-  document.getElementById('tab-choices').onclick = () =>
-    setState({ screen: 'choiceLevelMap', choiceTopic: null });
+  document.getElementById('tab-words').onclick  = () => setState({ screen: 'wordLevelMap' });
+  document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
+  document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
 
   div.querySelectorAll('.grade-tab:not([disabled])').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -787,6 +789,7 @@ function renderWordLevelMap(app) {
         <button class="mode-tab" id="tab-math">🔢 Math</button>
         <button class="mode-tab active" id="tab-words">📝 Words</button>
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
+        <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -848,6 +851,7 @@ function renderWordLevelMap(app) {
     setState({ allUnlocked: !state.allUnlocked });
   document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
+  document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
 
   div.querySelectorAll('.level-card:not(.locked)').forEach(card => {
     card.addEventListener('click', () => {
@@ -1191,6 +1195,7 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab" id="tab-math">🔢 Math</button>
           <button class="mode-tab" id="tab-words">📝 Words</button>
           <button class="mode-tab active" id="tab-choices">💡 Choices</button>
+          <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1207,6 +1212,7 @@ function renderChoiceLevelMap(app) {
 
     document.getElementById('tab-math').onclick   = () => setState({ screen: 'levelMap' });
     document.getElementById('tab-words').onclick  = () => setState({ screen: 'wordLevelMap' });
+    document.getElementById('tab-typing').onclick = () => setState({ screen: 'typingLevelMap' });
     document.getElementById('btn-back-topics').onclick = () => setState({ choiceTopic: null });
     document.getElementById('btn-unlock-all').onclick  = () => setState({ allUnlocked: !state.allUnlocked });
 
@@ -1239,6 +1245,7 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab" id="tab-math">🔢 Math</button>
           <button class="mode-tab" id="tab-words">📝 Words</button>
           <button class="mode-tab active" id="tab-choices">💡 Choices</button>
+          <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1255,6 +1262,7 @@ function renderChoiceLevelMap(app) {
 
     document.getElementById('tab-math').onclick   = () => setState({ screen: 'levelMap' });
     document.getElementById('tab-words').onclick  = () => setState({ screen: 'wordLevelMap' });
+    document.getElementById('tab-typing').onclick = () => setState({ screen: 'typingLevelMap' });
     document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); }
     document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
 
@@ -1473,6 +1481,272 @@ function renderChoiceSheetResults(app) {
 
   document.getElementById('btn-again').onclick = () => startChoiceSheet(r.topicId, r.levelId);
   document.getElementById('btn-map').onclick   = () => setState({ screen: 'choiceLevelMap', choiceSheetResult: null });
+}
+
+// ============================================================
+// TYPING LEVEL MAP
+// ============================================================
+function renderTypingLevelMap(app) {
+  const progress    = getProgress();
+  const typingLvls  = progress.typingLevels || {};
+  const curLevel    = progress.typingCurrentLevelId || 0;
+  const div = el('div', 'screen levelmap-screen');
+
+  const groups = ['Beginner', 'Elementary', 'Middle', 'High School'];
+  let cardsHTML = '';
+  groups.forEach(group => {
+    cardsHTML += `<div class="typing-group-label">${group}</div>`;
+    TYPING_LEVELS.filter(l => l.group === group).forEach(level => {
+      const idx         = level.id;
+      const lp          = typingLvls[idx] || { sheetsCompleted: 0, completed: false };
+      const isCompleted = lp.completed;
+      const isCurrent   = idx === curLevel;
+      const isUnlocked  = state.allUnlocked || idx <= curLevel;
+      const sheets      = lp.sheetsCompleted || 0;
+      const pct         = Math.min(100, Math.round((sheets / TYPING_SHEETS_TO_COMPLETE) * 100));
+      let cls = 'level-card';
+      if (isCompleted)      cls += ' completed';
+      else if (isCurrent)   cls += ' current';
+      else if (!isUnlocked) cls += ' locked';
+      cardsHTML += `
+        <div class="${cls}" data-level="${idx}" style="--lvl-color:${level.color}">
+          <div class="lc-emoji">${isCompleted ? '✅' : isUnlocked ? level.emoji : '🔒'}</div>
+          <div class="lc-name">${esc(level.name)}</div>
+          ${isUnlocked && !isCompleted ? `
+            <div class="lc-bar"><div class="lc-bar-fill" style="width:${pct}%"></div></div>
+            <div class="lc-count">${sheets} / ${TYPING_SHEETS_TO_COMPLETE} sheets</div>
+          ` : ''}
+          ${isCompleted ? '<div class="lc-done">Mastered! 🌟</div>' : ''}
+          ${!isUnlocked ? '<div class="lc-locked">Locked 🔒</div>' : ''}
+          ${isCurrent && !isCompleted ? '<div class="lc-current-badge">Current</div>' : ''}
+        </div>`;
+    });
+  });
+
+  div.innerHTML = `
+    <div class="mode-tabs-wrap">
+      <div class="mode-tabs">
+        <button class="mode-tab" id="tab-math">🔢 Math</button>
+        <button class="mode-tab" id="tab-words">📝 Words</button>
+        <button class="mode-tab" id="tab-choices">💡 Choices</button>
+        <button class="mode-tab active" id="tab-typing">⌨️ Typing</button>
+      </div>
+    </div>
+    <div class="levelmap-header">
+      <h2>Hi, ${esc(progress.playerName)}! 👋</h2>
+      <p>Choose a typing level to practice</p>
+      ${totalScoreBadge(progress)}
+      <button class="btn btn-ghost btn-sm" id="btn-switch-player">Sign Out</button>
+      <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
+        ${state.allUnlocked ? '🔓 Locks Off' : '🔒 Unlock All'}
+      </button>
+    </div>
+    <div class="levels-grid">${cardsHTML}</div>`;
+  app.appendChild(div);
+
+  document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
+  document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
+  document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
+  document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); };
+  document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
+
+  div.querySelectorAll('.level-card:not(.locked)').forEach(card => {
+    card.addEventListener('click', () => startTypingSheet(parseInt(card.dataset.level, 10)));
+  });
+}
+
+// ============================================================
+// TYPING SHEET
+// ============================================================
+function startTypingSheet(levelId) {
+  const level   = TYPING_LEVELS[levelId];
+  const prompts = shuffleArr([...level.prompts]).slice(0, TYPING_PROMPTS_PER_SHEET);
+  setState({
+    screen: 'typingSheet',
+    typingSheet: {
+      levelId,
+      prompts,
+      currentIndex: 0,
+      typed:        '',
+      startTime:    null,
+      totalErrors:  0,
+      totalChars:   0,
+      wpm:          0,
+    }
+  });
+}
+
+function renderTypingTarget(el, typed, target) {
+  let html = '';
+  for (let i = 0; i < target.length; i++) {
+    const ch = target[i] === ' ' ? '<span class="tc-space">&nbsp;</span>' : esc(target[i]);
+    if (i < typed.length) {
+      html += typed[i] === target[i]
+        ? `<span class="tc-correct">${ch}</span>`
+        : `<span class="tc-wrong">${ch}</span>`;
+    } else if (i === typed.length) {
+      html += `<span class="tc-cursor">${ch}</span>`;
+    } else {
+      html += `<span class="tc-upcoming">${ch}</span>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
+function advanceTypingPrompt() {
+  const s      = state.typingSheet;
+  const prompt = s.prompts[s.currentIndex];
+  const typed  = s.typed;
+
+  // Count errors
+  let errors = 0;
+  for (let i = 0; i < Math.max(typed.length, prompt.length); i++) {
+    if ((typed[i] || '') !== (prompt[i] || '')) errors++;
+  }
+  s.totalErrors += errors;
+  s.totalChars  += prompt.length;
+  s.currentIndex++;
+  s.typed = '';
+
+  if (s.currentIndex >= s.prompts.length) {
+    finishTypingSheet();
+    return;
+  }
+
+  // Lightweight DOM update — no full re-render
+  const input      = document.getElementById('typing-input');
+  const targetEl   = document.getElementById('typing-target');
+  const counterEl  = document.querySelector('.sheet-counter');
+  const progressEl = document.querySelector('.sheet-progress-fill');
+  if (!input || !targetEl) return;
+
+  input.value = '';
+  renderTypingTarget(targetEl, '', s.prompts[s.currentIndex]);
+  input.focus();
+
+  const pct = Math.round((s.currentIndex / s.prompts.length) * 100);
+  if (progressEl) progressEl.style.width = `${pct}%`;
+  if (counterEl)  counterEl.textContent  = `${s.currentIndex + 1} / ${s.prompts.length}`;
+}
+
+function finishTypingSheet() {
+  const s        = state.typingSheet;
+  const accuracy = s.totalChars > 0
+    ? Math.round(((s.totalChars - s.totalErrors) / s.totalChars) * 100)
+    : 0;
+  const updated  = recordTypingSheetResult(s.levelId, accuracy);
+  setState({
+    screen: 'typingSheetResults',
+    typingSheet: null,
+    typingSheetResult: { levelId: s.levelId, accuracy, wpm: s.wpm, progress: updated }
+  });
+}
+
+function renderTypingSheet(app) {
+  const s      = state.typingSheet;
+  const level  = TYPING_LEVELS[s.levelId];
+  const prompt = s.prompts[s.currentIndex];
+  const total  = s.prompts.length;
+
+  const div = el('div', 'screen sheet-screen');
+  div.innerHTML = `
+    <div class="sheet-header">
+      <div class="sheet-header-left">
+        <button class="btn btn-ghost btn-sm" id="btn-exit">✕ Exit</button>
+      </div>
+      <div class="sheet-title" style="color:${level.color}">${level.emoji} ${esc(level.name)}</div>
+      <div class="sheet-correct" id="wpm-display">— WPM</div>
+    </div>
+    <div class="sheet-progress-bar">
+      <div class="sheet-progress-fill" style="width:0%"></div>
+    </div>
+    <div class="sheet-counter">1 / ${total}</div>
+    <div class="card problem-card typing-card">
+      <div class="typing-target" id="typing-target"></div>
+      <input type="text" id="typing-input" class="typing-input"
+             autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+             placeholder="Start typing here…" />
+      <div class="typing-hint">Enter to skip · Backspace to correct</div>
+    </div>`;
+  app.appendChild(div);
+
+  document.getElementById('btn-exit').onclick = () =>
+    setState({ screen: 'typingLevelMap', typingSheet: null });
+
+  const input    = document.getElementById('typing-input');
+  const targetEl = document.getElementById('typing-target');
+  const wpmEl    = document.getElementById('wpm-display');
+
+  renderTypingTarget(targetEl, '', prompt);
+  input.focus();
+
+  input.addEventListener('input', () => {
+    if (!s.startTime) s.startTime = Date.now();
+    s.typed = input.value;
+    renderTypingTarget(targetEl, s.typed, prompt);
+
+    const elapsed = (Date.now() - s.startTime) / 60000;
+    const words   = (s.totalChars + s.typed.length) / 5;
+    s.wpm = elapsed > 0.01 ? Math.round(words / elapsed) : 0;
+    wpmEl.textContent = `${s.wpm} WPM`;
+
+    if (s.typed.length >= prompt.length) advanceTypingPrompt();
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); advanceTypingPrompt(); }
+  });
+
+  // Re-focus input if user clicks anywhere on the card
+  div.querySelector('.typing-card').addEventListener('click', () => input.focus());
+}
+
+// ============================================================
+// TYPING SHEET RESULTS
+// ============================================================
+function renderTypingSheetResults(app) {
+  const r      = state.typingSheetResult;
+  const level  = TYPING_LEVELS[r.levelId];
+  const lp     = (r.progress.typingLevels || {})[r.levelId] || { sheetsCompleted: 0, completed: false };
+  const passed = r.accuracy >= TYPING_PASS_ACCURACY;
+
+  const stars   = r.accuracy >= 95 ? '⭐⭐⭐' : r.accuracy >= 80 ? '⭐⭐' : '⭐';
+  const message = r.accuracy >= 95 ? 'Perfect typing! Amazing! 🎊'
+                : r.accuracy >= 85 ? 'Great job! Keep practicing! 🎉'
+                : r.accuracy >= 70 ? 'Good effort! Accuracy improves with practice!'
+                :                    'Keep going — slow down and focus on accuracy! 💪';
+
+  const div = el('div', 'screen results-screen');
+  div.innerHTML = `
+    <div class="card results-card">
+      <div class="results-stars animate-pop">${stars}</div>
+      <h2 class="results-message">${message}</h2>
+      <div class="results-score-box">
+        <div class="score-big">${r.accuracy}%</div>
+        <div class="score-pct">${r.wpm} WPM</div>
+      </div>
+      ${passed ? `
+        <div class="results-counted">
+          ✅ Sheet counted!
+          <strong>${lp.sheetsCompleted} / ${TYPING_SHEETS_TO_COMPLETE}</strong> sheets completed
+          <div class="mini-bar"><div class="mini-bar-fill" style="width:${Math.round((lp.sheetsCompleted / TYPING_SHEETS_TO_COMPLETE) * 100)}%"></div></div>
+        </div>` : `
+        <div class="results-not-counted">
+          ⚠️ Accuracy below ${TYPING_PASS_ACCURACY}% — this sheet doesn't count. Slow down and try again!
+        </div>`}
+      ${lp.completed ? `
+        <div class="level-complete-banner animate-pop">
+          🏆 Level Complete! You've mastered <em>${esc(level.name)}</em>! 🏆
+        </div>` : ''}
+      <div class="results-actions">
+        <button class="btn btn-primary btn-large" id="btn-again">Practice Again 🔄</button>
+        <button class="btn btn-secondary" id="btn-map">Level Map 🗺️</button>
+      </div>
+    </div>`;
+  app.appendChild(div);
+
+  document.getElementById('btn-again').onclick = () => startTypingSheet(r.levelId);
+  document.getElementById('btn-map').onclick   = () => setState({ screen: 'typingLevelMap', typingSheetResult: null });
 }
 
 // ============================================================

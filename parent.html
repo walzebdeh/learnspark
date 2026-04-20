@@ -241,6 +241,7 @@
   <script src="js/levels.js"></script>
   <script src="js/word-levels.js"></script>
   <script src="js/choices-levels.js"></script>
+  <script src="js/typing-levels.js"></script>
   <script src="js/firebase-config.js"></script>
 
   <script>
@@ -331,9 +332,10 @@
       });
     }
 
-    function getMathPoints(p)   { return Object.values(p.levels      || {}).reduce((s,v) => s + v.sheetsCompleted * 10, 0); }
+    function getMathPoints(p)   { return Object.values(p.levels       || {}).reduce((s,v) => s + v.sheetsCompleted * 10, 0); }
     function getWordPoints(p)   { return Object.values(p.wordLevels  || {}).reduce((s,v) => s + v.sheetsCompleted * 10, 0); }
     function getChoicePoints(p) { return Object.values(p.choiceLevels|| {}).reduce((s,v) => s + v.sheetsCompleted *  5, 0); }
+    function getTypingPoints(p) { return Object.values(p.typingLevels|| {}).reduce((s,v) => s + v.sheetsCompleted * 10, 0); }
 
     function gradeOfLevel(id) {
       const grades = Object.keys(GRADE_STARTS).map(Number).sort((a,b) => b - a);
@@ -346,7 +348,8 @@
       const mathPts   = getMathPoints(p);
       const wordPts   = getWordPoints(p);
       const choicePts = getChoicePoints(p);
-      const totalPts  = mathPts + wordPts + choicePts;
+      const typingPts = getTypingPoints(p);
+      const totalPts  = mathPts + wordPts + choicePts + typingPts;
 
       // ── Math progress ──
       let mathHTML = '';
@@ -428,6 +431,7 @@
               <span>🔢 ${mathPts} math</span>
               <span>📝 ${wordPts} words</span>
               <span>💡 ${choicePts} choices</span>
+              <span>⌨️ ${typingPts} typing</span>
             </div>
           </div>
           <div class="last-seen-row">
