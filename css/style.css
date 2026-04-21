@@ -533,10 +533,12 @@ html, body {
   color: var(--text);
 }
 .geo-svg {
-  width: min(320px, 90vw);
+  width: min(300px, 88vw);
+  max-height: 240px;
   height: auto;
   color: var(--text);
   overflow: visible;
+  display: block;
 }
 .geo-dim {
   fill: currentColor;

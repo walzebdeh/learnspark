@@ -1843,12 +1843,12 @@ function geoTriSVG(b, h) {
 }
 
 function geoBoxSVG(l, w, h) {
-  const VW = 300, VH = 220;
-  // scale front face (l × h) to fill most of view; depth drawn separately
-  const scale = Math.min(155 / l, 130 / h);
+  const VW = 300, VH = 210;
+  // scale front face to fit leaving room for depth offset and labels
+  const scale = Math.min(130 / l, 110 / h);
   const sl = Math.max(20, Math.round(l * scale));
   const sh = Math.max(20, Math.round(h * scale));
-  const sd = Math.max(14, Math.min(65, Math.round(w * scale * 0.5)));
+  const sd = Math.max(14, Math.min(55, Math.round(w * scale * 0.5)));
   const dx = Math.round(sd * 0.707), dy = Math.round(sd * 0.707);
   const fx0 = Math.round((VW - sl - dx) / 2) + 5;
   const fy1 = Math.round((VH - sh + dy) / 2) + 20;
