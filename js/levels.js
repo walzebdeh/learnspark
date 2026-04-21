@@ -714,7 +714,7 @@ const LEVELS = [
       const pool = [];
       for (let l = 2; l <= max; l++)
         for (let w = 2; w <= max; w++)
-          pool.push(eqn(`Area: ${l} × ${w}`, l * w));
+          pool.push(eqn(`rect:${l}:${w}`, l * w));
       return fillSheet(pool);
     }
   },
@@ -726,7 +726,7 @@ const LEVELS = [
       const pool = [];
       for (let b = 2; b <= max; b += 2)
         for (let h = 2; h <= max; h++)
-          pool.push(eqn(`½ × ${b} × ${h}`, (b * h) / 2));
+          pool.push(eqn(`tri:${b}:${h}`, (b * h) / 2));
       return fillSheet(pool);
     }
   },

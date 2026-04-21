@@ -1823,6 +1823,42 @@ function problemHTML(problem) {
       </div>`;
   }
 
+  // Geometry shapes
+  if (problem.type === 'equation') {
+    const rectM = problem.question.match(/^rect:(\d+):(\d+)$/);
+    if (rectM) {
+      const [, l, w] = rectM;
+      return `<div class="geo-wrap">
+        <div class="geo-label">What is the area?</div>
+        <svg class="geo-svg" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+          <rect x="30" y="25" width="180" height="100" fill="rgba(255,255,255,.08)" stroke="currentColor" stroke-width="3" rx="3"/>
+          <text x="120" y="16" text-anchor="middle" class="geo-dim">${esc(l)}</text>
+          <line x1="30" y1="20" x2="210" y2="20" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="30" y1="18" x2="30" y2="22" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="210" y1="18" x2="210" y2="22" stroke="currentColor" stroke-width="1.5"/>
+          <text x="225" y="80" text-anchor="start" class="geo-dim">${esc(w)}</text>
+          <line x1="216" y1="25" x2="216" y2="125" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="214" y1="25" x2="218" y2="25" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="214" y1="125" x2="218" y2="125" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </div>`;
+    }
+    const triM = problem.question.match(/^tri:(\d+):(\d+)$/);
+    if (triM) {
+      const [, b, h] = triM;
+      return `<div class="geo-wrap">
+        <div class="geo-label">What is the area?</div>
+        <svg class="geo-svg" viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="120,15 20,140 220,140" fill="rgba(255,255,255,.08)" stroke="currentColor" stroke-width="3"/>
+          <line x1="120" y1="15" x2="120" y2="140" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <rect x="120" y="130" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <text x="120" y="157" text-anchor="middle" class="geo-dim">${esc(b)}</text>
+          <text x="134" y="85" text-anchor="start" class="geo-dim">${esc(h)}</text>
+        </svg>
+      </div>`;
+    }
+  }
+
   // Equation type — check for special rendering
   if (problem.type === 'equation') {
     const q = problem.question;
