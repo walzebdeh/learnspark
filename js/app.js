@@ -17,7 +17,7 @@ let state = {
   wordSheet: null,
   wordPlacement: null,
   wordSheetResult: null,
-  mathGrade: null,       // 1-4; null = auto-detect from current level
+  mathGrade: null,       // 1-8; null = auto-detect from current level
   welcomeMode: null,     // null | 'new' | 'returning'
   allUnlocked: false,    // review mode: bypass level locks
   choiceTopic: null,     // selected topic id in choices map
@@ -381,7 +381,7 @@ function renderPlacement(app) {
 
 function submitPlacement() {
   const useDigits = !!document.querySelector('.digit-box');
-  const val = useDigits ? getDigitAnswer() : parseInt(document.getElementById('answer-input').value, 10);
+  const val = useDigits ? getDigitAnswer() : parseFloat(document.getElementById('answer-input').value);
   if (isNaN(val)) { shake(useDigits ? document.getElementById('digit-boxes-wrap') : document.getElementById('answer-input')); return; }
 
   const pt      = state.placement;
@@ -415,7 +415,7 @@ function submitPlacement() {
 // ============================================================
 
 function gradeOfLevel(id) {
-  const grades = [1, 2, 3, 4];
+  const grades = Object.keys(GRADE_STARTS).map(Number).sort((a, b) => a - b);
   for (let i = grades.length - 1; i >= 0; i--) {
     if (id >= GRADE_STARTS[grades[i]]) return grades[i];
   }
@@ -466,7 +466,7 @@ function renderLevelMap(app) {
   const div = el('div', 'screen levelmap-screen');
 
   // Grade tabs HTML
-  const gradeTabsHTML = [1, 2, 3, 4].map(g => {
+  const gradeTabsHTML = Object.keys(GRADE_STARTS).map(Number).sort((a, b) => a - b).map(g => {
     const locked  = !gradeUnlocked(g);
     const active  = g === activeGrade;
     let cls = 'grade-tab';
@@ -478,7 +478,8 @@ function renderLevelMap(app) {
 
   // Level cards for the active grade
   const gradeStart = GRADE_STARTS[activeGrade];
-  const nextGrade  = activeGrade < 4 ? GRADE_STARTS[activeGrade + 1] : LEVELS.length;
+  const maxGrade   = Math.max(...Object.keys(GRADE_STARTS).map(Number));
+  const nextGrade  = activeGrade < maxGrade ? GRADE_STARTS[activeGrade + 1] : LEVELS.length;
   let cardsHTML = '';
   for (let idx = gradeStart; idx < nextGrade && idx < LEVELS.length; idx++) {
     const level       = LEVELS[idx];
@@ -671,7 +672,7 @@ function renderSheet(app) {
 
 function submitSheet() {
   const useDigits = !!document.querySelector('.digit-box');
-  const val = useDigits ? getDigitAnswer() : parseInt(document.getElementById('answer-input').value, 10);
+  const val = useDigits ? getDigitAnswer() : parseFloat(document.getElementById('answer-input').value);
   if (isNaN(val)) { shake(useDigits ? document.getElementById('digit-boxes-wrap') : document.getElementById('answer-input')); return; }
 
   const s       = state.sheet;
