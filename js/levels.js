@@ -738,7 +738,7 @@ const LEVELS = [
       const pool = [];
       for (let l = 2; l <= max; l++)
         for (let w = 2; w <= max; w++)
-          if (l !== w) pool.push(eqn(`Perimeter: ${l} × ${w}`, 2 * (l + w)));
+          if (l !== w) pool.push(eqn(`perim:${l}:${w}`, 2 * (l + w)));
       return fillSheet(pool);
     }
   },

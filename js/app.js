@@ -1798,6 +1798,48 @@ function isStacked(problem) {
   return /^\d+\s*[+−]\s*\d+$/.test(problem.question);
 }
 
+function geoRectSVG(l, w, allSides) {
+  const VW = 240, VH = 160, maxW = 170, maxH = 110;
+  const scale = Math.min(maxW / l, maxH / w);
+  const sw = Math.max(16, Math.round(l * scale));
+  const sh = Math.max(16, Math.round(w * scale));
+  const x0 = Math.round((VW - sw) / 2);
+  const y0 = Math.round((VH - sh) / 2);
+  const x1 = x0 + sw, y1 = y0 + sh;
+  const cx = Math.round((x0 + x1) / 2);
+  const cy = Math.round((y0 + y1) / 2);
+  let s = `<svg class="geo-svg" viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg">
+    <rect x="${x0}" y="${y0}" width="${sw}" height="${sh}" fill="rgba(255,255,255,.08)" stroke="currentColor" stroke-width="3" rx="2"/>
+    <text x="${cx}" y="${y0 - 8}" text-anchor="middle" class="geo-dim">${l}</text>
+    <text x="${x1 + 12}" y="${cy + 6}" text-anchor="start" class="geo-dim">${w}</text>`;
+  if (allSides) {
+    s += `<text x="${cx}" y="${y1 + 20}" text-anchor="middle" class="geo-dim">${l}</text>
+    <text x="${x0 - 12}" y="${cy + 6}" text-anchor="end" class="geo-dim">${w}</text>`;
+  }
+  s += `</svg>`;
+  return s;
+}
+
+function geoTriSVG(b, h) {
+  const VW = 240, VH = 160, maxW = 180, maxH = 110;
+  const scale = Math.min(maxW / b, maxH / h);
+  const sb = Math.max(20, Math.round(b * scale));
+  const sh = Math.max(16, Math.round(h * scale));
+  const bY = Math.round(VH / 2 + sh / 2) + 5;
+  const tY = bY - sh;
+  const bX0 = Math.round(VW / 2 - sb / 2);
+  const bX1 = bX0 + sb;
+  const apex = Math.round(VW / 2);
+  const mid  = Math.round((tY + bY) / 2);
+  return `<svg class="geo-svg" viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="${apex},${tY} ${bX0},${bY} ${bX1},${bY}" fill="rgba(255,255,255,.08)" stroke="currentColor" stroke-width="3"/>
+    <line x1="${apex}" y1="${tY}" x2="${apex}" y2="${bY}" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <rect x="${apex}" y="${bY - 10}" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <text x="${Math.round((bX0 + bX1) / 2)}" y="${bY + 18}" text-anchor="middle" class="geo-dim">${b}</text>
+    <text x="${apex + 14}" y="${mid + 6}" text-anchor="start" class="geo-dim">${h}</text>
+  </svg>`;
+}
+
 function problemHTML(problem) {
   if (problem.type === 'count') {
     const stars = '⭐'.repeat(problem.display);
@@ -1825,37 +1867,18 @@ function problemHTML(problem) {
 
   // Geometry shapes
   if (problem.type === 'equation') {
-    const rectM = problem.question.match(/^rect:(\d+):(\d+)$/);
-    if (rectM) {
-      const [, l, w] = rectM;
-      return `<div class="geo-wrap">
-        <div class="geo-label">What is the area?</div>
-        <svg class="geo-svg" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
-          <rect x="30" y="25" width="180" height="100" fill="rgba(255,255,255,.08)" stroke="currentColor" stroke-width="3" rx="3"/>
-          <text x="120" y="16" text-anchor="middle" class="geo-dim">${esc(l)}</text>
-          <line x1="30" y1="20" x2="210" y2="20" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="30" y1="18" x2="30" y2="22" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="210" y1="18" x2="210" y2="22" stroke="currentColor" stroke-width="1.5"/>
-          <text x="225" y="80" text-anchor="start" class="geo-dim">${esc(w)}</text>
-          <line x1="216" y1="25" x2="216" y2="125" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="214" y1="25" x2="218" y2="25" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="214" y1="125" x2="218" y2="125" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
-      </div>`;
+    const rectM  = problem.question.match(/^rect:(\d+):(\d+)$/);
+    const perimM = problem.question.match(/^perim:(\d+):(\d+)$/);
+    const triM   = problem.question.match(/^tri:(\d+):(\d+)$/);
+
+    if (rectM || perimM) {
+      const [, l, w] = rectM || perimM;
+      const label = rectM ? 'What is the area?' : 'What is the perimeter?';
+      return `<div class="geo-wrap"><div class="geo-label">${label}</div>${geoRectSVG(+l, +w, !!perimM)}</div>`;
     }
-    const triM = problem.question.match(/^tri:(\d+):(\d+)$/);
     if (triM) {
       const [, b, h] = triM;
-      return `<div class="geo-wrap">
-        <div class="geo-label">What is the area?</div>
-        <svg class="geo-svg" viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="120,15 20,140 220,140" fill="rgba(255,255,255,.08)" stroke="currentColor" stroke-width="3"/>
-          <line x1="120" y1="15" x2="120" y2="140" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6,4"/>
-          <rect x="120" y="130" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
-          <text x="120" y="157" text-anchor="middle" class="geo-dim">${esc(b)}</text>
-          <text x="134" y="85" text-anchor="start" class="geo-dim">${esc(h)}</text>
-        </svg>
-      </div>`;
+      return `<div class="geo-wrap"><div class="geo-label">What is the area?</div>${geoTriSVG(+b, +h)}</div>`;
     }
   }
 
