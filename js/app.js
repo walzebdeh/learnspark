@@ -47,6 +47,7 @@ function render() {
     switch (state.screen) {
       case 'loading':          renderLoading(app);          break;
       case 'welcome':          renderWelcome(app);          break;
+      case 'placementChoice':  renderPlacementChoice(app);  break;
       case 'placement':        renderPlacement(app);        break;
       case 'levelMap':         renderLevelMap(app);         break;
       case 'sheet':            renderSheet(app);            break;
@@ -258,12 +259,12 @@ function renderWelcome(app) {
         }
         setPlayerName(name, pin, selectedAvatar);
         recordPlayerLogin(name);
-        setState({ screen: 'placement', placement: buildPlacement(), welcomeMode: null });
+        setState({ screen: 'placementChoice', welcomeMode: null });
       }).catch(() => {
         // If uniqueness check fails, proceed anyway
         setPlayerName(name, pin, selectedAvatar);
         recordPlayerLogin(name);
-        setState({ screen: 'placement', placement: buildPlacement(), welcomeMode: null });
+        setState({ screen: 'placementChoice', welcomeMode: null });
       });
     };
 
@@ -320,7 +321,7 @@ function renderWelcome(app) {
           if (p.placementDone) {
             setState({ screen: 'levelMap', welcomeMode: null });
           } else {
-            setState({ screen: 'placement', placement: buildPlacement(), welcomeMode: null });
+            setState({ screen: 'placementChoice', welcomeMode: null });
           }
         });
       });
@@ -346,6 +347,42 @@ function buildPlacement() {
 
 function sampleLevel(levelId) {
   return LEVELS[levelId].generate().slice(0, QUESTIONS_PER_CHECKPOINT);
+}
+
+function renderPlacementChoice(app) {
+  const name = getProgress().playerName || _activePlayer || 'there';
+  const div = el('div', 'screen pc-screen');
+  div.innerHTML = `
+    <div class="card pc-card">
+      <div class="pc-emoji">🎓</div>
+      <h2 class="pc-title">Welcome, ${esc(name)}!</h2>
+      <p class="pc-subtitle">Would you like a quick placement test to find your starting level, or jump straight into all the material?</p>
+      <div class="pc-options">
+        <button class="btn pc-option-btn" id="btn-take-placement">
+          <span class="pc-opt-icon">📋</span>
+          <span class="pc-opt-text">
+            <strong>Placement Test</strong>
+            <small>Find your perfect starting level</small>
+          </span>
+        </button>
+        <button class="btn pc-option-btn" id="btn-skip-placement">
+          <span class="pc-opt-icon">📚</span>
+          <span class="pc-opt-text">
+            <strong>Start from the Beginning</strong>
+            <small>Go straight to level 1</small>
+          </span>
+        </button>
+      </div>
+    </div>`;
+  app.appendChild(div);
+
+  document.getElementById('btn-take-placement').onclick = () =>
+    setState({ screen: 'placement', placement: buildPlacement() });
+
+  document.getElementById('btn-skip-placement').onclick = () => {
+    setPlacementLevel(0);
+    setState({ screen: 'levelMap' });
+  };
 }
 
 function renderPlacement(app) {
