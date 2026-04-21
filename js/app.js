@@ -319,9 +319,9 @@ function renderWelcome(app) {
           recordPlayerLogin(name);
           const p = getProgress();
           if (p.placementDone) {
-            setState({ screen: 'levelMap', welcomeMode: null });
+            setState({ screen: 'levelMap', welcomeMode: null, allUnlocked: p.allUnlocked || false });
           } else {
-            setState({ screen: 'placementChoice', welcomeMode: null });
+            setState({ screen: 'placementChoice', welcomeMode: null, allUnlocked: p.allUnlocked || false });
           }
         });
       });
@@ -586,8 +586,11 @@ function renderLevelMap(app) {
     }
   };
 
-  document.getElementById('btn-unlock-all').onclick = () =>
-    setState({ allUnlocked: !state.allUnlocked });
+  document.getElementById('btn-unlock-all').onclick = () => {
+    const next = !state.allUnlocked;
+    const p = getProgress(); p.allUnlocked = next; saveProgress(p);
+    setState({ allUnlocked: next });
+  };
 
   document.getElementById('tab-words').onclick  = () => setState({ screen: 'wordLevelMap' });
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
@@ -667,6 +670,7 @@ function renderSheet(app) {
       <div class="sheet-header-left">
         <button class="btn btn-ghost btn-sm" id="btn-save-exit">💾 Save &amp; Exit</button>
         <button class="btn btn-ghost btn-sm btn-exit-nosave" id="btn-exit-nosave">✕ Exit</button>
+        ${LEVEL_HELP[level.id] ? `<button class="btn btn-help-sm" id="btn-concept-help">💡 Help</button>` : ''}
       </div>
       <div class="sheet-title" style="color:${level.color}">${level.emoji} ${esc(level.name)}</div>
       <div class="sheet-correct">✓ ${correct}</div>
@@ -695,6 +699,10 @@ function renderSheet(app) {
     saveSheetInProgress(state.sheet);
     setState({ screen: 'levelMap', sheet: null });
   };
+
+  if (LEVEL_HELP[level.id]) {
+    document.getElementById('btn-concept-help').onclick = () => showConceptHelp(LEVEL_HELP[level.id]);
+  }
 
   document.getElementById('btn-exit-nosave').onclick = () => {
     clearSavedSheet(state.sheet.levelId);
@@ -885,8 +893,11 @@ function renderWordLevelMap(app) {
       setState({ screen: 'wordPlacement', wordPlacement: buildWordPlacement() });
     }
   };
-  document.getElementById('btn-unlock-all').onclick = () =>
-    setState({ allUnlocked: !state.allUnlocked });
+  document.getElementById('btn-unlock-all').onclick = () => {
+    const next = !state.allUnlocked;
+    const p = getProgress(); p.allUnlocked = next; saveProgress(p);
+    setState({ allUnlocked: next });
+  };
   document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
   document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
@@ -1978,6 +1989,22 @@ function el(tag, cls) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
   return e;
+}
+
+function showConceptHelp(help) {
+  const overlay = document.createElement('div');
+  overlay.className = 'help-overlay';
+  overlay.innerHTML = `
+    <div class="help-modal">
+      <div class="help-modal-head">
+        <span class="help-modal-title">💡 ${esc(help.title)}</span>
+        <button class="help-close" id="help-close">✕</button>
+      </div>
+      <div class="help-modal-body">${help.body}</div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#help-close').onclick = () => overlay.remove();
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
 function esc(str) {
