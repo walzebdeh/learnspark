@@ -520,19 +520,30 @@ html, body {
   line-height: 1.2;
 }
 
-/* ── Concept Help button ──────────────────────────────────── */
-.btn-help-sm {
-  background: rgba(255, 220, 0, .18);
-  border: 1.5px solid rgba(255, 220, 0, .45);
-  color: #ffe566;
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: .78rem;
-  font-weight: 700;
+/* ── Concept Help floating button ─────────────────────────── */
+.help-fab {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f9ca24;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 800;
   cursor: pointer;
-  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0,0,0,.3);
+  z-index: 100;
+  transition: transform .15s, box-shadow .15s;
 }
-.btn-help-sm:hover { background: rgba(255, 220, 0, .32); }
+.help-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0,0,0,.35);
+}
 
 /* ── Concept Help modal ───────────────────────────────────── */
 .help-overlay {

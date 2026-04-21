@@ -670,7 +670,6 @@ function renderSheet(app) {
       <div class="sheet-header-left">
         <button class="btn btn-ghost btn-sm" id="btn-save-exit">💾 Save &amp; Exit</button>
         <button class="btn btn-ghost btn-sm btn-exit-nosave" id="btn-exit-nosave">✕ Exit</button>
-        ${LEVEL_HELP[level.id] ? `<button class="btn btn-help-sm" id="btn-concept-help">💡 Help</button>` : ''}
       </div>
       <div class="sheet-title" style="color:${level.color}">${level.emoji} ${esc(level.name)}</div>
       <div class="sheet-correct">✓ ${correct}</div>
@@ -692,7 +691,8 @@ function renderSheet(app) {
              <input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />
              <button class="btn btn-primary" id="btn-check">Check ✓</button>
            </div>` : ''}`}
-    </div>`;
+    </div>
+    ${LEVEL_HELP[level.id] ? `<button class="help-fab" id="btn-concept-help">💡<span>Help</span></button>` : ''}`;
   app.appendChild(div);
 
   document.getElementById('btn-save-exit').onclick = () => {
