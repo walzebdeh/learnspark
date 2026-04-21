@@ -838,7 +838,7 @@ const LEVELS = [
       const maxB = [10, 15, 20][Math.min(tier, 2)];
       return uniqueRandom(() => {
         const m = randInt(2, maxM), x = randInt(1, maxX), b = randInt(1, maxB);
-        return eqn(`${m}x + ${b}, if x = ${x}`, m * x + b);
+        return eqn(`eval:${m}x + ${b}:${x}`, m * x + b);
       });
     }
   },
@@ -851,7 +851,7 @@ const LEVELS = [
       for (let l = 2; l <= max; l++)
         for (let w = 2; w <= max; w++)
           for (let h = 2; h <= max; h++)
-            pool.push(eqn(`Vol: ${l}×${w}×${h}`, l * w * h));
+            pool.push(eqn(`vol:${l}:${w}:${h}`, l * w * h));
       return fillSheet(pool);
     }
   },
@@ -861,9 +861,9 @@ const LEVELS = [
     generate(tier = 0) {
       const pool = [];
       for (let c = 1; c <= 9; c++) {
-        pool.push(eqn(`${c} × 10²`, c * 100));
-        pool.push(eqn(`${c} × 10³`, c * 1000));
-        if (tier >= 1) pool.push(eqn(`${c} × 10⁴`, c * 10000));
+        pool.push(eqn(`calc:${c} × 10²`, c * 100));
+        pool.push(eqn(`calc:${c} × 10³`, c * 1000));
+        if (tier >= 1) pool.push(eqn(`calc:${c} × 10⁴`, c * 10000));
       }
       return fillSheet(pool);
     }

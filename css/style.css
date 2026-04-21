@@ -564,6 +564,11 @@ html, body {
   color: var(--text);
   letter-spacing: 1px;
 }
+.find-x-sub {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--muted);
+}
 
 /* Fraction proportion: 3/3 = x/12 visual */
 .vis-proportion {

@@ -1821,7 +1821,7 @@ function geoRectSVG(l, w, allSides) {
 }
 
 function geoTriSVG(b, h) {
-  const VW = 240, VH = 160, maxW = 180, maxH = 110;
+  const VW = 240, VH = 160, maxW = 160, maxH = 105;
   const scale = Math.min(maxW / b, maxH / h);
   const sb = Math.max(20, Math.round(b * scale));
   const sh = Math.max(16, Math.round(h * scale));
@@ -1831,12 +1831,36 @@ function geoTriSVG(b, h) {
   const bX1 = bX0 + sb;
   const apex = Math.round(VW / 2);
   const mid  = Math.round((tY + bY) / 2);
+  // height label sits outside the triangle's right edge at mid-height
+  const rightEdgeAtMid = Math.round((apex + bX1) / 2);
   return `<svg class="geo-svg" viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg">
     <polygon points="${apex},${tY} ${bX0},${bY} ${bX1},${bY}" fill="rgba(255,255,255,.08)" stroke="currentColor" stroke-width="3"/>
     <line x1="${apex}" y1="${tY}" x2="${apex}" y2="${bY}" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6,4"/>
     <rect x="${apex}" y="${bY - 10}" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
     <text x="${Math.round((bX0 + bX1) / 2)}" y="${bY + 18}" text-anchor="middle" class="geo-dim">${b}</text>
-    <text x="${apex + 14}" y="${mid + 6}" text-anchor="start" class="geo-dim">${h}</text>
+    <text x="${rightEdgeAtMid + 10}" y="${mid + 6}" text-anchor="start" class="geo-dim">${h}</text>
+  </svg>`;
+}
+
+function geoBoxSVG(l, w, h) {
+  const VW = 280, VH = 200;
+  const scale = Math.min(120 / l, 90 / h, 50 / w);
+  const sl = Math.max(16, Math.round(l * scale));
+  const sh = Math.max(16, Math.round(h * scale));
+  const sd = Math.max(10, Math.round(w * scale * 0.6));
+  const dx = Math.round(sd * 0.707), dy = Math.round(sd * 0.707);
+  const fx0 = Math.round((VW - sl - dx) / 2) + 5;
+  const fy1 = Math.round((VH - sh + dy) / 2) + 20;
+  const fx1 = fx0 + sl, fy0 = fy1 - sh;
+  const bx0 = fx0 + dx, by0 = fy0 - dy;
+  const bx1 = fx1 + dx, by1 = fy1 - dy;
+  return `<svg class="geo-svg" viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="${fx0},${fy0} ${bx0},${by0} ${bx1},${by0} ${fx1},${fy0}" fill="rgba(255,255,255,.15)" stroke="currentColor" stroke-width="2.5"/>
+    <polygon points="${fx1},${fy0} ${bx1},${by0} ${bx1},${by1} ${fx1},${fy1}" fill="rgba(255,255,255,.08)" stroke="currentColor" stroke-width="2.5"/>
+    <polygon points="${fx0},${fy0} ${fx1},${fy0} ${fx1},${fy1} ${fx0},${fy1}" fill="rgba(255,255,255,.12)" stroke="currentColor" stroke-width="2.5"/>
+    <text x="${Math.round((fx0+fx1)/2)}" y="${fy1+18}" text-anchor="middle" class="geo-dim">${l}</text>
+    <text x="${fx0-10}" y="${Math.round((fy0+fy1)/2)+6}" text-anchor="end" class="geo-dim">${h}</text>
+    <text x="${Math.round((fx1+bx1)/2)+8}" y="${Math.round((fy1+by1)/2)+6}" text-anchor="start" class="geo-dim">${w}</text>
   </svg>`;
 }
 
@@ -1870,6 +1894,7 @@ function problemHTML(problem) {
     const rectM  = problem.question.match(/^rect:(\d+):(\d+)$/);
     const perimM = problem.question.match(/^perim:(\d+):(\d+)$/);
     const triM   = problem.question.match(/^tri:(\d+):(\d+)$/);
+    const volM   = problem.question.match(/^vol:(\d+):(\d+):(\d+)$/);
 
     if (rectM || perimM) {
       const [, l, w] = rectM || perimM;
@@ -1879,6 +1904,10 @@ function problemHTML(problem) {
     if (triM) {
       const [, b, h] = triM;
       return `<div class="geo-wrap"><div class="geo-label">What is the area?</div>${geoTriSVG(+b, +h)}</div>`;
+    }
+    if (volM) {
+      const [, l, w, h] = volM;
+      return `<div class="geo-wrap"><div class="geo-label">What is the volume?</div>${geoBoxSVG(+l, +w, +h)}</div>`;
     }
   }
 
@@ -1903,6 +1932,24 @@ function problemHTML(problem) {
       return `<div class="find-x-wrap">
         <div class="find-x-label">Find the value of x</div>
         <div class="find-x-eq">${esc(eq)}</div>
+      </div>`;
+    }
+
+    // Evaluate expression: eval:2x + 6:4
+    const evalM = q.match(/^eval:(.+):(\d+)$/);
+    if (evalM) {
+      return `<div class="find-x-wrap">
+        <div class="find-x-label">Evaluate the expression</div>
+        <div class="find-x-eq">${esc(evalM[1])}</div>
+        <div class="find-x-sub">when x = ${esc(evalM[2])}</div>
+      </div>`;
+    }
+
+    // Scientific notation / calculate: calc:3 × 10²
+    if (q.startsWith('calc:')) {
+      return `<div class="find-x-wrap">
+        <div class="find-x-label">Calculate the value</div>
+        <div class="find-x-eq">${esc(q.replace(/^calc:/, ''))}</div>
       </div>`;
     }
 
