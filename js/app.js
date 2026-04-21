@@ -1843,18 +1843,24 @@ function geoTriSVG(b, h) {
 }
 
 function geoBoxSVG(l, w, h) {
-  const VW = 300, VH = 210;
-  // scale front face to fit leaving room for depth offset and labels
-  const scale = Math.min(130 / l, 110 / h);
+  const VW = 300;
+  const scale = Math.min(140 / l, 120 / h);
   const sl = Math.max(20, Math.round(l * scale));
   const sh = Math.max(20, Math.round(h * scale));
-  const sd = Math.max(14, Math.min(55, Math.round(w * scale * 0.5)));
+  const sd = Math.max(14, Math.min(60, Math.round(w * scale * 0.5)));
   const dx = Math.round(sd * 0.707), dy = Math.round(sd * 0.707);
-  const fx0 = Math.round((VW - sl - dx) / 2) + 5;
-  const fy1 = Math.round((VH - sh + dy) / 2) + 20;
-  const fx1 = fx0 + sl, fy0 = fy1 - sh;
-  const bx0 = fx0 + dx, by0 = fy0 - dy;
-  const bx1 = fx1 + dx, by1 = fy1 - dy;
+
+  // anchor back-face top at y=8, derive everything downward so box never overflows top
+  const by0 = 8;
+  const fy0 = by0 + dy;
+  const fy1 = fy0 + sh;
+  const by1 = fy1 - dy;
+  const VH = fy1 + 24; // dynamic height: fits box + bottom label
+
+  const fx0 = Math.round((VW - sl - dx) / 2);
+  const fx1 = fx0 + sl;
+  const bx0 = fx0 + dx, bx1 = fx1 + dx;
+
   return `<svg class="geo-svg" viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg">
     <polygon points="${fx0},${fy0} ${bx0},${by0} ${bx1},${by0} ${fx1},${fy0}" fill="rgba(255,255,255,.15)" stroke="currentColor" stroke-width="2.5"/>
     <polygon points="${fx1},${fy0} ${bx1},${by0} ${bx1},${by1} ${fx1},${fy1}" fill="rgba(255,255,255,.08)" stroke="currentColor" stroke-width="2.5"/>
