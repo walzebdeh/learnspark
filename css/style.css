@@ -452,6 +452,59 @@ html, body {
   line-height: 1.2;
 }
 
+/* ── Find-x visual layout ─────────────────────────────────── */
+.find-x-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.find-x-label {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+.find-x-eq {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: 1px;
+}
+
+/* Fraction proportion: 3/3 = x/12 visual */
+.vis-proportion {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.vis-frac {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--text);
+}
+.vis-num {
+  padding: 0 12px 8px;
+  border-bottom: 3px solid var(--text);
+  min-width: 48px;
+  text-align: center;
+  line-height: 1;
+}
+.vis-den {
+  padding: 8px 12px 0;
+  min-width: 48px;
+  text-align: center;
+  line-height: 1;
+}
+.vis-eq {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--text);
+}
+
 .equals-row {
   font-size: 2.5rem;
   font-weight: 900;

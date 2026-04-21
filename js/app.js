@@ -1786,9 +1786,31 @@ function problemHTML(problem) {
       </div>`;
   }
 
-  // Equation type (missing addend, rounding, etc.) — smaller font, no "= ?" appended
+  // Equation type — check for special rendering
   if (problem.type === 'equation') {
-    return `<div class="equation-display">${esc(problem.question)}</div>`;
+    const q = problem.question;
+
+    // Fraction proportion: "Find x:  a/b = x/c" or "Find x:  a/b = c/x"
+    const fracMatch = q.match(/^Find x:\s+(\w+)\/(\w+)\s*=\s*(\w+)\/(\w+)$/);
+    if (fracMatch) {
+      const [, an, ad, bn, bd] = fracMatch;
+      const frac = (n, d) => `<div class="vis-frac"><span class="vis-num">${esc(n)}</span><span class="vis-den">${esc(d)}</span></div>`;
+      return `<div class="find-x-wrap">
+        <div class="find-x-label">Find the value of x</div>
+        <div class="vis-proportion">${frac(an,ad)}<span class="vis-eq">=</span>${frac(bn,bd)}</div>
+      </div>`;
+    }
+
+    // Other "Find x:" equations — show label + big equation
+    if (q.startsWith('Find x:')) {
+      const eq = q.replace(/^Find x:\s+/, '');
+      return `<div class="find-x-wrap">
+        <div class="find-x-label">Find the value of x</div>
+        <div class="find-x-eq">${esc(eq)}</div>
+      </div>`;
+    }
+
+    return `<div class="equation-display">${esc(q)}</div>`;
   }
 
   // Default inline format (×, ÷, fractions)
