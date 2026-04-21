@@ -533,7 +533,7 @@ html, body {
   color: var(--text);
 }
 .geo-svg {
-  width: 220px;
+  width: min(320px, 90vw);
   height: auto;
   color: var(--text);
   overflow: visible;

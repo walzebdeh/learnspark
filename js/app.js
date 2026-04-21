@@ -1799,7 +1799,7 @@ function isStacked(problem) {
 }
 
 function geoRectSVG(l, w, allSides) {
-  const VW = 240, VH = 160, maxW = 170, maxH = 110;
+  const VW = 260, VH = 180, maxW = 190, maxH = 130;
   const scale = Math.min(maxW / l, maxH / w);
   const sw = Math.max(16, Math.round(l * scale));
   const sh = Math.max(16, Math.round(w * scale));
@@ -1821,7 +1821,7 @@ function geoRectSVG(l, w, allSides) {
 }
 
 function geoTriSVG(b, h) {
-  const VW = 240, VH = 160, maxW = 160, maxH = 105;
+  const VW = 260, VH = 180, maxW = 190, maxH = 130;
   const scale = Math.min(maxW / b, maxH / h);
   const sb = Math.max(20, Math.round(b * scale));
   const sh = Math.max(16, Math.round(h * scale));
@@ -1843,11 +1843,12 @@ function geoTriSVG(b, h) {
 }
 
 function geoBoxSVG(l, w, h) {
-  const VW = 280, VH = 200;
-  const scale = Math.min(120 / l, 90 / h, 50 / w);
-  const sl = Math.max(16, Math.round(l * scale));
-  const sh = Math.max(16, Math.round(h * scale));
-  const sd = Math.max(10, Math.round(w * scale * 0.6));
+  const VW = 300, VH = 220;
+  // scale front face (l × h) to fill most of view; depth drawn separately
+  const scale = Math.min(155 / l, 130 / h);
+  const sl = Math.max(20, Math.round(l * scale));
+  const sh = Math.max(20, Math.round(h * scale));
+  const sd = Math.max(14, Math.min(65, Math.round(w * scale * 0.5)));
   const dx = Math.round(sd * 0.707), dy = Math.round(sd * 0.707);
   const fx0 = Math.round((VW - sl - dx) / 2) + 5;
   const fy1 = Math.round((VH - sh + dy) / 2) + 20;
