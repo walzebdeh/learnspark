@@ -338,8 +338,8 @@ const LEVELS = [
         for (let b = 1; b <= maxSum - a; b++) {
           const s = a + b;
           if (s <= maxSum) {
-            pool.push(eqn(`? + ${b} = ${s}`, a));
-            pool.push(eqn(`${a} + ? = ${s}`, b));
+            pool.push(eqn(`Find x:  x + ${b} = ${s}`, a));
+            pool.push(eqn(`Find x:  ${a} + x = ${s}`, b));
           }
         }
       }
@@ -354,7 +354,7 @@ const LEVELS = [
       const pool = [];
       for (let a = 2; a <= maxT; a++)
         for (let b = 2; b <= maxT; b++)
-          pool.push(eqn(`? × ${b} = ${a * b}`, a));
+          pool.push(eqn(`Find x:  x × ${b} = ${a * b}`, a));
       return fillSheet(pool);
     }
   },
@@ -605,8 +605,8 @@ const LEVELS = [
       const pool = [];
       for (let x = 1; x <= max; x++)
         for (let b = 1; b <= max; b++) {
-          pool.push(eqn(`x + ${b} = ${x + b}`, x));
-          if (x > b) pool.push(eqn(`x − ${b} = ${x - b}`, x));
+          pool.push(eqn(`Find x:  x + ${b} = ${x + b}`, x));
+          if (x > b) pool.push(eqn(`Find x:  x − ${b} = ${x - b}`, x));
         }
       return fillSheet(pool);
     }
@@ -620,8 +620,8 @@ const LEVELS = [
       const pool = [];
       for (let m = 2; m <= maxM; m++)
         for (let x = 2; x <= maxX; x++) {
-          pool.push(eqn(`${m}x = ${m * x}`, x));
-          pool.push(eqn(`x ÷ ${m} = ${x}`, m * x));
+          pool.push(eqn(`Find x:  ${m}x = ${m * x}`, x));
+          pool.push(eqn(`Find x:  x ÷ ${m} = ${x}`, m * x));
         }
       return fillSheet(pool);
     }
@@ -658,7 +658,7 @@ const LEVELS = [
       const maxB = [8, 12, 20][Math.min(tier, 2)];
       return uniqueRandom(() => {
         const m = randInt(2, maxM), x = randInt(1, maxX), b = randInt(1, maxB);
-        return eqn(`${m}x + ${b} = ${m * x + b}`, x);
+        return eqn(`Find x:  ${m}x + ${b} = ${m * x + b}`, x);
       });
     }
   },
@@ -672,8 +672,8 @@ const LEVELS = [
         for (let b = 2; b <= maxN; b++)
           for (let mult = 2; mult <= 8; mult++) {
             const c = a * mult, d = b * mult;
-            pool.push(eqn(`${a}/${b} = x/${d}`, c));
-            pool.push(eqn(`${a}/${b} = ${c}/x`, d));
+            pool.push(eqn(`Find x:  ${a}/${b} = x/${d}`, c));
+            pool.push(eqn(`Find x:  ${a}/${b} = ${c}/x`, d));
           }
       return fillSheet(pool);
     }
@@ -809,9 +809,9 @@ const LEVELS = [
       }
       const pool = [];
       for (const [a,b,c] of triples) {
-        pool.push(eqn(`${a}² + ${b}² = c²`, c));
-        pool.push(eqn(`${a}² + b² = ${c}²`, b));
-        pool.push(eqn(`a² + ${b}² = ${c}²`, a));
+        pool.push(eqn(`Find x:  ${a}² + ${b}² = x²`, c));
+        pool.push(eqn(`Find x:  ${a}² + x² = ${c}²`, b));
+        pool.push(eqn(`Find x:  x² + ${b}² = ${c}²`, a));
       }
       return fillSheet(pool);
     }
