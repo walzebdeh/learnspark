@@ -25,6 +25,7 @@ let state = {
   choiceSheetResult: null,
   typingSheet: null,
   typingSheetResult: null,
+  puzzleGame: null,
 };
 
 function setState(partial) {
@@ -62,6 +63,8 @@ function render() {
       case 'typingLevelMap':     renderTypingLevelMap(app);     break;
       case 'typingSheet':        renderTypingSheet(app);        break;
       case 'typingSheetResults': renderTypingSheetResults(app); break;
+      case 'puzzleMap':          renderPuzzleMap(app);          break;
+      case 'puzzlePlay':         renderPuzzlePlay(app);         break;
     }
   } catch(e) {
     console.error('Render error:', e);
@@ -555,6 +558,7 @@ function renderLevelMap(app) {
         <button class="mode-tab" id="tab-words">📝 Words</button>
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
+        <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -595,6 +599,7 @@ function renderLevelMap(app) {
   document.getElementById('tab-words').onclick  = () => setState({ screen: 'wordLevelMap' });
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
   document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
+  document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
 
   div.querySelectorAll('.grade-tab:not([disabled])').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -836,6 +841,7 @@ function renderWordLevelMap(app) {
         <button class="mode-tab active" id="tab-words">📝 Words</button>
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
+        <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -901,6 +907,7 @@ function renderWordLevelMap(app) {
   document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
   document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
+  document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
 
   div.querySelectorAll('.level-card:not(.locked)').forEach(card => {
     card.addEventListener('click', () => {
@@ -1245,6 +1252,7 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab" id="tab-words">📝 Words</button>
           <button class="mode-tab active" id="tab-choices">💡 Choices</button>
           <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
+          <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1259,9 +1267,10 @@ function renderChoiceLevelMap(app) {
       <div class="levels-grid">${cardsHTML}</div>`;
     app.appendChild(div);
 
-    document.getElementById('tab-math').onclick   = () => setState({ screen: 'levelMap' });
-    document.getElementById('tab-words').onclick  = () => setState({ screen: 'wordLevelMap' });
-    document.getElementById('tab-typing').onclick = () => setState({ screen: 'typingLevelMap' });
+    document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
+    document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
+    document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
+    document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
     document.getElementById('btn-back-topics').onclick = () => setState({ choiceTopic: null });
     document.getElementById('btn-unlock-all').onclick  = () => setState({ allUnlocked: !state.allUnlocked });
 
@@ -1295,6 +1304,7 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab" id="tab-words">📝 Words</button>
           <button class="mode-tab active" id="tab-choices">💡 Choices</button>
           <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
+          <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1309,9 +1319,10 @@ function renderChoiceLevelMap(app) {
       <div class="topics-grid">${topicCardsHTML}</div>`;
     app.appendChild(div);
 
-    document.getElementById('tab-math').onclick   = () => setState({ screen: 'levelMap' });
-    document.getElementById('tab-words').onclick  = () => setState({ screen: 'wordLevelMap' });
-    document.getElementById('tab-typing').onclick = () => setState({ screen: 'typingLevelMap' });
+    document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
+    document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
+    document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
+    document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
     document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); }
     document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
 
@@ -1579,6 +1590,7 @@ function renderTypingLevelMap(app) {
         <button class="mode-tab" id="tab-words">📝 Words</button>
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab active" id="tab-typing">⌨️ Typing</button>
+        <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -1596,6 +1608,7 @@ function renderTypingLevelMap(app) {
   document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
   document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
+  document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
   document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); };
   document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
 
@@ -2083,6 +2096,216 @@ function stackedWithBoxesHTML(problem) {
       <div class="sg-op"></div>${ansCells}
     </div>
     <button class="btn btn-primary" id="btn-check" style="margin-top:16px">Check ✓</button>`;
+}
+
+// ============================================================
+// PUZZLES
+// ============================================================
+
+const RC_CHARS = {
+  shepherd: { emoji: '🧑‍🌾', name: 'Shepherd' },
+  wolf:     { emoji: '🐺',   name: 'Wolf' },
+  goat:     { emoji: '🐐',   name: 'Goat' },
+  grass:    { emoji: '🌿',   name: 'Grass' },
+};
+
+function newRiverCrossing() {
+  return {
+    type: 'riverCrossing',
+    left: ['wolf', 'goat', 'grass'],
+    right: [],
+    boatSide: 'left',
+    passenger: null,
+    moves: 0,
+    status: 'playing',
+    lostReason: '',
+  };
+}
+
+function rcCheckBank(chars) {
+  if (chars.includes('wolf') && chars.includes('goat'))  return 'The wolf ate the goat! 🐺🐐';
+  if (chars.includes('goat') && chars.includes('grass')) return 'The goat ate the grass! 🐐🌿';
+  return null;
+}
+
+function renderPuzzleMap(app) {
+  const progress       = getProgress();
+  const puzzleProgress = progress.puzzles || {};
+
+  const cardsHTML = PUZZLES.map(pz => {
+    const pp = puzzleProgress[pz.id] || {};
+    return `
+      <div class="pz-card" data-puzzle="${pz.id}">
+        <div class="pz-card-emoji">${pz.emoji}</div>
+        <div class="pz-card-body">
+          <div class="pz-card-name">${pz.name}</div>
+          <div class="pz-card-diff">${pz.difficulty}</div>
+          <div class="pz-card-desc">${pz.story}</div>
+          ${pp.solved ? `<div class="pz-card-best">⭐ Best: ${pp.bestMoves} moves</div>` : ''}
+        </div>
+        <button class="pz-card-play">${pp.solved ? '↺ Play Again' : 'Play →'}</button>
+      </div>`;
+  }).join('');
+
+  const div = el('div', 'screen levelmap-screen');
+  div.innerHTML = `
+    <div class="mode-tabs-wrap">
+      <div class="mode-tabs">
+        <button class="mode-tab" id="tab-math">🔢 Math</button>
+        <button class="mode-tab" id="tab-words">📝 Words</button>
+        <button class="mode-tab" id="tab-choices">💡 Choices</button>
+        <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
+        <button class="mode-tab active" id="tab-puzzles">🧩 Puzzles</button>
+      </div>
+    </div>
+    <div class="levelmap-header">
+      <h2>Hi, ${esc(progress.playerName)}! 👋</h2>
+      <p>Logic puzzles — think carefully!</p>
+      ${totalScoreBadge(progress)}
+      <button class="btn btn-ghost btn-sm" id="btn-switch-player">Sign Out</button>
+    </div>
+    <div class="pz-grid">${cardsHTML}</div>`;
+  app.appendChild(div);
+
+  document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); };
+  document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
+  document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
+  document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
+  document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
+
+  div.querySelectorAll('.pz-card').forEach(card => {
+    card.addEventListener('click', () =>
+      setState({ screen: 'puzzlePlay', puzzleGame: newRiverCrossing() })
+    );
+  });
+}
+
+function renderPuzzlePlay(app) {
+  const g = state.puzzleGame;
+  if (!g) return;
+
+  const playing = g.status === 'playing';
+
+  function charCard(id, { clickable = false, selected = false, onboat = false } = {}) {
+    const c   = RC_CHARS[id];
+    const cls = ['rc-char'];
+    if (clickable) cls.push('rc-clickable');
+    if (selected)  cls.push('rc-selected');
+    if (onboat)    cls.push('rc-on-boat');
+    return `<div class="${cls.join(' ')}" data-char="${id}">
+      <div class="rc-emoji">${c.emoji}</div>
+      <div class="rc-name">${c.name}</div>
+    </div>`;
+  }
+
+  const leftHTML  = g.left.length  ? g.left.map(id  => charCard(id, { clickable: playing && g.boatSide === 'left',  selected: g.passenger === id && g.boatSide === 'left'  })).join('') : '<div class="rc-empty">Empty</div>';
+  const rightHTML = g.right.length ? g.right.map(id => charCard(id, { clickable: playing && g.boatSide === 'right', selected: g.passenger === id && g.boatSide === 'right' })).join('') : '<div class="rc-empty">Empty</div>';
+
+  const boatHTML = charCard('shepherd', { onboat: true })
+    + (g.passenger ? charCard(g.passenger, { onboat: true, selected: true }) : '<div class="rc-boat-slot">+ one more</div>');
+
+  const hint = playing
+    ? (g.boatSide === 'left'
+        ? 'Tap a character on the left bank to bring them, then cross.'
+        : 'Tap a character on the right bank to bring them back, or cross alone.')
+    : '';
+
+  const div = el('div', 'screen rc-screen');
+  div.innerHTML = `
+    <div class="rc-header">
+      <button class="btn btn-ghost btn-sm" id="btn-back-pz">← Puzzles</button>
+      <span class="rc-title">🌊 River Crossing</span>
+      <span class="rc-moves">⚡ ${g.moves} moves</span>
+    </div>
+    <p class="rc-hint">${hint}</p>
+    <div class="rc-scene">
+      <div class="rc-bank rc-left ${g.boatSide === 'left' ? 'rc-boat-here' : ''}">
+        <div class="rc-bank-label">🌄 Start</div>
+        <div class="rc-bank-chars" id="rc-left">${leftHTML}</div>
+      </div>
+      <div class="rc-river">
+        <div class="rc-water"><div class="rc-wave-line"></div><div class="rc-wave-line"></div></div>
+        <div class="rc-boat-wrap">
+          <div class="rc-boat">${boatHTML}</div>
+          ${playing ? `<button class="rc-cross-btn" id="rc-cross">${g.boatSide === 'left' ? 'Cross →' : '← Cross'}</button>` : ''}
+        </div>
+      </div>
+      <div class="rc-bank rc-right ${g.boatSide === 'right' ? 'rc-boat-here' : ''}">
+        <div class="rc-bank-label">🏁 Goal</div>
+        <div class="rc-bank-chars" id="rc-right">${rightHTML}</div>
+      </div>
+    </div>
+    ${g.status === 'won' ? `
+      <div class="rc-overlay">
+        <div class="rc-overlay-card">
+          <div class="rc-ov-emoji">🎉</div>
+          <h2>You did it!</h2>
+          <p>Everyone made it across in <strong>${g.moves} moves</strong>!</p>
+          ${g.moves <= 7 ? '<p class="rc-perfect">⭐ Perfect — that\'s the optimal solution!</p>' : ''}
+          <div class="rc-ov-btns">
+            <button class="btn btn-primary" id="rc-restart">Play Again</button>
+            <button class="btn btn-ghost"   id="rc-back-map">Back</button>
+          </div>
+        </div>
+      </div>` : ''}
+    ${g.status === 'lost' ? `
+      <div class="rc-overlay rc-overlay-lost">
+        <div class="rc-overlay-card">
+          <div class="rc-ov-emoji">😬</div>
+          <h2>Oh no!</h2>
+          <p>${g.lostReason}</p>
+          <div class="rc-ov-btns">
+            <button class="btn btn-primary" id="rc-restart">Try Again</button>
+            <button class="btn btn-ghost"   id="rc-back-map">Back</button>
+          </div>
+        </div>
+      </div>` : ''}`;
+  app.appendChild(div);
+
+  document.getElementById('btn-back-pz').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+
+  div.querySelectorAll('.rc-clickable').forEach(card => {
+    card.addEventListener('click', () => {
+      const id  = card.dataset.char;
+      const cur = state.puzzleGame;
+      setState({ puzzleGame: { ...cur, passenger: cur.passenger === id ? null : id } });
+    });
+  });
+
+  const crossBtn = document.getElementById('rc-cross');
+  if (crossBtn) {
+    crossBtn.addEventListener('click', () => {
+      const cur  = state.puzzleGame;
+      const from = cur.boatSide;
+      const to   = from === 'left' ? 'right' : 'left';
+
+      const fromBank = cur[from].filter(id => id !== cur.passenger);
+      const toBank   = [...cur[to], ...(cur.passenger ? [cur.passenger] : [])];
+
+      const next = { ...cur, [from]: fromBank, [to]: toBank, boatSide: to, passenger: null, moves: cur.moves + 1 };
+
+      const danger = rcCheckBank(fromBank);
+      if (danger) {
+        next.status = 'lost';
+        next.lostReason = danger;
+      } else if (next.left.length === 0 && next.boatSide === 'right') {
+        next.status = 'won';
+        const p = getProgress();
+        if (!p.puzzles) p.puzzles = {};
+        const prev = p.puzzles[0];
+        if (!prev || !prev.solved || next.moves < prev.bestMoves) {
+          p.puzzles[0] = { solved: true, bestMoves: next.moves };
+          saveProgress(p);
+        }
+      }
+      setState({ puzzleGame: next });
+    });
+  }
+
+  if (document.getElementById('rc-restart')) {
+    document.getElementById('rc-restart').onclick  = () => setState({ puzzleGame: newRiverCrossing() });
+    document.getElementById('rc-back-map').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+  }
 }
 
 // ── Boot ─────────────────────────────────────────────────────

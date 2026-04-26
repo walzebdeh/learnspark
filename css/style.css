@@ -1547,6 +1547,245 @@ html, body {
 }
 
 /* ============================================================
+   PUZZLES — Map
+   ============================================================ */
+.pz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 8px 0 40px;
+}
+.pz-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.12);
+  cursor: pointer;
+  transition: transform .18s, box-shadow .18s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+.pz-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,.18); }
+.pz-card-emoji { font-size: 3.5rem; line-height: 1; }
+.pz-card-name  { font-size: 1.3rem; font-weight: 800; color: var(--text); margin-bottom: 2px; }
+.pz-card-diff  { font-size: .82rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .06em; }
+.pz-card-desc  { font-size: .88rem; color: #555; line-height: 1.5; }
+.pz-card-best  { font-size: .85rem; font-weight: 700; color: #f39c12; }
+.pz-card-play  {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white; border: none; border-radius: 12px;
+  padding: 10px 28px; font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: opacity .15s;
+}
+.pz-card-play:hover { opacity: .88; }
+
+/* ============================================================
+   PUZZLES — River Crossing Game
+   ============================================================ */
+.rc-screen {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e8f4fd 0%, #d4edfc 100%);
+}
+.rc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(255,255,255,.7);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.rc-title { font-size: 1.1rem; font-weight: 800; color: #1a1a2e; }
+.rc-moves { font-size: .9rem; font-weight: 700; color: #667eea; }
+.rc-hint  {
+  text-align: center; font-size: .88rem; color: #555;
+  padding: 10px 20px 4px; min-height: 36px;
+}
+
+/* Scene layout */
+.rc-scene {
+  display: flex;
+  flex: 1;
+  min-height: 420px;
+}
+.rc-bank {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 10px;
+  background: linear-gradient(180deg, #5d9e41 0%, #4a7e31 100%);
+  position: relative;
+  transition: filter .2s;
+}
+.rc-bank::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 24px;
+  background: linear-gradient(90deg, rgba(255,255,255,.0), rgba(255,255,255,.08));
+  pointer-events: none;
+}
+.rc-left::after  { right: 0; }
+.rc-right::after { left: 0; transform: scaleX(-1); }
+.rc-boat-here { filter: brightness(1.08); }
+.rc-bank-label {
+  font-size: .78rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .1em; color: rgba(255,255,255,.85);
+}
+.rc-bank-chars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+.rc-empty {
+  color: rgba(255,255,255,.45);
+  font-size: .85rem;
+  margin-top: 20px;
+}
+
+/* River strip */
+.rc-river {
+  width: 170px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #1a78c2 0%, #1565a8 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.rc-water {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 20px 0;
+  pointer-events: none;
+}
+.rc-wave-line {
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,.25) 0px, rgba(255,255,255,.25) 18px,
+    transparent 18px, transparent 28px
+  );
+  animation: waveMove 2.5s linear infinite;
+}
+.rc-wave-line:nth-child(2) { animation-delay: -1.25s; }
+@keyframes waveMove {
+  from { background-position: 0 0; }
+  to   { background-position: 46px 0; }
+}
+.rc-boat-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 1;
+}
+.rc-boat {
+  background: #7b4f2e;
+  border-radius: 8px 8px 50% 50% / 8px 8px 20px 20px;
+  padding: 10px 10px 14px;
+  display: flex;
+  gap: 6px;
+  min-width: 120px;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35);
+  border-top: 4px solid #a0673a;
+}
+.rc-boat-slot {
+  color: rgba(255,255,255,.45);
+  font-size: .68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  text-align: center;
+  line-height: 1.3;
+}
+.rc-cross-btn {
+  background: white;
+  color: #1a78c2;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: .88rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0,0,0,.25);
+  transition: transform .12s, box-shadow .12s;
+  white-space: nowrap;
+}
+.rc-cross-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 18px rgba(0,0,0,.3);
+}
+
+/* Character cards */
+.rc-char {
+  background: white;
+  border-radius: 14px;
+  padding: 8px 12px;
+  text-align: center;
+  width: 72px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.15);
+  border: 3px solid transparent;
+  transition: transform .15s, border-color .15s, box-shadow .15s;
+}
+.rc-clickable { cursor: pointer; }
+.rc-clickable:hover { transform: translateY(-4px); box-shadow: 0 7px 18px rgba(0,0,0,.22); }
+.rc-selected  { border-color: #f9ca24; background: #fffde7; }
+.rc-on-boat   { width: 56px; padding: 6px 8px; background: rgba(255,255,255,.92); border-color: transparent; }
+.rc-emoji { font-size: 2rem; line-height: 1.1; }
+.rc-name  { font-size: .62rem; font-weight: 700; color: #555; margin-top: 3px; }
+.rc-on-boat .rc-emoji { font-size: 1.6rem; }
+.rc-on-boat .rc-name  { font-size: .56rem; }
+
+/* Win / Lose overlay */
+.rc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+.rc-overlay-lost { background: rgba(80,0,0,.55); }
+.rc-overlay-card {
+  background: white;
+  border-radius: 24px;
+  padding: 40px 32px;
+  text-align: center;
+  max-width: 340px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+.rc-ov-emoji { font-size: 3.5rem; margin-bottom: 12px; }
+.rc-overlay-card h2 { font-size: 1.8rem; margin-bottom: 10px; color: var(--text); }
+.rc-overlay-card p  { color: #555; font-size: 1rem; margin-bottom: 8px; }
+.rc-perfect { color: #f39c12; font-weight: 700; }
+.rc-ov-btns { display: flex; gap: 10px; margin-top: 20px; }
+.rc-ov-btns .btn { flex: 1; }
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 480px) {
@@ -1556,4 +1795,7 @@ html, body {
   .answer-input { width: 110px; font-size: 1.7rem; }
   .letter-tile { width: 40px; height: 44px; font-size: 1.3rem; }
   .mode-tab { padding: 8px 18px; font-size: .9rem; }
+  .rc-river { width: 130px; }
+  .rc-char  { width: 60px; }
+  .rc-on-boat { width: 48px; }
 }
