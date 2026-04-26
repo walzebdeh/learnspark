@@ -26,25 +26,6 @@ const PUZZLES = [
   },
   {
     id: 1,
-    type: 'riverCrossing',
-    name: 'Fox & Hen',
-    emoji: '🦊',
-    difficulty: '⭐ Easy',
-    story: 'A farmer needs to bring a fox and a hen across the river. If the fox is left alone with the hen, it will eat her!',
-    rower: 'farmer',
-    chars: {
-      farmer: { emoji: '👨‍🌾', name: 'Farmer', bg: 'linear-gradient(155deg,#e8f5e9,#a5d6a7)', boatBg: 'rgba(165,214,167,.9)' },
-      fox:    { emoji: '🦊',   name: 'Fox',    bg: 'linear-gradient(155deg,#fff3e0,#ffcc80)', boatBg: 'rgba(255,204,128,.9)' },
-      hen:    { emoji: '🐓',   name: 'Hen',    bg: 'linear-gradient(155deg,#fff8e1,#ffe082)', boatBg: 'rgba(255,224,130,.9)' },
-    },
-    start: ['fox', 'hen'],
-    conflicts: [
-      { pair: ['fox', 'hen'], msg: 'The fox ate the hen! 🦊🐓' },
-    ],
-    minMoves: 5,
-  },
-  {
-    id: 2,
     type: 'hanoi',
     name: 'Tower of Hanoi',
     emoji: '🗼',
