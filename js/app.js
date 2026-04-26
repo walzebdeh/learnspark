@@ -2095,7 +2095,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cloudData) saveProgress(cloudData);
       const p = getProgress();
       if (p.placementDone) {
-        setState({ screen: 'levelMap', welcomeMode: null });
+        setState({ screen: 'levelMap', welcomeMode: null, allUnlocked: p.allUnlocked || false });
       } else {
         setState({ screen: 'welcome', welcomeMode: null });
       }

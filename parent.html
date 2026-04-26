@@ -202,6 +202,30 @@
       transition: background .15s, color .15s;
     }
     .btn-delete-player:hover { background: #e74c3c; color: white; }
+    .btn-edit-player {
+      background: none;
+      border: 1.5px solid #667eea;
+      color: #667eea;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: .78rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s, color .15s;
+    }
+    .btn-edit-player:hover { background: #667eea; color: white; }
+    .pin-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #f0f0f0; border-radius: 8px;
+      padding: 3px 10px; font-size: .8rem; font-weight: 700;
+      color: #555; font-family: monospace; letter-spacing: .1em;
+      cursor: pointer; user-select: none;
+      transition: background .15s;
+    }
+    .pin-badge:hover { background: #e0e0e0; }
+    .pin-badge .pin-icon { font-style: normal; font-size: .9rem; }
+    .card-actions { display: flex; gap: 6px; }
 
     .points-summary {
       background: linear-gradient(135deg, #667eea, #764ba2);
@@ -329,6 +353,15 @@
             }).catch(e => alert('Delete failed: ' + e.message));
           };
         });
+
+        grid.querySelectorAll('.btn-edit-player').forEach(btn => {
+          btn.onclick = () => {
+            const name = btn.dataset.name;
+            db.collection('progress').doc(name).get().then(doc => {
+              if (doc.exists) showEditPlayerModal(name, doc.data());
+            });
+          };
+        });
       });
     }
 
@@ -419,11 +452,18 @@
         : 'Never';
       const lastIp = p.lastIp || '—';
 
+      const pin = p.pin || '????';
       return `
         <div class="player-card" data-name="${name}">
           <div class="card-header">
             <h2><span class="player-avatar">${avatar}</span>${name}</h2>
-            <button class="btn-delete-player" data-name="${name}" title="Delete player">🗑 Delete</button>
+            <div class="card-actions">
+              <span class="pin-badge" title="Click to show/hide PIN" onclick="togglePin(this,'${pin}')">
+                <i class="pin-icon">🔑</i><span class="pin-val">••••</span>
+              </span>
+              <button class="btn-edit-player" data-name="${name}" title="Edit player">✏️ Edit</button>
+              <button class="btn-delete-player" data-name="${name}" title="Delete player">🗑</button>
+            </div>
           </div>
           <div class="points-summary">
             <div class="pts-total">⭐ ${totalPts.toLocaleString()} total pts</div>
@@ -554,6 +594,117 @@
           submitBtn.disabled    = false;
           submitBtn.textContent = 'Create Player';
         });
+      };
+    }
+    function togglePin(el, pin) {
+      const span = el.querySelector('.pin-val');
+      span.textContent = span.textContent === '••••' ? pin : '••••';
+    }
+
+    function showEditPlayerModal(oldName, p) {
+      let selectedAvatar = p.avatar || AVATARS_LIST[0];
+
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = `
+        <div class="modal-card">
+          <h2>Edit Player</h2>
+          <p>Update name, avatar, or PIN</p>
+          <div class="modal-avatar-grid" id="edit-avatar-grid">
+            ${AVATARS_LIST.map(a => `<button class="modal-avatar-opt ${a === selectedAvatar ? 'selected' : ''}" data-avatar="${a}">${a}</button>`).join('')}
+          </div>
+          <input class="modal-input" type="text" id="edit-name" placeholder="Kid's name" maxlength="20" autocomplete="off" value="${oldName}" />
+          <div style="font-size:.85rem;font-weight:600;color:#555;text-align:left;margin-bottom:8px">New PIN <span style="font-weight:400;color:#aaa">(leave blank to keep current)</span></div>
+          <div class="modal-pin-row" id="edit-pin-boxes">
+            <input class="modal-pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="modal-pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="modal-pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="modal-pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+          </div>
+          <div style="font-size:.85rem;font-weight:600;color:#555;text-align:left;margin-bottom:8px">Confirm new PIN</div>
+          <div class="modal-pin-row" id="edit-pin-confirm-boxes">
+            <input class="modal-pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="modal-pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="modal-pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="modal-pin-box" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+          </div>
+          <div class="modal-error" id="edit-error"></div>
+          <div class="modal-actions">
+            <button class="btn-modal-cancel" id="edit-cancel">Cancel</button>
+            <button class="btn-modal-submit" id="edit-submit">Save Changes</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+
+      overlay.querySelector('#edit-avatar-grid').addEventListener('click', e => {
+        const btn = e.target.closest('.modal-avatar-opt');
+        if (!btn) return;
+        selectedAvatar = btn.dataset.avatar;
+        overlay.querySelectorAll('.modal-avatar-opt').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+
+      function wirePins(containerId) {
+        const boxes = [...overlay.querySelectorAll(`#${containerId} .modal-pin-box`)];
+        boxes.forEach((box, i) => {
+          box.addEventListener('input', () => {
+            box.value = box.value.replace(/\D/g,'').slice(0,1);
+            if (box.value && i < 3) boxes[i+1].focus();
+          });
+          box.addEventListener('keydown', e => {
+            if (e.key === 'Backspace' && !box.value && i > 0) boxes[i-1].focus();
+          });
+        });
+        return () => boxes.map(b => b.value).join('');
+      }
+      const getPin     = wirePins('edit-pin-boxes');
+      const getConfirm = wirePins('edit-pin-confirm-boxes');
+
+      overlay.querySelector('#edit-cancel').onclick = () => overlay.remove();
+
+      overlay.querySelector('#edit-submit').onclick = async () => {
+        const newName   = overlay.querySelector('#edit-name').value.trim();
+        const newPin    = getPin();
+        const confirm   = getConfirm();
+        const errEl     = overlay.querySelector('#edit-error');
+        const submitBtn = overlay.querySelector('#edit-submit');
+        errEl.textContent = '';
+
+        if (!newName) { errEl.textContent = 'Name cannot be empty.'; return; }
+        if (newPin.length > 0 && newPin.length < 4) { errEl.textContent = 'Enter all 4 PIN digits or leave blank.'; return; }
+        if (newPin.length === 4 && newPin !== confirm) { errEl.textContent = 'PINs don\'t match.'; return; }
+
+        submitBtn.disabled    = true;
+        submitBtn.textContent = 'Saving…';
+
+        try {
+          const updates = { avatar: selectedAvatar };
+          if (newPin.length === 4) updates.pin = newPin;
+
+          if (newName !== oldName) {
+            // Check name not taken
+            const existing = await db.collection('progress').doc(newName).get();
+            if (existing.exists) {
+              errEl.textContent    = 'That name is already taken.';
+              submitBtn.disabled    = false;
+              submitBtn.textContent = 'Save Changes';
+              return;
+            }
+            // Copy data to new doc, delete old
+            const fullData = { ...p, ...updates, playerName: newName };
+            await db.collection('progress').doc(newName).set(fullData);
+            await db.collection('progress').doc(oldName).delete();
+          } else {
+            await db.collection('progress').doc(oldName).set(updates, { merge: true });
+          }
+
+          overlay.remove();
+          location.reload();
+        } catch(e) {
+          errEl.textContent    = 'Error saving: ' + e.message;
+          submitBtn.disabled    = false;
+          submitBtn.textContent = 'Save Changes';
+        }
       };
     }
   </script>
