@@ -2102,29 +2102,20 @@ function stackedWithBoxesHTML(problem) {
 // PUZZLES
 // ============================================================
 
-const RC_CHARS = {
-  shepherd: { emoji: '🧑‍🌾', name: 'Shepherd' },
-  wolf:     { emoji: '🐺',   name: 'Wolf' },
-  goat:     { emoji: '🐐',   name: 'Goat' },
-  grass:    { emoji: '🌿',   name: 'Grass' },
-};
-
-function newRiverCrossing() {
-  return {
-    type: 'riverCrossing',
-    left: ['wolf', 'goat', 'grass'],
-    right: [],
-    boatSide: 'left',
-    passenger: null,
-    moves: 0,
-    status: 'playing',
-    lostReason: '',
-  };
+function newPuzzleGame(puzzleId) {
+  const pz = PUZZLES[puzzleId];
+  if (pz.type === 'riverCrossing') {
+    return { type: 'riverCrossing', puzzleId, left: [...pz.start], right: [], boatSide: 'left', passenger: null, moves: 0, status: 'playing', lostReason: '' };
+  }
+  if (pz.type === 'hanoi') {
+    return { type: 'hanoi', puzzleId, pegs: [[3,2,1],[],[]], selected: null, moves: 0, status: 'playing' };
+  }
 }
 
-function rcCheckBank(chars) {
-  if (chars.includes('wolf') && chars.includes('goat'))  return 'The wolf ate the goat! 🐺🐐';
-  if (chars.includes('goat') && chars.includes('grass')) return 'The goat ate the grass! 🐐🌿';
+function rcCheckBankConflicts(bank, puzzleId) {
+  for (const c of PUZZLES[puzzleId].conflicts) {
+    if (bank.includes(c.pair[0]) && bank.includes(c.pair[1])) return c.msg;
+  }
   return null;
 }
 
@@ -2174,25 +2165,32 @@ function renderPuzzleMap(app) {
   document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
 
   div.querySelectorAll('.pz-card').forEach(card => {
-    card.addEventListener('click', () =>
-      setState({ screen: 'puzzlePlay', puzzleGame: newRiverCrossing() })
-    );
+    card.addEventListener('click', () => {
+      const id = parseInt(card.dataset.puzzle, 10);
+      setState({ screen: 'puzzlePlay', puzzleGame: newPuzzleGame(id) });
+    });
   });
 }
 
 function renderPuzzlePlay(app) {
   const g = state.puzzleGame;
   if (!g) return;
+  if (g.type === 'riverCrossing') renderRiverCrossing(app, g);
+  else if (g.type === 'hanoi')    renderHanoi(app, g);
+}
 
+function renderRiverCrossing(app, g) {
+  const pz      = PUZZLES[g.puzzleId];
   const playing = g.status === 'playing';
 
   function charCard(id, { clickable = false, selected = false, onboat = false } = {}) {
-    const c   = RC_CHARS[id];
+    const c   = pz.chars[id];
+    const bg  = onboat ? c.boatBg : c.bg;
     const cls = ['rc-char'];
     if (clickable) cls.push('rc-clickable');
     if (selected)  cls.push('rc-selected');
     if (onboat)    cls.push('rc-on-boat');
-    return `<div class="${cls.join(' ')}" data-char="${id}">
+    return `<div class="${cls.join(' ')}" data-char="${id}" style="background:${bg}">
       <div class="rc-emoji">${c.emoji}</div>
       <div class="rc-name">${c.name}</div>
     </div>`;
@@ -2200,21 +2198,17 @@ function renderPuzzlePlay(app) {
 
   const leftHTML  = g.left.length  ? g.left.map(id  => charCard(id, { clickable: playing && g.boatSide === 'left',  selected: g.passenger === id && g.boatSide === 'left'  })).join('') : '<div class="rc-empty">Empty</div>';
   const rightHTML = g.right.length ? g.right.map(id => charCard(id, { clickable: playing && g.boatSide === 'right', selected: g.passenger === id && g.boatSide === 'right' })).join('') : '<div class="rc-empty">Empty</div>';
-
-  const boatHTML = charCard('shepherd', { onboat: true })
+  const boatHTML  = charCard(pz.rower, { onboat: true })
     + (g.passenger ? charCard(g.passenger, { onboat: true, selected: true }) : '<div class="rc-boat-slot">+ one more</div>');
-
   const hint = playing
-    ? (g.boatSide === 'left'
-        ? 'Tap a character on the left bank to bring them, then cross.'
-        : 'Tap a character on the right bank to bring them back, or cross alone.')
+    ? (g.boatSide === 'left' ? 'Tap a character on the left bank to bring them, then cross.' : 'Tap a character on the right bank to bring them back, or cross alone.')
     : '';
 
   const div = el('div', 'screen rc-screen');
   div.innerHTML = `
     <div class="rc-header">
       <button class="btn btn-ghost btn-sm" id="btn-back-pz">← Puzzles</button>
-      <span class="rc-title">🌊 River Crossing</span>
+      <span class="rc-title">${pz.emoji} ${pz.name}</span>
       <span class="rc-moves">⚡ ${g.moves} moves</span>
     </div>
     <div class="rc-sky">
@@ -2234,12 +2228,9 @@ function renderPuzzlePlay(app) {
       </div>
       <div class="rc-river">
         <div class="rc-water">
-          <div class="rc-wave-line"></div>
-          <div class="rc-wave-line"></div>
-          <div class="rc-wave-line"></div>
-          <div class="rc-wave-line"></div>
-          <div class="rc-wave-line"></div>
-          <div class="rc-wave-line"></div>
+          <div class="rc-wave-line"></div><div class="rc-wave-line"></div>
+          <div class="rc-wave-line"></div><div class="rc-wave-line"></div>
+          <div class="rc-wave-line"></div><div class="rc-wave-line"></div>
         </div>
         <div class="rc-boat-wrap">
           <div class="rc-boat">${boatHTML}</div>
@@ -2259,8 +2250,8 @@ function renderPuzzlePlay(app) {
         <div class="rc-overlay-card">
           <div class="rc-ov-emoji">🎉</div>
           <h2>You did it!</h2>
-          <p>Everyone made it across in <strong>${g.moves} moves</strong>!</p>
-          ${g.moves <= 7 ? '<p class="rc-perfect">⭐ Perfect — that\'s the optimal solution!</p>' : ''}
+          <p>Everyone crossed in <strong>${g.moves} moves</strong>!</p>
+          ${g.moves <= pz.minMoves ? '<p class="rc-perfect">⭐ Perfect — optimal solution!</p>' : ''}
           <div class="rc-ov-btns">
             <button class="btn btn-primary" id="rc-restart">Play Again</button>
             <button class="btn btn-ghost"   id="rc-back-map">Back</button>
@@ -2294,16 +2285,14 @@ function renderPuzzlePlay(app) {
   const crossBtn = document.getElementById('rc-cross');
   if (crossBtn) {
     crossBtn.addEventListener('click', () => {
-      const cur  = state.puzzleGame;
-      const from = cur.boatSide;
-      const to   = from === 'left' ? 'right' : 'left';
-
+      const cur      = state.puzzleGame;
+      const from     = cur.boatSide;
+      const to       = from === 'left' ? 'right' : 'left';
       const fromBank = cur[from].filter(id => id !== cur.passenger);
       const toBank   = [...cur[to], ...(cur.passenger ? [cur.passenger] : [])];
+      const next     = { ...cur, [from]: fromBank, [to]: toBank, boatSide: to, passenger: null, moves: cur.moves + 1 };
 
-      const next = { ...cur, [from]: fromBank, [to]: toBank, boatSide: to, passenger: null, moves: cur.moves + 1 };
-
-      const danger = rcCheckBank(fromBank);
+      const danger = rcCheckBankConflicts(fromBank, cur.puzzleId);
       if (danger) {
         next.status = 'lost';
         next.lostReason = danger;
@@ -2311,9 +2300,9 @@ function renderPuzzlePlay(app) {
         next.status = 'won';
         const p = getProgress();
         if (!p.puzzles) p.puzzles = {};
-        const prev = p.puzzles[0];
+        const prev = p.puzzles[cur.puzzleId];
         if (!prev || !prev.solved || next.moves < prev.bestMoves) {
-          p.puzzles[0] = { solved: true, bestMoves: next.moves };
+          p.puzzles[cur.puzzleId] = { solved: true, bestMoves: next.moves };
           saveProgress(p);
         }
       }
@@ -2322,7 +2311,112 @@ function renderPuzzlePlay(app) {
   }
 
   if (document.getElementById('rc-restart')) {
-    document.getElementById('rc-restart').onclick  = () => setState({ puzzleGame: newRiverCrossing() });
+    document.getElementById('rc-restart').onclick  = () => setState({ puzzleGame: newPuzzleGame(g.puzzleId) });
+    document.getElementById('rc-back-map').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+  }
+}
+
+function renderHanoi(app, g) {
+  const pz      = PUZZLES[g.puzzleId];
+  const playing = g.status === 'playing';
+  const DISK_W  = { 1: 52, 2: 90, 3: 134 };
+  const DISK_BG = { 1: 'linear-gradient(180deg,#58d68d,#27ae60)', 2: 'linear-gradient(180deg,#5dade2,#2980b9)', 3: 'linear-gradient(180deg,#ec7063,#e74c3c)' };
+
+  function pegHTML(pegIdx, disks) {
+    const isSel   = g.selected === pegIdx;
+    const topDisk = disks.length > 0 ? disks[disks.length - 1] : null;
+    const movingTop = g.selected !== null && g.pegs[g.selected].length > 0 ? g.pegs[g.selected][g.pegs[g.selected].length - 1] : null;
+    const canDrop = playing && g.selected !== null && g.selected !== pegIdx && (disks.length === 0 || topDisk > movingTop);
+    const canPick = playing && g.selected === null && disks.length > 0;
+    const cls = ['hanoi-peg-wrap', ...(isSel ? ['peg-selected'] : []), ...((canPick || canDrop) ? ['peg-clickable'] : [])].join(' ');
+    const disksHTML = disks.map(s => `<div class="hanoi-disk" style="width:${DISK_W[s]}px;background:${DISK_BG[s]}"></div>`).join('');
+    return `<div class="${cls}" data-peg="${pegIdx}">
+      <div class="hanoi-disks">${disksHTML}</div>
+      <div class="hanoi-pole"></div>
+    </div>`;
+  }
+
+  const hint = playing
+    ? (g.selected === null ? 'Click a peg to pick up its top disk.' : 'Click another peg to place the disk there.')
+    : '';
+
+  const div = el('div', 'screen hanoi-screen');
+  div.innerHTML = `
+    <div class="hanoi-header">
+      <button class="btn btn-ghost btn-sm" id="btn-back-pz">← Puzzles</button>
+      <span class="hanoi-title">🗼 Tower of Hanoi</span>
+      <span class="hanoi-moves">⚡ ${g.moves} moves</span>
+    </div>
+    <p class="hanoi-hint">${hint}</p>
+    <div class="hanoi-stage">
+      <div class="hanoi-peg-group">
+        ${g.pegs.map((disks, i) => pegHTML(i, disks)).join('')}
+      </div>
+      <div class="hanoi-base-bar"></div>
+      <div class="hanoi-peg-labels"><span>A</span><span>B</span><span>C</span></div>
+    </div>
+    <div class="hanoi-legend">
+      <div class="hanoi-legend-disk" style="width:52px;background:${DISK_BG[1]}">Small</div>
+      <div class="hanoi-legend-disk" style="width:90px;background:${DISK_BG[2]}">Medium</div>
+      <div class="hanoi-legend-disk" style="width:134px;background:${DISK_BG[3]}">Large</div>
+    </div>
+    ${g.status === 'won' ? `
+      <div class="rc-overlay">
+        <div class="rc-overlay-card">
+          <div class="rc-ov-emoji">🏆</div>
+          <h2>Tower Built!</h2>
+          <p>You did it in <strong>${g.moves} moves</strong>!</p>
+          ${g.moves === pz.minMoves ? '<p class="rc-perfect">⭐ Perfect — optimal solution!</p>' : ''}
+          <div class="rc-ov-btns">
+            <button class="btn btn-primary" id="rc-restart">Play Again</button>
+            <button class="btn btn-ghost"   id="rc-back-map">Back</button>
+          </div>
+        </div>
+      </div>` : ''}`;
+  app.appendChild(div);
+
+  document.getElementById('btn-back-pz').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+
+  div.querySelectorAll('.hanoi-peg-wrap').forEach(pegEl => {
+    pegEl.addEventListener('click', () => {
+      const pegIdx = parseInt(pegEl.dataset.peg, 10);
+      const cur = state.puzzleGame;
+      if (!playing) return;
+
+      if (cur.selected === null) {
+        if (cur.pegs[pegIdx].length > 0) setState({ puzzleGame: { ...cur, selected: pegIdx } });
+        return;
+      }
+      if (cur.selected === pegIdx) { setState({ puzzleGame: { ...cur, selected: null } }); return; }
+
+      const fromPeg = [...cur.pegs[cur.selected]];
+      const toPeg   = [...cur.pegs[pegIdx]];
+      const moving  = fromPeg[fromPeg.length - 1];
+      const topDest = toPeg.length > 0 ? toPeg[toPeg.length - 1] : Infinity;
+
+      if (moving > topDest) { shake(pegEl); setState({ puzzleGame: { ...cur, selected: null } }); return; }
+
+      fromPeg.pop();
+      toPeg.push(moving);
+      const newPegs = cur.pegs.map((p, i) => i === cur.selected ? fromPeg : i === pegIdx ? toPeg : [...p]);
+      const won     = newPegs[2].length === 3;
+      const next    = { ...cur, pegs: newPegs, selected: null, moves: cur.moves + 1, status: won ? 'won' : 'playing' };
+
+      if (won) {
+        const p = getProgress();
+        if (!p.puzzles) p.puzzles = {};
+        const prev = p.puzzles[cur.puzzleId];
+        if (!prev || !prev.solved || next.moves < prev.bestMoves) {
+          p.puzzles[cur.puzzleId] = { solved: true, bestMoves: next.moves };
+          saveProgress(p);
+        }
+      }
+      setState({ puzzleGame: next });
+    });
+  });
+
+  if (document.getElementById('rc-restart')) {
+    document.getElementById('rc-restart').onclick  = () => setState({ puzzleGame: newPuzzleGame(g.puzzleId) });
     document.getElementById('rc-back-map').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
   }
 }
