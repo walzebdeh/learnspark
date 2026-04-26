@@ -190,42 +190,33 @@
     }
     .card-header h2 { margin-bottom: 0; }
     .btn-delete-player {
-      background: none;
-      border: 1.5px solid #e74c3c;
-      color: #e74c3c;
-      border-radius: 8px;
-      padding: 4px 10px;
-      font-size: .78rem;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background .15s, color .15s;
+      background: none; border: none;
+      color: #ccc; font-size: 1rem;
+      padding: 4px 6px; cursor: pointer; border-radius: 6px;
+      transition: color .15s, background .15s;
+      line-height: 1;
     }
-    .btn-delete-player:hover { background: #e74c3c; color: white; }
+    .btn-delete-player:hover { color: #e74c3c; background: #ffeaea; }
     .btn-edit-player {
-      background: none;
-      border: 1.5px solid #667eea;
-      color: #667eea;
-      border-radius: 8px;
-      padding: 4px 10px;
-      font-size: .78rem;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background .15s, color .15s;
+      background: none; border: none;
+      color: #aaa; font-size: 1rem;
+      padding: 4px 6px; cursor: pointer; border-radius: 6px;
+      transition: color .15s, background .15s;
+      line-height: 1;
     }
-    .btn-edit-player:hover { background: #667eea; color: white; }
-    .pin-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      background: #f0f0f0; border-radius: 8px;
-      padding: 3px 10px; font-size: .8rem; font-weight: 700;
-      color: #555; font-family: monospace; letter-spacing: .1em;
-      cursor: pointer; user-select: none;
+    .btn-edit-player:hover { color: #667eea; background: #eef0ff; }
+    .pin-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: .9rem;
+    }
+    .pin-val-display {
+      font-family: monospace; font-weight: 700; letter-spacing: .12em;
+      color: #333; cursor: pointer; user-select: none;
+      background: #f5f5f5; border-radius: 6px; padding: 2px 10px;
       transition: background .15s;
     }
-    .pin-badge:hover { background: #e0e0e0; }
-    .pin-badge .pin-icon { font-style: normal; font-size: .9rem; }
-    .card-actions { display: flex; gap: 6px; }
+    .pin-val-display:hover { background: #e8e8e8; }
+    .card-actions { display: flex; gap: 2px; align-items: center; }
 
     .points-summary {
       background: linear-gradient(135deg, #667eea, #764ba2);
@@ -458,12 +449,13 @@
           <div class="card-header">
             <h2><span class="player-avatar">${avatar}</span>${name}</h2>
             <div class="card-actions">
-              <span class="pin-badge" title="Click to show/hide PIN" onclick="togglePin(this,'${pin}')">
-                <i class="pin-icon">🔑</i><span class="pin-val">••••</span>
-              </span>
-              <button class="btn-edit-player" data-name="${name}" title="Edit player">✏️ Edit</button>
+              <button class="btn-edit-player" data-name="${name}" title="Edit player">✏️</button>
               <button class="btn-delete-player" data-name="${name}" title="Delete player">🗑</button>
             </div>
+          </div>
+          <div class="pin-row">
+            <span class="stat-label">🔑 PIN</span>
+            <span class="pin-val-display" onclick="togglePin(this,'${pin}')">••••</span>
           </div>
           <div class="points-summary">
             <div class="pts-total">⭐ ${totalPts.toLocaleString()} total pts</div>
@@ -597,8 +589,7 @@
       };
     }
     function togglePin(el, pin) {
-      const span = el.querySelector('.pin-val');
-      span.textContent = span.textContent === '••••' ? pin : '••••';
+      el.textContent = el.textContent === '••••' ? pin : '••••';
     }
 
     function showEditPlayerModal(oldName, p) {
