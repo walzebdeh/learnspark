@@ -2211,6 +2211,7 @@ function renderRiverCrossing(app, g) {
       <span class="rc-title">${pz.emoji} ${pz.name}</span>
       <span class="rc-moves">⚡ ${g.moves} moves</span>
     </div>
+    <div class="pz-story-banner">${pz.story}</div>
     <div class="rc-sky">
       <span class="rc-cloud" style="animation-delay:0s">☁️</span>
       <span class="rc-cloud" style="animation-delay:-2.5s;font-size:1.3rem">⛅</span>
@@ -2347,6 +2348,7 @@ function renderHanoi(app, g) {
       <span class="hanoi-title">🗼 Tower of Hanoi</span>
       <span class="hanoi-moves">⚡ ${g.moves} moves</span>
     </div>
+    <div class="pz-story-banner">${pz.story}</div>
     <p class="hanoi-hint">${hint}</p>
     <div class="hanoi-stage">
       <div class="hanoi-peg-group">

@@ -1549,6 +1549,22 @@ html, body {
 /* ============================================================
    PUZZLES — Map
    ============================================================ */
+.pz-story-banner {
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: .9rem;
+  line-height: 1.5;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+  color: inherit;
+}
+
+.rc-screen .pz-story-banner { color: #1a2a1a; background: rgba(255,255,255,.7); border-color: rgba(0,0,0,.1); }
+.hanoi-screen .pz-story-banner { color: #c8daf0; background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15); }
+
 .pz-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
