@@ -2108,7 +2108,17 @@ function newPuzzleGame(puzzleId) {
     return { type: 'riverCrossing', puzzleId, left: [...pz.start], right: [], boatSide: 'left', passenger: null, moves: 0, status: 'playing', lostReason: '' };
   }
   if (pz.type === 'hanoi') {
-    return { type: 'hanoi', puzzleId, pegs: [[3,2,1],[],[]], selected: null, moves: 0, status: 'playing' };
+    const d = pz.disks || 3;
+    return { type: 'hanoi', puzzleId, pegs: [Array.from({length: d}, (_, i) => d - i), [], []], selected: null, moves: 0, status: 'playing' };
+  }
+  if (pz.type === 'maze') {
+    return { type: 'maze', puzzleId, row: pz.start[0], col: pz.start[1], moves: 0, status: 'playing' };
+  }
+  if (pz.type === 'sliding') {
+    return { type: 'sliding', puzzleId, tiles: [...pz.start], moves: 0, status: 'playing' };
+  }
+  if (pz.type === 'lightsOut') {
+    return { type: 'lightsOut', puzzleId, grid: pz.start.map(r => [...r]), moves: 0, status: 'playing' };
   }
 }
 
@@ -2177,6 +2187,9 @@ function renderPuzzlePlay(app) {
   if (!g) return;
   if (g.type === 'riverCrossing') renderRiverCrossing(app, g);
   else if (g.type === 'hanoi')    renderHanoi(app, g);
+  else if (g.type === 'maze')     renderMaze(app, g);
+  else if (g.type === 'sliding')  renderSliding(app, g);
+  else if (g.type === 'lightsOut') renderLightsOut(app, g);
 }
 
 function renderRiverCrossing(app, g) {
@@ -2320,8 +2333,16 @@ function renderRiverCrossing(app, g) {
 function renderHanoi(app, g) {
   const pz      = PUZZLES[g.puzzleId];
   const playing = g.status === 'playing';
-  const DISK_W  = { 1: 52, 2: 90, 3: 134 };
-  const DISK_BG = { 1: 'linear-gradient(180deg,#58d68d,#27ae60)', 2: 'linear-gradient(180deg,#5dade2,#2980b9)', 3: 'linear-gradient(180deg,#ec7063,#e74c3c)' };
+  const numDisks = pz.disks || 3;
+  const DISK_W  = { 1: 44, 2: 68, 3: 96, 4: 122, 5: 150 };
+  const DISK_BG = {
+    1: 'linear-gradient(180deg,#58d68d,#27ae60)',
+    2: 'linear-gradient(180deg,#5dade2,#2980b9)',
+    3: 'linear-gradient(180deg,#ec7063,#e74c3c)',
+    4: 'linear-gradient(180deg,#f0b27a,#e67e22)',
+    5: 'linear-gradient(180deg,#c39bd3,#9b59b6)',
+  };
+  const DISK_LABEL = { 1: 'Tiny', 2: 'Small', 3: 'Medium', 4: 'Large', 5: 'Huge' };
 
   function pegHTML(pegIdx, disks) {
     const isSel   = g.selected === pegIdx;
@@ -2358,9 +2379,9 @@ function renderHanoi(app, g) {
       <div class="hanoi-peg-labels"><span>A</span><span>B</span><span>C</span></div>
     </div>
     <div class="hanoi-legend">
-      <div class="hanoi-legend-disk" style="width:52px;background:${DISK_BG[1]}">Small</div>
-      <div class="hanoi-legend-disk" style="width:90px;background:${DISK_BG[2]}">Medium</div>
-      <div class="hanoi-legend-disk" style="width:134px;background:${DISK_BG[3]}">Large</div>
+      ${Array.from({length: numDisks}, (_, i) => i + 1).map(s =>
+        `<div class="hanoi-legend-disk" style="width:${DISK_W[s]}px;background:${DISK_BG[s]}">${DISK_LABEL[s]}</div>`
+      ).join('')}
     </div>
     ${g.status === 'won' ? `
       <div class="rc-overlay">
@@ -2401,7 +2422,7 @@ function renderHanoi(app, g) {
       fromPeg.pop();
       toPeg.push(moving);
       const newPegs = cur.pegs.map((p, i) => i === cur.selected ? fromPeg : i === pegIdx ? toPeg : [...p]);
-      const won     = newPegs[2].length === 3;
+      const won     = newPegs[2].length === numDisks;
       const next    = { ...cur, pegs: newPegs, selected: null, moves: cur.moves + 1, status: won ? 'won' : 'playing' };
 
       if (won) {
@@ -2418,6 +2439,204 @@ function renderHanoi(app, g) {
   });
 
   if (document.getElementById('rc-restart')) {
+    document.getElementById('rc-restart').onclick  = () => setState({ puzzleGame: newPuzzleGame(g.puzzleId) });
+    document.getElementById('rc-back-map').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+  }
+}
+
+// ── Puzzle helpers ───────────────────────────────────────────
+function savePuzzleProgress(puzzleId, moves) {
+  const p = getProgress();
+  if (!p.puzzles) p.puzzles = {};
+  const prev = p.puzzles[puzzleId];
+  if (!prev || !prev.solved || moves < prev.bestMoves) {
+    p.puzzles[puzzleId] = { solved: true, bestMoves: moves };
+    saveProgress(p);
+  }
+}
+
+function puzzleWonOverlay(puzzleId, moves, restartLabel) {
+  const pz = PUZZLES[puzzleId];
+  return `<div class="rc-overlay">
+    <div class="rc-overlay-card">
+      <div class="rc-ov-emoji">🏆</div>
+      <h2>Puzzle Solved!</h2>
+      <p>You did it in <strong>${moves} moves</strong>!</p>
+      ${moves <= pz.minMoves ? '<p class="rc-perfect">⭐ Perfect — optimal solution!</p>' : ''}
+      <div class="rc-ov-btns">
+        <button class="btn btn-primary" id="rc-restart">${restartLabel}</button>
+        <button class="btn btn-ghost" id="rc-back-map">Back to Puzzles</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Maze ─────────────────────────────────────────────────────
+function renderMaze(app, g) {
+  const pz   = PUZZLES[g.puzzleId];
+  const rows = pz.grid.length;
+  const cols = pz.grid[0].length;
+
+  function gridHTML() {
+    return pz.grid.map((row, r) =>
+      row.map((cell, c) => {
+        const isPlayer = r === g.row && c === g.col;
+        const isEnd    = r === pz.end[0] && c === pz.end[1];
+        let cls = 'mz-cell';
+        if (cell === 1) cls += ' mz-wall';
+        else if (isPlayer) cls += ' mz-player';
+        else if (isEnd)    cls += ' mz-end';
+        else               cls += ' mz-path';
+        return `<div class="${cls}">${isPlayer ? '🧒' : isEnd ? '⭐' : ''}</div>`;
+      }).join('')
+    ).join('');
+  }
+
+  const div = el('div', 'screen maze-screen');
+  div.innerHTML = `
+    <div class="maze-header">
+      <button class="btn btn-ghost btn-sm" id="btn-back-pz">← Puzzles</button>
+      <span class="maze-title">${pz.emoji} ${pz.name}</span>
+      <span class="maze-moves">⚡ ${g.moves} moves</span>
+    </div>
+    <div class="pz-story-banner">${pz.story}</div>
+    <div class="mz-grid" style="--cols:${cols}">${gridHTML()}</div>
+    <div class="mz-arrows">
+      <div class="mz-arrows-row"><button class="mz-btn" data-dir="up">▲</button></div>
+      <div class="mz-arrows-row">
+        <button class="mz-btn" data-dir="left">◀</button>
+        <div class="mz-center"></div>
+        <button class="mz-btn" data-dir="right">▶</button>
+      </div>
+      <div class="mz-arrows-row"><button class="mz-btn" data-dir="down">▼</button></div>
+    </div>
+    ${g.status === 'won' ? puzzleWonOverlay(g.puzzleId, g.moves, '↺ Play Again') : ''}`;
+  app.appendChild(div);
+
+  document.getElementById('btn-back-pz').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+
+  function move(dir) {
+    const cur = state.puzzleGame;
+    if (!cur || cur.status !== 'playing') return;
+    const dr = dir === 'up' ? -1 : dir === 'down' ? 1 : 0;
+    const dc = dir === 'left' ? -1 : dir === 'right' ? 1 : 0;
+    const nr = cur.row + dr, nc = cur.col + dc;
+    if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
+    if (pz.grid[nr][nc] === 1) return;
+    const won = nr === pz.end[0] && nc === pz.end[1];
+    if (won) savePuzzleProgress(cur.puzzleId, cur.moves + 1);
+    setState({ puzzleGame: { ...cur, row: nr, col: nc, moves: cur.moves + 1, status: won ? 'won' : 'playing' } });
+  }
+
+  div.querySelectorAll('.mz-btn[data-dir]').forEach(btn => {
+    btn.addEventListener('click', () => move(btn.dataset.dir));
+  });
+
+  function onKey(e) {
+    if (state.screen !== 'puzzlePlay') { document.removeEventListener('keydown', onKey); return; }
+    const map = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+    if (map[e.key]) { e.preventDefault(); move(map[e.key]); }
+  }
+  document.addEventListener('keydown', onKey);
+
+  if (g.status === 'won') {
+    document.getElementById('rc-restart').onclick  = () => setState({ puzzleGame: newPuzzleGame(g.puzzleId) });
+    document.getElementById('rc-back-map').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+  }
+}
+
+// ── Sliding Puzzle ────────────────────────────────────────────
+function renderSliding(app, g) {
+  const pz = PUZZLES[g.puzzleId];
+
+  function tileHTML(val, idx) {
+    if (val === 0) return `<div class="sl-blank" data-idx="${idx}"></div>`;
+    const blankIdx = g.tiles.indexOf(0);
+    const dr = Math.abs(Math.floor(idx/3) - Math.floor(blankIdx/3));
+    const dc = Math.abs((idx%3) - (blankIdx%3));
+    const movable = (dr + dc) === 1;
+    return `<div class="sl-tile${movable ? ' sl-movable' : ''}" data-idx="${idx}">${val}</div>`;
+  }
+
+  const div = el('div', 'screen sliding-screen');
+  div.innerHTML = `
+    <div class="maze-header">
+      <button class="btn btn-ghost btn-sm" id="btn-back-pz">← Puzzles</button>
+      <span class="maze-title">${pz.emoji} ${pz.name}</span>
+      <span class="maze-moves">⚡ ${g.moves} moves</span>
+    </div>
+    <div class="pz-story-banner">${pz.story}</div>
+    <div class="sl-grid">${g.tiles.map((v, i) => tileHTML(v, i)).join('')}</div>
+    ${g.status === 'won' ? puzzleWonOverlay(g.puzzleId, g.moves, '↺ Play Again') : ''}`;
+  app.appendChild(div);
+
+  document.getElementById('btn-back-pz').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+
+  div.querySelectorAll('.sl-movable').forEach(tile => {
+    tile.addEventListener('click', () => {
+      const cur = state.puzzleGame;
+      if (cur.status !== 'playing') return;
+      const idx     = parseInt(tile.dataset.idx, 10);
+      const blankI  = cur.tiles.indexOf(0);
+      const newTiles = [...cur.tiles];
+      newTiles[blankI] = newTiles[idx];
+      newTiles[idx] = 0;
+      const won = newTiles.every((v, i) => i === 8 ? v === 0 : v === i + 1);
+      if (won) savePuzzleProgress(cur.puzzleId, cur.moves + 1);
+      setState({ puzzleGame: { ...cur, tiles: newTiles, moves: cur.moves + 1, status: won ? 'won' : 'playing' } });
+    });
+  });
+
+  if (g.status === 'won') {
+    document.getElementById('rc-restart').onclick  = () => setState({ puzzleGame: newPuzzleGame(g.puzzleId) });
+    document.getElementById('rc-back-map').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+  }
+}
+
+// ── Lights Out ────────────────────────────────────────────────
+function renderLightsOut(app, g) {
+  const pz   = PUZZLES[g.puzzleId];
+  const size = pz.size;
+
+  function gridHTML() {
+    return g.grid.map((row, r) =>
+      row.map((v, c) => `<div class="lo-cell ${v ? 'lo-on' : 'lo-off'}" data-r="${r}" data-c="${c}"></div>`)
+      .join('')
+    ).join('');
+  }
+
+  const div = el('div', 'screen lo-screen');
+  div.innerHTML = `
+    <div class="maze-header lo-header">
+      <button class="btn btn-ghost btn-sm" id="btn-back-pz">← Puzzles</button>
+      <span class="maze-title">${pz.emoji} ${pz.name}</span>
+      <span class="maze-moves lo-moves">⚡ ${g.moves} taps</span>
+    </div>
+    <div class="pz-story-banner">${pz.story}</div>
+    <div class="lo-grid" style="--size:${size}">${gridHTML()}</div>
+    ${g.status === 'won' ? puzzleWonOverlay(g.puzzleId, g.moves, '↺ Play Again') : ''}`;
+  app.appendChild(div);
+
+  document.getElementById('btn-back-pz').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+
+  div.querySelectorAll('.lo-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const cur = state.puzzleGame;
+      if (cur.status !== 'playing') return;
+      const r = parseInt(cell.dataset.r, 10);
+      const c = parseInt(cell.dataset.c, 10);
+      const newGrid = cur.grid.map(row => [...row]);
+      [[0,0],[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr, dc]) => {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < size && nc >= 0 && nc < size) newGrid[nr][nc] ^= 1;
+      });
+      const won = newGrid.every(row => row.every(v => v === 0));
+      if (won) savePuzzleProgress(cur.puzzleId, cur.moves + 1);
+      setState({ puzzleGame: { ...cur, grid: newGrid, moves: cur.moves + 1, status: won ? 'won' : 'playing' } });
+    });
+  });
+
+  if (g.status === 'won') {
     document.getElementById('rc-restart').onclick  = () => setState({ puzzleGame: newPuzzleGame(g.puzzleId) });
     document.getElementById('rc-back-map').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
   }

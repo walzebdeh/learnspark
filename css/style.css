@@ -1562,8 +1562,11 @@ html, body {
   color: inherit;
 }
 
-.rc-screen .pz-story-banner { color: #1a2a1a; background: rgba(255,255,255,.7); border-color: rgba(0,0,0,.1); }
-.hanoi-screen .pz-story-banner { color: #c8daf0; background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15); }
+.rc-screen      .pz-story-banner { color: #1a2a1a; background: rgba(255,255,255,.7);  border-color: rgba(0,0,0,.1); }
+.hanoi-screen   .pz-story-banner { color: #c8daf0; background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15); }
+.maze-screen    .pz-story-banner { color: #1b5e20; background: rgba(255,255,255,.65); border-color: rgba(0,0,0,.1); }
+.sliding-screen .pz-story-banner { color: #0d47a1; background: rgba(255,255,255,.65); border-color: rgba(0,0,0,.1); }
+.lo-screen      .pz-story-banner { color: #c8daf0; background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.15); }
 
 .pz-grid {
   display: grid;
@@ -1893,6 +1896,153 @@ html, body {
 .rc-perfect { color: #e67e22; font-weight: 800; font-size: 1.05rem; }
 .rc-ov-btns { display: flex; gap: 10px; margin-top: 22px; }
 .rc-ov-btns .btn { flex: 1; }
+
+/* ============================================================
+   MAZE
+   ============================================================ */
+.maze-screen {
+  padding: 20px 16px 40px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
+  align-items: center;
+  gap: 16px;
+}
+.maze-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 420px;
+  gap: 12px;
+}
+.maze-title { font-size: 1.1rem; font-weight: 700; flex: 1; text-align: center; color: #1b5e20; }
+.maze-moves { font-size: .9rem; font-weight: 700; color: #2e7d32; white-space: nowrap; }
+.mz-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 3px;
+  width: min(360px, 88vw);
+  background: #2e7d32;
+  padding: 5px;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.2);
+}
+.mz-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(.8rem, 4vw, 1.5rem);
+}
+.mz-wall   { background: #1b5e20; }
+.mz-path   { background: #f9fbe7; }
+.mz-player { background: #fff9c4; }
+.mz-end    { background: #ffe082; }
+.mz-arrows { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 4px; }
+.mz-arrows-row { display: flex; gap: 6px; align-items: center; }
+.mz-btn {
+  width: 60px; height: 60px;
+  border: none; border-radius: 14px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
+  font-size: 1.4rem; cursor: pointer;
+  transition: transform .1s, box-shadow .1s;
+  display: flex; align-items: center; justify-content: center;
+}
+.mz-btn:active { transform: scale(.9); box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+.mz-center { width: 60px; height: 60px; }
+
+/* ============================================================
+   SLIDING PUZZLE
+   ============================================================ */
+.sliding-screen {
+  padding: 20px 16px 40px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e3f2fd 0%, #90caf9 100%);
+  align-items: center;
+  gap: 16px;
+}
+.sliding-screen .maze-header .maze-title { color: #0d47a1; }
+.sliding-screen .maze-moves { color: #1565c0; }
+.sl-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: min(290px, 82vw);
+  padding: 12px;
+  background: rgba(255,255,255,.4);
+  border-radius: 20px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.15);
+}
+.sl-tile, .sl-blank {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.4rem, 8vw, 2.2rem);
+  font-weight: 900;
+  user-select: none;
+}
+.sl-tile {
+  background: white;
+  color: #1a237e;
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
+  cursor: default;
+}
+.sl-movable {
+  cursor: pointer;
+  background: linear-gradient(135deg, #bbdefb, #e3f2fd);
+  box-shadow: 0 4px 16px rgba(21,101,192,.3);
+  transition: transform .12s;
+}
+.sl-movable:hover  { transform: scale(1.06); }
+.sl-movable:active { transform: scale(.95); }
+.sl-blank {
+  background: rgba(0,0,0,.06);
+  border: 2px dashed rgba(0,0,0,.12);
+}
+
+/* ============================================================
+   LIGHTS OUT
+   ============================================================ */
+.lo-screen {
+  padding: 20px 16px 40px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 100%);
+  align-items: center;
+  gap: 16px;
+  color: #fff;
+}
+.lo-header .maze-title { color: #e0e8ff; }
+.lo-moves { color: #ffd700 !important; }
+.lo-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--size), 1fr);
+  gap: 10px;
+  width: min(300px, 82vw);
+  padding: 16px;
+  background: rgba(255,255,255,.04);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.lo-cell {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .12s, box-shadow .12s;
+}
+.lo-on {
+  background: #ffd700;
+  box-shadow: 0 0 14px rgba(255,215,0,.7), 0 0 28px rgba(255,215,0,.3);
+}
+.lo-off {
+  background: #1a1a3e;
+  border: 2px solid rgba(255,255,255,.12);
+}
+.lo-off:hover { background: #2a2a5e; }
+.lo-on:hover  { background: #ffe44d; }
 
 /* ============================================================
    TOWER OF HANOI
