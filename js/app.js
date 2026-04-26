@@ -2217,21 +2217,40 @@ function renderPuzzlePlay(app) {
       <span class="rc-title">🌊 River Crossing</span>
       <span class="rc-moves">⚡ ${g.moves} moves</span>
     </div>
+    <div class="rc-sky">
+      <span class="rc-cloud" style="animation-delay:0s">☁️</span>
+      <span class="rc-cloud" style="animation-delay:-2.5s;font-size:1.3rem">⛅</span>
+      <span class="rc-cloud" style="animation-delay:-5s">☁️</span>
+      <span class="rc-cloud" style="animation-delay:-1.5s;font-size:1.1rem">☁️</span>
+    </div>
     <p class="rc-hint">${hint}</p>
     <div class="rc-scene">
       <div class="rc-bank rc-left ${g.boatSide === 'left' ? 'rc-boat-here' : ''}">
-        <div class="rc-bank-label">🌄 Start</div>
+        <div class="rc-bank-top">
+          <div class="rc-bank-label">🌄 Start</div>
+          <div class="rc-bank-trees">🌲 🌳</div>
+        </div>
         <div class="rc-bank-chars" id="rc-left">${leftHTML}</div>
       </div>
       <div class="rc-river">
-        <div class="rc-water"><div class="rc-wave-line"></div><div class="rc-wave-line"></div></div>
+        <div class="rc-water">
+          <div class="rc-wave-line"></div>
+          <div class="rc-wave-line"></div>
+          <div class="rc-wave-line"></div>
+          <div class="rc-wave-line"></div>
+          <div class="rc-wave-line"></div>
+          <div class="rc-wave-line"></div>
+        </div>
         <div class="rc-boat-wrap">
           <div class="rc-boat">${boatHTML}</div>
-          ${playing ? `<button class="rc-cross-btn" id="rc-cross">${g.boatSide === 'left' ? 'Cross →' : '← Cross'}</button>` : ''}
+          ${playing ? `<button class="rc-cross-btn" id="rc-cross">${g.boatSide === 'left' ? '⛵ Cross →' : '← Cross ⛵'}</button>` : ''}
         </div>
       </div>
       <div class="rc-bank rc-right ${g.boatSide === 'right' ? 'rc-boat-here' : ''}">
-        <div class="rc-bank-label">🏁 Goal</div>
+        <div class="rc-bank-top">
+          <div class="rc-bank-label">🏁 Goal</div>
+          <div class="rc-bank-trees">🌳 🌲</div>
+        </div>
         <div class="rc-bank-chars" id="rc-right">${rightHTML}</div>
       </div>
     </div>
