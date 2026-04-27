@@ -868,11 +868,98 @@ const LEVELS = [
       return fillSheet(pool);
     }
   },
+
+  // ── SKILLS (grade 9, unlocked early) ─────────────────────────
+
+  // 60 ─ Telling Time: O'clock & Half Hour
+  {
+    id: 60, name: 'Telling Time', emoji: '🕐', color: '#6C5CE7', unlockAt: 2,
+    generate() {
+      return uniqueRandom(() => {
+        const h = randInt(1, 12);
+        const m = [0, 30][randInt(0, 1)];
+        const ms = m.toString().padStart(2, '0');
+        return { type: 'time', question: `clock:${h}:${ms}`, answer: `${h}:${ms}` };
+      });
+    }
+  },
+
+  // 61 ─ Telling Time: Quarter Hours
+  {
+    id: 61, name: 'Time: Quarter Hours', emoji: '🕒', color: '#A29BFE', unlockAt: 3,
+    generate() {
+      return uniqueRandom(() => {
+        const h = randInt(1, 12);
+        const m = [0, 15, 30, 45][randInt(0, 3)];
+        const ms = m.toString().padStart(2, '0');
+        return { type: 'time', question: `clock:${h}:${ms}`, answer: `${h}:${ms}` };
+      });
+    }
+  },
+
+  // 62 ─ Counting Coins: Pennies & Nickels
+  {
+    id: 62, name: 'Counting Coins', emoji: '🪙', color: '#FDCB6E', unlockAt: 2,
+    generate() {
+      return uniqueRandom(() => {
+        const n = randInt(0, 4);
+        const p = randInt(1, 9);
+        const total = n * 5 + p;
+        return { type: 'money', question: `coins:0:0:${n}:${p}`, answer: total };
+      });
+    }
+  },
+
+  // 63 ─ Mixed Coins
+  {
+    id: 63, name: 'Mixed Coins', emoji: '💰', color: '#E17055', unlockAt: 4,
+    generate() {
+      return uniqueRandom(() => {
+        const q = randInt(0, 3);
+        const d = randInt(0, 4);
+        const n = randInt(0, 4);
+        const p = randInt(0, 9);
+        const total = q * 25 + d * 10 + n * 5 + p;
+        if (total === 0) return null;
+        return { type: 'money', question: `coins:${q}:${d}:${n}:${p}`, answer: total };
+      });
+    }
+  },
+
+  // 64 ─ Word Problems
+  {
+    id: 64, name: 'Word Problems', emoji: '📖', color: '#00B894', unlockAt: 3,
+    generate() {
+      const mk = (q, a) => ({ type: 'word', question: q, answer: a });
+      const templates = [
+        () => { const a = randInt(3, 14), b = randInt(2, 10); return mk(`🍎 Sara had ${a} apples. She picked ${b} more. How many apples does she have now?`, a + b); },
+        () => { const a = randInt(6, 20), b = randInt(2, 5); return mk(`🐦 ${a} birds sat on a branch. ${b} flew away. How many birds are left?`, a - b); },
+        () => { const a = randInt(2, 6), b = randInt(2, 5); return mk(`🍪 Jake baked ${a} trays of cookies. Each tray holds ${b} cookies. How many cookies total?`, a * b); },
+        () => { const a = randInt(2, 5); const b = a * randInt(2, 6); return mk(`🍕 ${b} slices of pizza are shared equally among ${a} friends. How many slices each?`, b / a); },
+        () => { const a = randInt(4, 14), b = randInt(2, 10); return mk(`⚽ The home team scored ${a} goals. The visitors scored ${b}. How many goals were scored in total?`, a + b); },
+        () => { const a = randInt(10, 25), b = randInt(2, 8); return mk(`📚 A shelf has ${a} books. ${b} are checked out. How many books remain?`, a - b); },
+        () => { const a = randInt(2, 7), b = randInt(2, 6); return mk(`🌼 Emma planted ${a} rows with ${b} flowers each. How many flowers did she plant?`, a * b); },
+        () => { const a = randInt(2, 5); const b = a * randInt(2, 7); return mk(`🍬 ${b} candies are packed into bags of ${a}. How many bags are there?`, b / a); },
+        () => { const a = randInt(6, 18), b = randInt(2, 5), c = randInt(1, 4); return mk(`🎒 Tom has ${a} marbles. He gives ${b} to Sam and wins ${c} from a game. How many marbles does Tom have now?`, a - b + c); },
+        () => { const a = randInt(3, 12), b = randInt(2, 8); return mk(`🐟 A tank has ${a} goldfish and ${b} angelfish. How many fish are there in all?`, a + b); },
+        () => { const pp = randInt(1, 4), n = randInt(3, 8); return mk(`🎈 Each of ${n} children gets ${pp} balloon${pp > 1 ? 's' : ''}. How many balloons are needed?`, pp * n); },
+        () => { const a = randInt(5, 15), b = randInt(2, 6); return mk(`🚌 A bus has ${a} passengers. At the stop, ${b} get on. How many passengers are on the bus now?`, a + b); },
+        () => { const a = randInt(8, 20), b = randInt(3, 7); return mk(`🌟 ${a} children signed up for the talent show, but ${b} dropped out. How many are performing?`, a - b); },
+        () => { const p = randInt(2, 5); const t = p * randInt(3, 6); return mk(`🥚 Eggs come in cartons of ${p}. There are ${t} eggs. How many cartons are that?`, t / p); },
+        () => { const a = randInt(3, 9), b = randInt(3, 9); return mk(`🦋 ${a} butterflies land on red flowers and ${b} land on yellow flowers. How many butterflies are there altogether?`, a + b); },
+      ];
+      return uniqueRandom(() => {
+        const fn = templates[randInt(0, templates.length - 1)];
+        try { return fn(); } catch(e) { return null; }
+      });
+    }
+  },
 ];
 
 // Placement test checkpoints (level IDs sampled during placement)
 const PLACEMENT_CHECKPOINTS = [2, 5, 8, 11, 14, 18, 22, 25, 30, 38, 44, 52];
 
 // First level ID of each grade (used for tab unlock logic)
-const GRADE_STARTS = { 1: 0, 2: 6, 3: 12, 4: 20, 5: 28, 6: 36, 7: 44, 8: 52 };
-const GRADE_NAMES  = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th' };
+const GRADE_STARTS    = { 1: 0, 2: 6, 3: 12, 4: 20, 5: 28, 6: 36, 7: 44, 8: 52, 9: 60 };
+const GRADE_NAMES     = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th', 9: 'Skills' };
+const GRADE_UNLOCK_AT = { 9: 2 }; // Skills tab unlocks after reaching level 2

@@ -512,9 +512,10 @@ function renderLevelMap(app) {
   const autoGrade  = gradeOfLevel(progress.currentLevelId || 0);
   const activeGrade = state.mathGrade || autoGrade;
 
-  // A grade is accessible if currentLevelId has reached its start
+  // A grade is accessible if currentLevelId has reached its start (or custom unlockAt)
   function gradeUnlocked(g) {
-    return state.allUnlocked || (progress.currentLevelId || 0) >= GRADE_STARTS[g];
+    const threshold = (GRADE_UNLOCK_AT && GRADE_UNLOCK_AT[g] !== undefined) ? GRADE_UNLOCK_AT[g] : GRADE_STARTS[g];
+    return state.allUnlocked || (progress.currentLevelId || 0) >= threshold;
   }
 
   const div = el('div', 'screen levelmap-screen');
@@ -526,7 +527,7 @@ function renderLevelMap(app) {
     let cls = 'grade-tab';
     if (active)  cls += ' active';
     if (locked)  cls += ' locked-tab';
-    const label = GRADE_NAMES[g] + ' Grade';
+    const label = g === 9 ? GRADE_NAMES[g] : GRADE_NAMES[g] + ' Grade';
     return `<button class="${cls}" data-grade="${g}" ${locked ? 'disabled' : ''}>${locked ? '🔒 ' : ''}${esc(label)}</button>`;
   }).join('');
 
@@ -540,7 +541,7 @@ function renderLevelMap(app) {
     const lp          = progress.levels[idx] || { sheetsCompleted: 0, completed: false };
     const isCompleted = lp.completed;
     const isCurrent   = idx === progress.currentLevelId;
-    const isUnlocked  = state.allUnlocked || idx <= progress.currentLevelId;
+    const isUnlocked  = state.allUnlocked || (level.unlockAt !== undefined ? (progress.currentLevelId || 0) >= level.unlockAt : idx <= progress.currentLevelId);
     const sheets      = lp.sheetsCompleted || 0;
     const pct         = Math.min(100, Math.round((sheets / SHEETS_TO_COMPLETE) * 100));
     const savedHere   = savedSheets[idx];
@@ -703,11 +704,15 @@ function renderSheet(app) {
         ? stackedWithBoxesHTML(problem)
         : `<div class="problem-display">
             ${problemHTML(problem)}
-            ${isStacked(problem) || problem.type === 'equation' ? '' : '<div class="equals-row">= ?</div>'}
+            ${isStacked(problem) || problem.type === 'equation' || problem.type === 'time' || problem.type === 'money' || problem.type === 'word' ? '' : '<div class="equals-row">= ?</div>'}
            </div>
            ${feedbackHTML}
            ${!s.feedback ? `<div class="answer-row" id="answer-row">
-             <input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />
+             ${problem.type === 'time'
+               ? `<input type="text" id="answer-input" class="answer-input" placeholder="H:MM" autocomplete="off" />`
+               : problem.type === 'money'
+               ? `<input type="number" id="answer-input" class="answer-input answer-input-cents" placeholder="¢" autocomplete="off" inputmode="numeric" />`
+               : `<input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />`}
              <button class="btn btn-primary" id="btn-check">Check ✓</button>
            </div>` : ''}`}
     </div>
@@ -735,13 +740,22 @@ function renderSheet(app) {
 }
 
 function submitSheet() {
-  const useDigits = !!document.querySelector('.digit-box');
-  const val = useDigits ? getDigitAnswer() : parseFloat(document.getElementById('answer-input').value);
-  if (isNaN(val)) { shake(useDigits ? document.getElementById('digit-boxes-wrap') : document.getElementById('answer-input')); return; }
-
   const s       = state.sheet;
   const problem = s.problems[s.currentIndex];
-  const correct = val === problem.answer;
+
+  let val, correct;
+  if (problem.type === 'time') {
+    const raw = (document.getElementById('answer-input').value || '').trim();
+    const tm = raw.match(/^(\d{1,2}):(\d{1,2})$/);
+    if (!tm) { shake(document.getElementById('answer-input')); return; }
+    val = `${parseInt(tm[1], 10)}:${tm[2].padStart(2, '0')}`;
+    correct = val === problem.answer;
+  } else {
+    const useDigits = !!document.querySelector('.digit-box');
+    val = useDigits ? getDigitAnswer() : parseFloat(document.getElementById('answer-input').value);
+    if (isNaN(val)) { shake(useDigits ? document.getElementById('digit-boxes-wrap') : document.getElementById('answer-input')); return; }
+    correct = val === problem.answer;
+  }
 
   s.answers.push({ given: val, correct, expected: problem.answer });
   s.feedback = correct ? 'correct' : 'wrong';
@@ -1909,7 +1923,96 @@ function geoBoxSVG(l, w, h) {
   </svg>`;
 }
 
+function clockSVG(h, m) {
+  const cx = 100, cy = 105, r = 88;
+  // Hour hand angle: (h%12 + m/60) * 30 deg, offset -90 so 12 is up
+  const haDeg = ((h % 12) + m / 60) * 30 - 90;
+  const maDeg = m * 6 - 90;
+  const toXY = (deg, len) => [
+    +(cx + len * Math.cos(deg * Math.PI / 180)).toFixed(1),
+    +(cy + len * Math.sin(deg * Math.PI / 180)).toFixed(1),
+  ];
+  const [hx, hy] = toXY(haDeg, 50);
+  const [mx, my] = toXY(maDeg, 72);
+
+  let ticks = '';
+  for (let i = 0; i < 12; i++) {
+    const a = i * 30 - 90;
+    const isMajor = i % 3 === 0;
+    const [x1, y1] = toXY(a, r - (isMajor ? 14 : 8));
+    const [x2, y2] = toXY(a, r);
+    ticks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="${isMajor ? 3 : 1.5}" stroke-linecap="round"/>`;
+  }
+
+  // Hour number labels at 12, 3, 6, 9
+  const nums = [[12, 0], [3, 90], [6, 180], [9, 270]];
+  let labels = '';
+  for (const [num, deg] of nums) {
+    const [nx, ny] = toXY(deg - 90, r - 26);
+    labels += `<text x="${nx}" y="${ny}" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="currentColor">${num}</text>`;
+  }
+
+  return `<svg viewBox="0 0 200 220" class="geo-svg clock-svg" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(255,255,255,.15)" stroke="currentColor" stroke-width="4"/>
+    ${ticks}
+    ${labels}
+    <line x1="${cx}" y1="${cy}" x2="${hx}" y2="${hy}" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+    <line x1="${cx}" y1="${cy}" x2="${mx}" y2="${my}" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="5" fill="currentColor"/>
+    <text x="${cx}" y="208" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">What time does the clock show?</text>
+  </svg>`;
+}
+
+function moneySVG(q, d, n, p) {
+  const coins = [];
+  for (let i = 0; i < q; i++) coins.push({ r: 22, fill: '#FFD700', stroke: '#B8860B', label: '25¢' });
+  for (let i = 0; i < d; i++) coins.push({ r: 16, fill: '#E8E8E8', stroke: '#999',    label: '10¢' });
+  for (let i = 0; i < n; i++) coins.push({ r: 19, fill: '#C0C0C0', stroke: '#888',    label: '5¢'  });
+  for (let i = 0; i < p; i++) coins.push({ r: 16, fill: '#CD7F32', stroke: '#8B4513', label: '1¢'  });
+
+  const svgW = 260;
+  const padding = 12, gap = 8;
+  let x = padding, y = 32, rowH = 0;
+  const placed = [];
+  for (const c of coins) {
+    if (x + c.r * 2 + padding > svgW && placed.length) {
+      x = padding;
+      y += rowH + gap;
+      rowH = 0;
+    }
+    placed.push({ ...c, cx: x + c.r, cy: y + c.r });
+    x += c.r * 2 + gap;
+    rowH = Math.max(rowH, c.r * 2);
+  }
+  const svgH = y + rowH + 36;
+
+  let circles = '';
+  for (const c of placed) {
+    circles += `<circle cx="${c.cx}" cy="${c.cy}" r="${c.r}" fill="${c.fill}" stroke="${c.stroke}" stroke-width="2"/>
+    <text x="${c.cx}" y="${c.cy + 1}" text-anchor="middle" dominant-baseline="central" font-size="${c.r < 18 ? 9 : 10}" font-weight="800" fill="#333">${c.label}</text>`;
+  }
+
+  return `<svg viewBox="0 0 ${svgW} ${svgH}" class="geo-svg money-svg" xmlns="http://www.w3.org/2000/svg">
+    <text x="${svgW / 2}" y="16" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">How many cents in all?</text>
+    ${circles}
+  </svg>`;
+}
+
 function problemHTML(problem) {
+  if (problem.type === 'time') {
+    const m = problem.question.match(/^clock:(\d+):(\d+)$/);
+    if (m) return `<div class="geo-wrap">${clockSVG(+m[1], +m[2])}</div>`;
+  }
+
+  if (problem.type === 'money') {
+    const m = problem.question.match(/^coins:(\d+):(\d+):(\d+):(\d+)$/);
+    if (m) return `<div class="geo-wrap">${moneySVG(+m[1], +m[2], +m[3], +m[4])}</div>`;
+  }
+
+  if (problem.type === 'word') {
+    return `<div class="word-problem-wrap"><div class="word-story">${esc(problem.question)}</div></div>`;
+  }
+
   if (problem.type === 'count') {
     const stars = '⭐'.repeat(problem.display);
     return `
