@@ -771,6 +771,36 @@ html, body {
   color: var(--text);
 }
 
+/* ── Time input (two boxes) ──────────────────────────────── */
+.time-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.time-box {
+  width: 72px;
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  padding: 10px 6px;
+  border: 3px solid rgba(255,255,255,.35);
+  border-radius: 14px;
+  background: rgba(255,255,255,.9);
+  color: #222;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.time-box::-webkit-outer-spin-button,
+.time-box::-webkit-inner-spin-button { -webkit-appearance: none; }
+.time-box:focus { border-color: var(--primary); }
+.time-colon {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--text);
+  padding: 0 2px;
+  line-height: 1;
+}
+
 /* ── Money (coin problems) ────────────────────────────────── */
 .money-svg {
   width: min(280px, 88vw);

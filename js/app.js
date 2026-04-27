@@ -710,12 +710,16 @@ function renderSheet(app) {
         ? stackedWithBoxesHTML(problem)
         : `<div class="problem-display">
             ${problemHTML(problem)}
-            ${isStacked(problem) || problem.type === 'equation' || problem.type === 'time' || problem.type === 'money' || problem.type === 'word' ? '' : '<div class="equals-row">= ?</div>'}
+            ${isStacked(problem) || isDecimalStacked(problem) || problem.type === 'equation' || problem.type === 'time' || problem.type === 'money' || problem.type === 'word' ? '' : '<div class="equals-row">= ?</div>'}
            </div>
            ${feedbackHTML}
            ${!s.feedback ? `<div class="answer-row" id="answer-row">
              ${problem.type === 'time'
-               ? `<input type="text" id="answer-input" class="answer-input" placeholder="H:MM" autocomplete="off" />`
+               ? `<div class="time-input-wrap" id="time-input-wrap">
+                    <input type="number" id="time-hours" class="time-box" placeholder="H" min="1" max="12" inputmode="numeric" autocomplete="off" />
+                    <span class="time-colon">:</span>
+                    <input type="number" id="time-minutes" class="time-box" placeholder="MM" min="0" max="59" inputmode="numeric" autocomplete="off" />
+                  </div>`
                : problem.type === 'money'
                ? `<input type="number" id="answer-input" class="answer-input answer-input-cents" placeholder="¢" autocomplete="off" inputmode="numeric" />`
                : `<input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />`}
@@ -740,8 +744,9 @@ function renderSheet(app) {
   };
 
   if (!s.feedback) {
-    if (isStacked(problem)) wireDigitInput(() => submitSheet());
-    else                    wireAnswerInput(() => submitSheet());
+    if (isStacked(problem))           wireDigitInput(() => submitSheet());
+    else if (problem.type === 'time') wireTimeInput(() => submitSheet());
+    else                              wireAnswerInput(() => submitSheet());
   }
 }
 
@@ -751,10 +756,12 @@ function submitSheet() {
 
   let val, correct;
   if (problem.type === 'time') {
-    const raw = (document.getElementById('answer-input').value || '').trim();
-    const tm = raw.match(/^(\d{1,2}):(\d{1,2})$/);
-    if (!tm) { shake(document.getElementById('answer-input')); return; }
-    val = `${parseInt(tm[1], 10)}:${tm[2].padStart(2, '0')}`;
+    const h = parseInt((document.getElementById('time-hours').value  || ''), 10);
+    const m = parseInt((document.getElementById('time-minutes').value || ''), 10);
+    if (isNaN(h) || isNaN(m) || h < 1 || h > 12 || m < 0 || m > 59) {
+      shake(document.getElementById('time-input-wrap')); return;
+    }
+    val = `${h}:${String(m).padStart(2, '0')}`;
     correct = val === problem.answer;
   } else {
     const useDigits = !!document.querySelector('.digit-box');
@@ -1850,10 +1857,16 @@ function renderTypingSheetResults(app) {
 // PROBLEM RENDERING
 // ============================================================
 
-// Returns true for addition/subtraction problems that should be shown stacked.
+// Returns true for integer addition/subtraction problems that should use digit boxes.
 function isStacked(problem) {
   if (problem.type !== 'arithmetic') return false;
   return /^\d+\s*[+−]\s*\d+$/.test(problem.question);
+}
+
+// Returns true for decimal addition/subtraction (stacked visual, normal number input).
+function isDecimalStacked(problem) {
+  if (problem.type !== 'arithmetic') return false;
+  return /^\d+\.\d+\s*[+−]\s*\d+\.\d+$/.test(problem.question);
 }
 
 function geoRectSVG(l, w, allSides) {
@@ -2028,7 +2041,22 @@ function problemHTML(problem) {
       </div>`;
   }
 
-  // Stacked vertical format for + and −
+  // Stacked vertical format for decimal + and −
+  if (isDecimalStacked(problem)) {
+    const m  = problem.question.match(/^(\d+\.\d+)\s*([+−])\s*(\d+\.\d+)$/);
+    const op = m[2] === '+' ? '+' : '−';
+    return `
+      <div class="stacked-problem">
+        <div class="stacked-top">${esc(m[1])}</div>
+        <div class="stacked-bottom">
+          <span class="stacked-op">${op}</span>
+          <span class="stacked-val">${esc(m[3])}</span>
+        </div>
+        <div class="stacked-line"></div>
+      </div>`;
+  }
+
+  // Stacked vertical format for integer + and −
   if (isStacked(problem)) {
     const m  = problem.question.match(/^(\d+)\s*([+−])\s*(\d+)$/);
     const op = m[2] === '+' ? '+' : '−';
@@ -2161,6 +2189,19 @@ function wireAnswerInput(onSubmit) {
   input.focus();
   btn.onclick = onSubmit;
   input.addEventListener('keydown', e => { if (e.key === 'Enter') onSubmit(); });
+}
+
+function wireTimeInput(onSubmit) {
+  const hInput = document.getElementById('time-hours');
+  const mInput = document.getElementById('time-minutes');
+  const btn    = document.getElementById('btn-check');
+  if (!hInput || !mInput || !btn) return;
+  hInput.focus();
+  hInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); mInput.focus(); }
+  });
+  mInput.addEventListener('keydown', e => { if (e.key === 'Enter') onSubmit(); });
+  btn.onclick = onSubmit;
 }
 
 // Entry goes right-to-left (ones first, then tens, then hundreds)
