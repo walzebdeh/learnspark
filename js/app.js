@@ -408,14 +408,28 @@ function renderPlacement(app) {
   const level   = LEVELS[cpId];
   const problem = pt.problems[pt.qIndex];
 
-  const stacked = isStacked(problem);
+  const stacked        = isStacked(problem);
+  const decimalStacked = isDecimalStacked(problem);
+  const isTime         = problem.type === 'time';
+  const hideEquals     = stacked || decimalStacked || isTime || problem.type === 'equation' || problem.type === 'money' || problem.type === 'word';
+
+  const answerInput = isTime
+    ? `<div class="time-input-wrap" id="time-input-wrap">
+         <input type="number" id="time-hours" class="time-box" placeholder="H" min="1" max="12" inputmode="numeric" autocomplete="off" />
+         <span class="time-colon">:</span>
+         <input type="number" id="time-minutes" class="time-box" placeholder="MM" min="0" max="59" inputmode="numeric" autocomplete="off" />
+       </div>`
+    : problem.type === 'money'
+    ? `<input type="number" id="answer-input" class="answer-input answer-input-cents" placeholder="¢" autocomplete="off" inputmode="numeric" />`
+    : `<input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />`;
+
   const cardBody = stacked ? stackedWithBoxesHTML(problem) : `
     <div class="problem-display">
       ${problemHTML(problem)}
-      ${problem.type === 'equation' ? '' : '<div class="equals-row">= ?</div>'}
+      ${hideEquals ? '' : '<div class="equals-row">= ?</div>'}
     </div>
     <div class="answer-row">
-      <input type="number" id="answer-input" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />
+      ${answerInput}
       <button class="btn btn-primary" id="btn-check">Check ✓</button>
     </div>`;
 
@@ -429,29 +443,49 @@ function renderPlacement(app) {
       ${cardBody}
     </div>`;
   app.appendChild(div);
-  if (stacked) wireDigitInput(() => submitPlacement());
-  else         wireAnswerInput(() => submitPlacement());
+  if (stacked)      wireDigitInput(() => submitPlacement());
+  else if (isTime)  wireTimeInput(() => submitPlacement());
+  else              wireAnswerInput(() => submitPlacement());
 }
 
 function submitPlacement() {
-  const useDigits = !!document.querySelector('.digit-box');
-  const val = useDigits ? getDigitAnswer() : parseFloat(document.getElementById('answer-input').value);
-  if (isNaN(val)) { shake(useDigits ? document.getElementById('digit-boxes-wrap') : document.getElementById('answer-input')); return; }
-
   const pt      = state.placement;
   const problem = pt.problems[pt.qIndex];
-  pt.results.push({ cpIndex: pt.cpIndex, correct: val === problem.answer });
+
+  let val, correct;
+  if (problem.type === 'time') {
+    const h = parseInt((document.getElementById('time-hours').value  || ''), 10);
+    const m = parseInt((document.getElementById('time-minutes').value || ''), 10);
+    if (isNaN(h) || isNaN(m) || h < 1 || h > 12 || m < 0 || m > 59) {
+      shake(document.getElementById('time-input-wrap')); return;
+    }
+    val     = `${h}:${String(m).padStart(2, '0')}`;
+    correct = val === problem.answer;
+  } else {
+    const useDigits = !!document.querySelector('.digit-box');
+    val = useDigits ? getDigitAnswer() : parseFloat(document.getElementById('answer-input').value);
+    if (isNaN(val)) { shake(useDigits ? document.getElementById('digit-boxes-wrap') : document.getElementById('answer-input')); return; }
+    correct = val === problem.answer;
+  }
+
+  pt.results.push({ cpIndex: pt.cpIndex, correct });
   pt.qIndex++;
 
   if (pt.qIndex >= QUESTIONS_PER_CHECKPOINT) {
     // Evaluate this checkpoint: pass if at least 1/2 correct
-    const thisCP  = pt.results.filter(r => r.cpIndex === pt.cpIndex);
-    const passed  = thisCP.filter(r => r.correct).length >= 1;
-    const isLast  = pt.cpIndex >= PLACEMENT_CHECKPOINTS.length - 1;
+    const thisCP = pt.results.filter(r => r.cpIndex === pt.cpIndex);
+    const passed = thisCP.filter(r => r.correct).length >= 1;
+    const isLast = pt.cpIndex >= PLACEMENT_CHECKPOINTS.length - 1;
 
     if (!passed || isLast) {
-      const placedLevel = PLACEMENT_CHECKPOINTS[passed ? pt.cpIndex : Math.max(0, pt.cpIndex - 1)];
-      try { setPlacementLevel(placedLevel); } catch(e) { console.warn('setPlacementLevel error:', e); }
+      let rawLevel = PLACEMENT_CHECKPOINTS[passed ? pt.cpIndex : Math.max(0, pt.cpIndex - 1)];
+      // Skill levels (grade field) map to the last regular level of their grade
+      const rawLevelDef = LEVELS[rawLevel];
+      if (rawLevelDef && rawLevelDef.grade !== undefined) {
+        const g = rawLevelDef.grade;
+        rawLevel = (GRADE_STARTS[g + 1] !== undefined ? GRADE_STARTS[g + 1] - 1 : GRADE_STARTS[g]);
+      }
+      try { setPlacementLevel(rawLevel); } catch(e) { console.warn('setPlacementLevel error:', e); }
       setState({ screen: 'levelMap', placement: null });
     } else {
       pt.cpIndex++;

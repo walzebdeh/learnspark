@@ -957,7 +957,7 @@ const LEVELS = [
 ];
 
 // Placement test checkpoints (level IDs sampled during placement)
-const PLACEMENT_CHECKPOINTS = [2, 5, 8, 11, 14, 18, 22, 25, 30, 38, 44, 52];
+const PLACEMENT_CHECKPOINTS = [2, 5, 60, 8, 62, 64, 11, 14, 18, 22, 25, 30, 38, 44, 52];
 
 // First level ID of each grade (used for tab unlock logic)
 const GRADE_STARTS = { 1: 0, 2: 6, 3: 12, 4: 20, 5: 28, 6: 36, 7: 44, 8: 52 };
