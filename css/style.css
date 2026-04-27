@@ -2005,6 +2005,62 @@ html, body {
 }
 
 /* ============================================================
+   SUDOKU 4×4
+   ============================================================ */
+.su-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: min(280px, 82vw);
+  background: #1565c0;
+  padding: 8px;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.2);
+}
+.su-quadrant {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+  background: #1976d2;
+  padding: 5px;
+  border-radius: 10px;
+}
+.su-cell {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.3rem, 7vw, 2rem);
+  font-weight: 900;
+  transition: transform .1s;
+  user-select: none;
+}
+.su-given  { background: #e3f2fd; color: #0d47a1; cursor: default; }
+.su-empty  { background: #f5f5f5; color: transparent; cursor: pointer; }
+.su-filled { background: #e8f5e9; color: #1b5e20; cursor: pointer; }
+.su-wrong  { background: #ffebee; color: #b71c1c; cursor: pointer; }
+.su-selected { outline: 3px solid #ffd700; outline-offset: -2px; transform: scale(1.06); }
+.su-empty:hover, .su-filled:hover, .su-wrong:hover { opacity: .85; }
+.su-picker {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.su-pick-btn {
+  width: 58px; height: 58px;
+  border: none; border-radius: 14px;
+  background: white;
+  font-size: 1.5rem; font-weight: 900;
+  color: #1565c0;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,.15);
+  transition: transform .1s;
+}
+.su-pick-btn:active { transform: scale(.88); }
+.su-clear { color: #c62828; font-size: 1.2rem; }
+
+/* ============================================================
    LIGHTS OUT
    ============================================================ */
 .lo-screen {

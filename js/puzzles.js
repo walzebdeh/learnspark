@@ -186,4 +186,99 @@ const PUZZLES = [
     disks: 5,
     minMoves: 31,
   },
+
+  // ── id 12 ── Sudoku Mini (easy) ────────────────────────────
+  {
+    id: 12,
+    type: 'sudoku',
+    name: 'Mini Sudoku',
+    emoji: '🔵',
+    difficulty: '⭐⭐ Medium',
+    story: 'Fill the 4×4 grid so every row, column, and 2×2 box contains the numbers 1, 2, 3, and 4 exactly once!',
+    given:    [[1,0,3,0],[3,4,0,2],[2,0,4,3],[0,3,2,0]],
+    solution: [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]],
+    minMoves: 6,
+  },
+
+  // ── id 13 ── Maze: Jungle Run (medium 7×7) ─────────────────
+  {
+    id: 13,
+    type: 'maze',
+    name: 'Jungle Run',
+    emoji: '🌴',
+    difficulty: '⭐⭐ Medium',
+    story: 'Race through the jungle to reach the finish! Watch out — some paths are dead ends.',
+    grid: [
+      [0,0,0,1,0,0,1],
+      [1,1,0,0,1,1,0],
+      [1,1,0,0,0,1,0],
+      [1,1,1,1,0,1,0],
+      [0,0,1,0,0,0,0],
+      [0,1,0,0,1,1,0],
+      [0,0,0,1,1,1,0],
+    ],
+    start: [0,0], end: [6,6],
+    minMoves: 12,
+  },
+
+  // ── id 14 ── Sudoku Mini (medium) ──────────────────────────
+  {
+    id: 14,
+    type: 'sudoku',
+    name: 'Mini Sudoku II',
+    emoji: '🟡',
+    difficulty: '⭐⭐⭐ Hard',
+    story: 'A trickier 4×4 Sudoku — more empty cells this time. Every row, column, and 2×2 box needs 1–4.',
+    given:    [[0,2,3,0],[3,0,0,2],[0,1,0,3],[4,0,2,0]],
+    solution: [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]],
+    minMoves: 8,
+  },
+
+  // ── id 15 ── Lights Out 5×5 (randomized) ──────────────────
+  {
+    id: 15,
+    type: 'lightsOut',
+    name: 'Lights Out 5×5',
+    emoji: '🌟',
+    difficulty: '⭐⭐⭐ Hard',
+    story: 'A bigger 5×5 grid of lights — turn them all off! Every game is a different challenge.',
+    size: 5,
+    minMoves: 5,
+  },
+
+  // ── id 16 ── Maze: Volcano (hard 9×9) ─────────────────────
+  {
+    id: 16,
+    type: 'maze',
+    name: 'Volcano Escape',
+    emoji: '🌋',
+    difficulty: '⭐⭐⭐ Hard',
+    story: "The volcano is erupting — find the escape route through this 9×9 maze before it's too late!",
+    grid: [
+      [0,0,0,1,0,0,0,0,1],
+      [0,0,0,0,1,0,0,0,0],
+      [0,0,0,0,1,0,1,0,0],
+      [1,1,0,0,0,1,0,0,0],
+      [1,1,0,0,0,0,1,0,1],
+      [0,0,0,0,0,0,0,0,0],
+      [0,1,0,1,0,1,0,0,0],
+      [0,0,1,0,0,0,1,0,0],
+      [1,0,1,0,1,0,1,0,0],
+    ],
+    start: [0,0], end: [8,8],
+    minMoves: 16,
+  },
+
+  // ── id 17 ── Sudoku Mini (hard) ────────────────────────────
+  {
+    id: 17,
+    type: 'sudoku',
+    name: 'Mini Sudoku III',
+    emoji: '🔴',
+    difficulty: '⭐⭐⭐⭐ Expert',
+    story: 'The hardest Mini Sudoku! Only 6 numbers given — you must deduce all the rest using logic.',
+    given:    [[0,0,3,0],[3,0,0,2],[0,1,0,0],[4,0,0,1]],
+    solution: [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]],
+    minMoves: 10,
+  },
 ];

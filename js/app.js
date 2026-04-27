@@ -2132,7 +2132,21 @@ function newPuzzleGame(puzzleId) {
     return { type: 'sliding', puzzleId, tiles: [...pz.start], moves: 0, status: 'playing' };
   }
   if (pz.type === 'lightsOut') {
-    return { type: 'lightsOut', puzzleId, grid: pz.start.map(r => [...r]), moves: 0, status: 'playing' };
+    const size = pz.size;
+    const grid = Array.from({length: size}, () => Array(size).fill(0));
+    let presses = Math.floor(Math.random() * 5) + 3;
+    while (presses-- > 0) {
+      const r = Math.floor(Math.random() * size), c = Math.floor(Math.random() * size);
+      [[0,0],[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr,dc]) => {
+        const nr = r+dr, nc = c+dc;
+        if (nr>=0 && nr<size && nc>=0 && nc<size) grid[nr][nc] ^= 1;
+      });
+    }
+    if (grid.every(row => row.every(v => v===0))) grid[0][0] = 1;
+    return { type: 'lightsOut', puzzleId, grid, moves: 0, status: 'playing' };
+  }
+  if (pz.type === 'sudoku') {
+    return { type: 'sudoku', puzzleId, grid: pz.given.map(r => [...r]), selected: null, moves: 0, status: 'playing' };
   }
 }
 
@@ -2204,6 +2218,7 @@ function renderPuzzlePlay(app) {
   else if (g.type === 'maze')     renderMaze(app, g);
   else if (g.type === 'sliding')  renderSliding(app, g);
   else if (g.type === 'lightsOut') renderLightsOut(app, g);
+  else if (g.type === 'sudoku')    renderSudoku(app, g);
 }
 
 function renderRiverCrossing(app, g) {
@@ -2647,6 +2662,81 @@ function renderLightsOut(app, g) {
       const won = newGrid.every(row => row.every(v => v === 0));
       if (won) savePuzzleProgress(cur.puzzleId, cur.moves + 1);
       setState({ puzzleGame: { ...cur, grid: newGrid, moves: cur.moves + 1, status: won ? 'won' : 'playing' } });
+    });
+  });
+
+  if (g.status === 'won') {
+    document.getElementById('rc-restart').onclick  = () => setState({ puzzleGame: newPuzzleGame(g.puzzleId) });
+    document.getElementById('rc-back-map').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+  }
+}
+
+// ── Sudoku 4×4 ───────────────────────────────────────────────
+function renderSudoku(app, g) {
+  const pz       = PUZZLES[g.puzzleId];
+  const given    = pz.given;
+  const solution = pz.solution;
+
+  function cellHTML(r, c) {
+    const val     = g.grid[r][c];
+    const isGiven = given[r][c] !== 0;
+    const isSel   = g.selected && g.selected[0] === r && g.selected[1] === c;
+    const isWrong = val !== 0 && !isGiven && val !== solution[r][c];
+    let cls = 'su-cell';
+    if (isGiven)       cls += ' su-given';
+    else if (isWrong)  cls += ' su-wrong';
+    else if (val)      cls += ' su-filled';
+    else               cls += ' su-empty';
+    if (isSel)         cls += ' su-selected';
+    return `<div class="${cls}" data-r="${r}" data-c="${c}">${val || ''}</div>`;
+  }
+
+  function quadHTML(qr, qc) {
+    return [0,1].flatMap(dr => [0,1].map(dc => cellHTML(qr*2+dr, qc*2+dc))).join('');
+  }
+
+  const selNotNull = g.selected && g.status === 'playing';
+
+  const div = el('div', 'screen sliding-screen');
+  div.innerHTML = `
+    <div class="maze-header">
+      <button class="btn btn-ghost btn-sm" id="btn-back-pz">← Puzzles</button>
+      <span class="maze-title">${pz.emoji} ${pz.name}</span>
+      <span class="maze-moves">⚡ ${g.moves} fills</span>
+    </div>
+    <div class="pz-story-banner">${pz.story}</div>
+    <div class="su-grid">
+      ${[0,1].flatMap(qr => [0,1].map(qc =>
+        `<div class="su-quadrant">${quadHTML(qr, qc)}</div>`
+      )).join('')}
+    </div>
+    ${selNotNull ? `<div class="su-picker">
+      ${[1,2,3,4].map(n => `<button class="su-pick-btn" data-num="${n}">${n}</button>`).join('')}
+      <button class="su-pick-btn su-clear" data-num="0">✕</button>
+    </div>` : '<div style="height:64px"></div>'}
+    ${g.status === 'won' ? puzzleWonOverlay(g.puzzleId, g.moves, '↺ Play Again') : ''}`;
+  app.appendChild(div);
+
+  document.getElementById('btn-back-pz').onclick = () => setState({ screen: 'puzzleMap', puzzleGame: null });
+
+  div.querySelectorAll('.su-empty, .su-filled, .su-wrong').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const r = parseInt(cell.dataset.r, 10), c = parseInt(cell.dataset.c, 10);
+      setState({ puzzleGame: { ...state.puzzleGame, selected: [r, c] } });
+    });
+  });
+
+  div.querySelectorAll('.su-pick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cur = state.puzzleGame;
+      if (!cur.selected || cur.status !== 'playing') return;
+      const [r, c] = cur.selected;
+      const num = parseInt(btn.dataset.num, 10);
+      const newGrid = cur.grid.map(row => [...row]);
+      newGrid[r][c] = num;
+      const won = newGrid.every((row, ri) => row.every((v, ci) => v === solution[ri][ci]));
+      if (won) savePuzzleProgress(cur.puzzleId, cur.moves + 1);
+      setState({ puzzleGame: { ...cur, grid: newGrid, selected: num ? [r,c] : null, moves: cur.moves + 1, status: won ? 'won' : 'playing' } });
     });
   });
 
