@@ -512,10 +512,9 @@ function renderLevelMap(app) {
   const autoGrade  = gradeOfLevel(progress.currentLevelId || 0);
   const activeGrade = state.mathGrade || autoGrade;
 
-  // A grade is accessible if currentLevelId has reached its start (or custom unlockAt)
+  // A grade is accessible if currentLevelId has reached its start
   function gradeUnlocked(g) {
-    const threshold = (GRADE_UNLOCK_AT && GRADE_UNLOCK_AT[g] !== undefined) ? GRADE_UNLOCK_AT[g] : GRADE_STARTS[g];
-    return state.allUnlocked || (progress.currentLevelId || 0) >= threshold;
+    return state.allUnlocked || (progress.currentLevelId || 0) >= GRADE_STARTS[g];
   }
 
   const div = el('div', 'screen levelmap-screen');
@@ -527,21 +526,28 @@ function renderLevelMap(app) {
     let cls = 'grade-tab';
     if (active)  cls += ' active';
     if (locked)  cls += ' locked-tab';
-    const label = g === 9 ? GRADE_NAMES[g] : GRADE_NAMES[g] + ' Grade';
+    const label = GRADE_NAMES[g] + ' Grade';
     return `<button class="${cls}" data-grade="${g}" ${locked ? 'disabled' : ''}>${locked ? '🔒 ' : ''}${esc(label)}</button>`;
   }).join('');
 
-  // Level cards for the active grade
+  // Level cards for the active grade — includes index-range levels + any level with grade field
   const gradeStart = GRADE_STARTS[activeGrade];
   const maxGrade   = Math.max(...Object.keys(GRADE_STARTS).map(Number));
-  const nextGrade  = activeGrade < maxGrade ? GRADE_STARTS[activeGrade + 1] : LEVELS.length;
+  const nextGrade  = activeGrade < maxGrade ? GRADE_STARTS[activeGrade + 1] : Infinity;
+  const gradeEntries = [];
+  LEVELS.forEach((level, idx) => {
+    const inRange    = !level.grade && idx >= gradeStart && idx < nextGrade;
+    const byField    = level.grade === activeGrade;
+    if (inRange || byField) gradeEntries.push({ level, idx });
+  });
+
   let cardsHTML = '';
-  for (let idx = gradeStart; idx < nextGrade && idx < LEVELS.length; idx++) {
-    const level       = LEVELS[idx];
+  for (const { level, idx } of gradeEntries) {
     const lp          = progress.levels[idx] || { sheetsCompleted: 0, completed: false };
     const isCompleted = lp.completed;
     const isCurrent   = idx === progress.currentLevelId;
-    const isUnlocked  = state.allUnlocked || (level.unlockAt !== undefined ? (progress.currentLevelId || 0) >= level.unlockAt : idx <= progress.currentLevelId);
+    const isUnlocked  = state.allUnlocked ||
+      (level.grade !== undefined ? gradeUnlocked(level.grade) : idx <= progress.currentLevelId);
     const sheets      = lp.sheetsCompleted || 0;
     const pct         = Math.min(100, Math.round((sheets / SHEETS_TO_COMPLETE) * 100));
     const savedHere   = savedSheets[idx];

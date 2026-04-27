@@ -873,7 +873,7 @@ const LEVELS = [
 
   // 60 ─ Telling Time: O'clock & Half Hour
   {
-    id: 60, name: 'Telling Time', emoji: '🕐', color: '#6C5CE7', unlockAt: 2,
+    id: 60, name: 'Telling Time', emoji: '🕐', color: '#6C5CE7', grade: 1,
     generate() {
       return uniqueRandom(() => {
         const h = randInt(1, 12);
@@ -886,7 +886,7 @@ const LEVELS = [
 
   // 61 ─ Telling Time: Quarter Hours
   {
-    id: 61, name: 'Time: Quarter Hours', emoji: '🕒', color: '#A29BFE', unlockAt: 3,
+    id: 61, name: 'Time: Quarter Hours', emoji: '🕒', color: '#A29BFE', grade: 2,
     generate() {
       return uniqueRandom(() => {
         const h = randInt(1, 12);
@@ -899,7 +899,7 @@ const LEVELS = [
 
   // 62 ─ Counting Coins: Pennies & Nickels
   {
-    id: 62, name: 'Counting Coins', emoji: '🪙', color: '#FDCB6E', unlockAt: 2,
+    id: 62, name: 'Counting Coins', emoji: '🪙', color: '#FDCB6E', grade: 2,
     generate() {
       return uniqueRandom(() => {
         const n = randInt(0, 4);
@@ -912,7 +912,7 @@ const LEVELS = [
 
   // 63 ─ Mixed Coins
   {
-    id: 63, name: 'Mixed Coins', emoji: '💰', color: '#E17055', unlockAt: 4,
+    id: 63, name: 'Mixed Coins', emoji: '💰', color: '#E17055', grade: 2,
     generate() {
       return uniqueRandom(() => {
         const q = randInt(0, 3);
@@ -928,7 +928,7 @@ const LEVELS = [
 
   // 64 ─ Word Problems
   {
-    id: 64, name: 'Word Problems', emoji: '📖', color: '#00B894', unlockAt: 3,
+    id: 64, name: 'Word Problems', emoji: '📖', color: '#00B894', grade: 2,
     generate() {
       const mk = (q, a) => ({ type: 'word', question: q, answer: a });
       const templates = [
@@ -960,6 +960,5 @@ const LEVELS = [
 const PLACEMENT_CHECKPOINTS = [2, 5, 8, 11, 14, 18, 22, 25, 30, 38, 44, 52];
 
 // First level ID of each grade (used for tab unlock logic)
-const GRADE_STARTS    = { 1: 0, 2: 6, 3: 12, 4: 20, 5: 28, 6: 36, 7: 44, 8: 52, 9: 60 };
-const GRADE_NAMES     = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th', 9: 'Skills' };
-const GRADE_UNLOCK_AT = { 9: 2 }; // Skills tab unlocks after reaching level 2
+const GRADE_STARTS = { 1: 0, 2: 6, 3: 12, 4: 20, 5: 28, 6: 36, 7: 44, 8: 52 };
+const GRADE_NAMES  = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th' };
