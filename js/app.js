@@ -28,8 +28,22 @@ let state = {
   puzzleGame: null,
 };
 
+let _appBooted = false;
+
+function _histSnap() {
+  return { screen: state.screen, puzzleGame: state.puzzleGame, choiceTopic: state.choiceTopic, allUnlocked: state.allUnlocked };
+}
+
 function setState(partial) {
+  const prevScreen = state.screen;
   Object.assign(state, partial);
+  if (partial.screen !== undefined) {
+    if (_appBooted && partial.screen !== prevScreen) {
+      history.pushState(_histSnap(), '');
+    } else {
+      history.replaceState(_histSnap(), '');
+    }
+  }
   render();
 }
 
@@ -2642,6 +2656,18 @@ function renderLightsOut(app, g) {
   }
 }
 
+// ── Back-button (History API) ─────────────────────────────────
+window.addEventListener('popstate', (e) => {
+  if (!e.state) return;
+  Object.assign(state, {
+    screen:      e.state.screen,
+    puzzleGame:  e.state.puzzleGame  ?? null,
+    choiceTopic: e.state.choiceTopic ?? null,
+    allUnlocked: e.state.allUnlocked ?? false,
+  });
+  render();
+});
+
 // ── Boot ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   if (_activePlayer) {
@@ -2656,8 +2682,10 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         setState({ screen: 'welcome', welcomeMode: null });
       }
+      _appBooted = true;
     });
   } else {
     render(); // shows welcome landing
+    _appBooted = true;
   }
 });
