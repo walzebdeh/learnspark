@@ -26,12 +26,15 @@ let state = {
   typingSheet: null,
   typingSheetResult: null,
   puzzleGame: null,
+  arabicSheet: null,
+  arabicSheetResult: null,
+  arabicGrade: null,
 };
 
 let _appBooted = false;
 
 function _histSnap() {
-  return { screen: state.screen, puzzleGame: state.puzzleGame, choiceTopic: state.choiceTopic, allUnlocked: state.allUnlocked };
+  return { screen: state.screen, puzzleGame: state.puzzleGame, choiceTopic: state.choiceTopic, allUnlocked: state.allUnlocked, arabicGrade: state.arabicGrade };
 }
 
 function setState(partial) {
@@ -79,6 +82,9 @@ function render() {
       case 'typingSheetResults': renderTypingSheetResults(app); break;
       case 'puzzleMap':          renderPuzzleMap(app);          break;
       case 'puzzlePlay':         renderPuzzlePlay(app);         break;
+      case 'arabicLevelMap':     renderArabicLevelMap(app);     break;
+      case 'arabicSheet':        renderArabicSheet(app);        break;
+      case 'arabicSheetResults': renderArabicSheetResults(app); break;
     }
   } catch(e) {
     console.error('Render error:', e);
@@ -519,13 +525,15 @@ function getMathPoints(p)   { return Object.values(p.levels       || {}).reduce(
 function getWordPoints(p)   { return Object.values(p.wordLevels  || {}).reduce((s,v) => s + v.sheetsCompleted * WORDS_PTS_PER_SHEET,  0); }
 function getChoicePoints(p) { return Object.values(p.choiceLevels|| {}).reduce((s,v) => s + v.sheetsCompleted * CHOICE_PTS_PER_SHEET, 0); }
 function getTypingPoints(p) { return Object.values(p.typingLevels|| {}).reduce((s,v) => s + v.sheetsCompleted * TYPING_PTS_PER_SHEET, 0); }
+function getArabicPoints(p) { return Object.values(p.arabicLevels|| {}).reduce((s,v) => s + v.sheetsCompleted * ARABIC_PTS_PER_SHEET, 0); }
 
 function totalScoreBadge(p) {
   const math    = getMathPoints(p);
   const words   = getWordPoints(p);
   const choices = getChoicePoints(p);
   const typing  = getTypingPoints(p);
-  const total   = math + words + choices + typing;
+  const arabic  = getArabicPoints(p);
+  const total   = math + words + choices + typing + arabic;
   return `
     <div class="total-score-badge">
       <div class="tsb-total">⭐ ${total.toLocaleString()} pts</div>
@@ -534,6 +542,7 @@ function totalScoreBadge(p) {
         <span>📝 ${words}</span>
         <span>💡 ${choices}</span>
         <span>⌨️ ${typing}</span>
+        <span>🌙 ${arabic}</span>
       </div>
     </div>`;
 }
@@ -614,6 +623,7 @@ function renderLevelMap(app) {
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
+        <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -651,10 +661,11 @@ function renderLevelMap(app) {
     setState({ allUnlocked: next });
   };
 
-  document.getElementById('tab-words').onclick  = () => setState({ screen: 'wordLevelMap' });
-  document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
-  document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
-  document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
+  document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
+  document.getElementById('tab-choices').onclick  = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
+  document.getElementById('tab-typing').onclick   = () => setState({ screen: 'typingLevelMap' });
+  document.getElementById('tab-puzzles').onclick  = () => setState({ screen: 'puzzleMap' });
+  document.getElementById('tab-arabic').onclick   = () => setState({ screen: 'arabicLevelMap' });
 
   div.querySelectorAll('.grade-tab:not([disabled])').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -917,6 +928,7 @@ function renderWordLevelMap(app) {
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
+        <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -983,6 +995,7 @@ function renderWordLevelMap(app) {
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
   document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
   document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
+  document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
 
   div.querySelectorAll('.level-card:not(.locked)').forEach(card => {
     card.addEventListener('click', () => {
@@ -1328,6 +1341,7 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab active" id="tab-choices">💡 Choices</button>
           <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
           <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
+          <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1346,6 +1360,7 @@ function renderChoiceLevelMap(app) {
     document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
     document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
     document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
+    document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
     document.getElementById('btn-back-topics').onclick = () => setState({ choiceTopic: null });
     document.getElementById('btn-unlock-all').onclick  = () => setState({ allUnlocked: !state.allUnlocked });
 
@@ -1380,6 +1395,7 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab active" id="tab-choices">💡 Choices</button>
           <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
           <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
+          <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1398,6 +1414,7 @@ function renderChoiceLevelMap(app) {
     document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
     document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
     document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
+    document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
     document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); }
     document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
 
@@ -1666,6 +1683,7 @@ function renderTypingLevelMap(app) {
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab active" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
+        <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -1684,6 +1702,7 @@ function renderTypingLevelMap(app) {
   document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
   document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
+  document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
   document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); };
   document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
 
@@ -2369,6 +2388,7 @@ function renderPuzzleMap(app) {
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab active" id="tab-puzzles">🧩 Puzzles</button>
+        <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -2385,6 +2405,7 @@ function renderPuzzleMap(app) {
   document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
   document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
+  document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
 
   div.querySelectorAll('.pz-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -2930,6 +2951,253 @@ function renderSudoku(app, g) {
   }
 }
 
+// ============================================================
+// ARABIC LEVEL MAP
+// ============================================================
+function renderArabicLevelMap(app) {
+  const progress   = getProgress();
+  const arabicLvls = progress.arabicLevels || {};
+  const curLevel   = progress.arabicCurrentLevelId || 0;
+  const activeGrade = state.arabicGrade || 1;
+
+  const gradeTabsHTML = Object.keys(ARABIC_GRADE_STARTS).map(Number).sort((a,b) => a - b).map(g => {
+    const locked = !state.allUnlocked && curLevel < ARABIC_GRADE_STARTS[g];
+    const active = g === activeGrade;
+    let cls = 'grade-tab';
+    if (active)  cls += ' active';
+    if (locked)  cls += ' locked-tab';
+    return `<button class="${cls}" data-agrade="${g}" ${locked ? 'disabled' : ''}>${locked ? '🔒 ' : ''}الصَّف ${esc(ARABIC_GRADE_NAMES[g])}</button>`;
+  }).join('');
+
+  const entries = ARABIC_LEVELS.filter(l => l.grade === activeGrade);
+  let cardsHTML = '';
+  for (const level of entries) {
+    const idx = level.id;
+    const lp  = arabicLvls[idx] || { sheetsCompleted: 0, completed: false };
+    const isCompleted = lp.completed;
+    const isCurrent   = idx === curLevel;
+    const isUnlocked  = state.allUnlocked || idx <= curLevel;
+    const sheets = lp.sheetsCompleted || 0;
+    const pct = Math.min(100, Math.round((sheets / ARABIC_SHEETS_TO_COMPLETE) * 100));
+    let cls = 'level-card';
+    if (isCompleted)      cls += ' completed';
+    else if (isCurrent)   cls += ' current';
+    else if (!isUnlocked) cls += ' locked';
+    cardsHTML += `
+      <div class="${cls}" data-alevel="${idx}" style="--lvl-color:${level.color}">
+        <div class="lc-emoji">${isCompleted ? '✅' : isUnlocked ? level.emoji : '🔒'}</div>
+        <div class="lc-name arabic-text">${esc(level.name)}</div>
+        ${isUnlocked && !isCompleted ? `
+          <div class="lc-bar"><div class="lc-bar-fill" style="width:${pct}%"></div></div>
+          <div class="lc-count">${sheets} / ${ARABIC_SHEETS_TO_COMPLETE} sheets</div>
+        ` : ''}
+        ${isCompleted ? '<div class="lc-done">Mastered! 🌟</div>' : ''}
+        ${!isUnlocked ? '<div class="lc-locked">Locked 🔒</div>' : ''}
+        ${isCurrent && !isCompleted ? '<div class="lc-current-badge">Current</div>' : ''}
+      </div>`;
+  }
+
+  const div = el('div', 'screen levelmap-screen');
+  div.innerHTML = `
+    <div class="mode-tabs-wrap">
+      <div class="mode-tabs">
+        <button class="mode-tab" id="tab-math">🔢 Math</button>
+        <button class="mode-tab" id="tab-words">📝 Words</button>
+        <button class="mode-tab" id="tab-choices">💡 Choices</button>
+        <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
+        <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
+        <button class="mode-tab active" id="tab-arabic">🌙 عربي</button>
+      </div>
+    </div>
+    <div class="levelmap-header">
+      <h2 class="arabic-text">أَهلاً، ${esc(progress.playerName)}! 👋</h2>
+      <p>اختَر المُستوى</p>
+      ${totalScoreBadge(progress)}
+      <button class="btn btn-ghost btn-sm" id="btn-switch-player">Sign Out</button>
+      <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
+        ${state.allUnlocked ? '🔓 Locks Off' : '🔒 Unlock All'}
+      </button>
+    </div>
+    <div class="grade-tabs-wrap">
+      <div class="grade-tabs">${gradeTabsHTML}</div>
+    </div>
+    <div class="levels-grid">${cardsHTML}</div>`;
+  app.appendChild(div);
+
+  document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
+  document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
+  document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
+  document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
+  document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
+  document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); };
+  document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
+
+  div.querySelectorAll('.grade-tab:not([disabled])').forEach(btn => {
+    btn.addEventListener('click', () => setState({ arabicGrade: parseInt(btn.dataset.agrade, 10) }));
+  });
+
+  div.querySelectorAll('.level-card:not(.locked)').forEach(card => {
+    card.addEventListener('click', () => startArabicSheet(parseInt(card.dataset.alevel, 10)));
+  });
+}
+
+// ============================================================
+// ARABIC SHEET
+// ============================================================
+function startArabicSheet(levelId) {
+  const saved = getArabicSavedSheet(levelId);
+  if (saved && saved.currentIndex < saved.questions.length) {
+    setState({ screen: 'arabicSheet', arabicSheet: { ...saved, lastChoice: null } });
+    return;
+  }
+  if (saved) clearArabicSavedSheet(levelId);
+  const level     = ARABIC_LEVELS[levelId];
+  const questions = level.generate(ARABIC_QUESTIONS_PER_SHEET);
+  setState({
+    screen: 'arabicSheet',
+    arabicSheet: { levelId, questions, currentIndex: 0, lastChoice: null, answers: [] }
+  });
+}
+
+function renderArabicSheet(app) {
+  const s     = state.arabicSheet;
+  const level = ARABIC_LEVELS[s.levelId];
+  const q     = s.questions[s.currentIndex];
+  const total = s.questions.length;
+  const pct   = Math.round((s.currentIndex / total) * 100);
+  const score = s.answers.filter(a => a.correct).length;
+
+  const choicesHTML = q.choices.map((ch, i) => {
+    let cls = 'arabic-choice-btn';
+    if (s.lastChoice !== null) {
+      if (i === q.answer) cls += ' correct';
+      else if (i === s.lastChoice) cls += ' wrong';
+      cls += ' disabled';
+    }
+    return `<button class="${cls}" data-idx="${i}">${esc(ch)}</button>`;
+  }).join('');
+
+  const feedbackHTML = s.lastChoice !== null
+    ? (s.lastChoice === q.answer
+        ? `<div class="feedback correct animate-pop">✓ أَحسَنتَ! 🎉</div>`
+        : `<div class="feedback wrong animate-pop">✗ الجَواب: ${esc(q.choices[q.answer])}</div>`)
+    : '';
+
+  const div = el('div', 'screen sheet-screen');
+  div.innerHTML = `
+    <div class="sheet-header">
+      <div class="sheet-header-left">
+        <button class="btn btn-ghost btn-sm" id="btn-save-exit">💾 Save &amp; Exit</button>
+        <button class="btn btn-ghost btn-sm btn-exit-nosave" id="btn-exit">✕ Exit</button>
+      </div>
+      <div class="sheet-title arabic-text" style="color:${level.color}">${level.emoji} ${esc(level.name)}</div>
+      <div class="sheet-correct">✓ ${score}</div>
+    </div>
+    <div class="sheet-progress-bar">
+      <div class="sheet-progress-fill" style="width:${pct}%"></div>
+    </div>
+    <div class="sheet-counter">${s.currentIndex + 1} / ${total}</div>
+    <div class="card problem-card arabic-problem-card">
+      <div class="arabic-question-display">${esc(q.question)}</div>
+      <div class="arabic-prompt arabic-text">${esc(q.prompt)}</div>
+      <div class="arabic-choices">${choicesHTML}</div>
+      ${feedbackHTML}
+    </div>`;
+  app.appendChild(div);
+
+  document.getElementById('btn-save-exit').onclick = () => {
+    saveArabicSheetInProgress(s);
+    setState({ screen: 'arabicLevelMap', arabicSheet: null });
+  };
+  document.getElementById('btn-exit').onclick = () => {
+    clearArabicSavedSheet(s.levelId);
+    setState({ screen: 'arabicLevelMap', arabicSheet: null });
+  };
+
+  if (s.lastChoice === null) {
+    div.querySelectorAll('.arabic-choice-btn').forEach(btn => {
+      btn.addEventListener('click', () => submitArabicAnswer(parseInt(btn.dataset.idx, 10)));
+    });
+  }
+}
+
+function submitArabicAnswer(choiceIdx) {
+  const s       = state.arabicSheet;
+  const q       = s.questions[s.currentIndex];
+  const correct = choiceIdx === q.answer;
+
+  s.lastChoice = choiceIdx;
+  s.answers.push({ correct });
+  render();
+
+  setTimeout(() => {
+    s.lastChoice = null;
+    s.currentIndex++;
+    if (s.currentIndex >= s.questions.length) {
+      finishArabicSheet();
+    } else {
+      render();
+    }
+  }, correct ? 1000 : 1600);
+}
+
+function finishArabicSheet() {
+  const s      = state.arabicSheet;
+  clearArabicSavedSheet(s.levelId);
+  const score   = s.answers.filter(a => a.correct).length;
+  const passed  = score >= ARABIC_PASS_SCORE;
+  const updated = recordArabicSheetResult(s.levelId, passed);
+  setState({
+    screen: 'arabicSheetResults',
+    arabicSheet: null,
+    arabicSheetResult: { levelId: s.levelId, score, total: s.questions.length, passed, progress: updated }
+  });
+}
+
+// ============================================================
+// ARABIC SHEET RESULTS
+// ============================================================
+function renderArabicSheetResults(app) {
+  const r     = state.arabicSheetResult;
+  const level = ARABIC_LEVELS[r.levelId];
+  const pct   = Math.round((r.score / r.total) * 100);
+  const lp    = (r.progress.arabicLevels || {})[r.levelId] || { sheetsCompleted: 0, completed: false };
+  const stars   = pct === 100 ? '⭐⭐⭐' : pct >= 80 ? '⭐⭐' : '⭐';
+  const message = pct === 100 ? 'ممتاز! Perfect! 🎊'
+                : pct >= 80  ? 'أَحسَنتَ! Great job! 🎉'
+                :               'تَدَرَّب أَكثَر! Keep practicing! 💪';
+
+  const div = el('div', 'screen results-screen');
+  div.innerHTML = `
+    <div class="card results-card">
+      <div class="results-stars animate-pop">${stars}</div>
+      <h2 class="results-message">${message}</h2>
+      <div class="results-score-box">
+        <div class="score-big">${r.score} / ${r.total}</div>
+        <div class="score-pct">${pct}%</div>
+      </div>
+      <div class="results-counted">
+        ✅ Sheet counted!
+        <strong>${lp.sheetsCompleted} / ${ARABIC_SHEETS_TO_COMPLETE}</strong> sheets completed
+        <div class="mini-bar">
+          <div class="mini-bar-fill" style="width:${Math.round((lp.sheetsCompleted / ARABIC_SHEETS_TO_COMPLETE) * 100)}%"></div>
+        </div>
+      </div>
+      ${lp.completed ? `
+        <div class="level-complete-banner animate-pop">
+          🏆 Level Complete! You've mastered <em class="arabic-text">${esc(level.name)}</em>! 🏆
+        </div>` : ''}
+      <div class="results-actions">
+        <button class="btn btn-primary btn-large" id="btn-again">Practice Again 🔄</button>
+        <button class="btn btn-secondary" id="btn-map">All Levels 🗺️</button>
+      </div>
+    </div>`;
+  app.appendChild(div);
+
+  document.getElementById('btn-again').onclick = () => startArabicSheet(r.levelId);
+  document.getElementById('btn-map').onclick   = () => setState({ screen: 'arabicLevelMap', arabicSheetResult: null });
+}
+
 // ── Back-button (History API) ─────────────────────────────────
 window.addEventListener('popstate', (e) => {
   if (!e.state) return;
@@ -2938,6 +3206,7 @@ window.addEventListener('popstate', (e) => {
     puzzleGame:  e.state.puzzleGame  ?? null,
     choiceTopic: e.state.choiceTopic ?? null,
     allUnlocked: e.state.allUnlocked ?? false,
+    arabicGrade: e.state.arabicGrade ?? null,
   });
   render();
 });

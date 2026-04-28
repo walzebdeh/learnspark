@@ -2,6 +2,7 @@
    GLOBAL — imports, reset, variables
    ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1169,31 +1170,31 @@ html, body {
    MODE TABS
    ============================================================ */
 .mode-tabs-wrap {
-  display: flex;
-  justify-content: center;
   width: 100%;
-  overflow-x: auto;
 }
 
 .mode-tabs {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   background: rgba(255,255,255,.2);
   border-radius: 50px;
-  flex-shrink: 0;
   padding: 6px;
+  width: 100%;
 }
 
 .mode-tab {
+  flex: 1;
   background: transparent;
   color: rgba(255,255,255,.8);
   border: none;
   border-radius: 50px;
-  padding: 10px 28px;
+  padding: 10px 4px;
   font-family: 'Nunito', sans-serif;
   font-weight: 800;
-  font-size: 1rem;
+  font-size: .9rem;
   cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
   transition: background .2s, color .2s;
 }
 
@@ -2337,6 +2338,91 @@ html, body {
 }
 
 /* ============================================================
+   ARABIC
+   ============================================================ */
+.arabic-text {
+  font-family: 'Amiri', 'Noto Naskh Arabic', serif;
+  direction: rtl;
+}
+
+.arabic-problem-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.arabic-question-display {
+  font-family: 'Amiri', 'Noto Naskh Arabic', serif;
+  font-size: 4rem;
+  font-weight: 700;
+  direction: rtl;
+  line-height: 1.3;
+  color: var(--text);
+  text-align: center;
+  padding: 12px 24px;
+  background: var(--bg);
+  border-radius: 14px;
+  width: 100%;
+  word-break: break-word;
+}
+
+.arabic-prompt {
+  font-family: 'Amiri', 'Noto Naskh Arabic', serif;
+  font-size: 1.15rem;
+  color: var(--muted);
+  direction: rtl;
+  text-align: center;
+}
+
+.arabic-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.arabic-choice-btn {
+  font-family: 'Amiri', 'Noto Naskh Arabic', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  direction: rtl;
+  background: var(--bg);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 14px 10px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .12s;
+  text-align: center;
+  color: var(--text);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.arabic-choice-btn:hover:not(.disabled) {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  background: #ede9ff;
+}
+
+.arabic-choice-btn.correct {
+  background: #d4fae8;
+  border-color: var(--success);
+  color: #1a7a42;
+}
+
+.arabic-choice-btn.wrong {
+  background: #ffe5e5;
+  border-color: var(--danger);
+  color: #c0392b;
+}
+
+.arabic-choice-btn.disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 480px) {
@@ -2345,7 +2431,7 @@ html, body {
   .levels-grid { grid-template-columns: repeat(2, 1fr); }
   .answer-input { width: 110px; font-size: 1.7rem; }
   .letter-tile { width: 40px; height: 44px; font-size: 1.3rem; }
-  .mode-tab { padding: 8px 18px; font-size: .9rem; }
+  .mode-tab { padding: 8px 4px; font-size: .75rem; }
   .rc-river   { width: 140px; }
   .rc-char    { width: 68px; }
   .rc-on-boat { width: 52px; }

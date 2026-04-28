@@ -217,6 +217,51 @@ function clearSavedSheet(levelId) {
   saveProgress(p);
 }
 
+// ── Arabic progress ───────────────────────────────────────────
+function recordArabicSheetResult(levelId, passed) {
+  const p = getProgress();
+  if (!p.arabicLevels) p.arabicLevels = {};
+  if (!p.arabicLevels[levelId]) p.arabicLevels[levelId] = { sheetsCompleted: 0, completed: false };
+  if (passed) {
+    p.arabicLevels[levelId].sheetsCompleted += 1;
+    if (p.arabicLevels[levelId].sheetsCompleted >= ARABIC_SHEETS_TO_COMPLETE) {
+      p.arabicLevels[levelId].completed = true;
+      const next = levelId + 1;
+      if ((p.arabicCurrentLevelId || 0) === levelId && next < ARABIC_LEVELS.length) {
+        p.arabicCurrentLevelId = next;
+      }
+    }
+  }
+  if (p.arabicCurrentLevelId === undefined) p.arabicCurrentLevelId = 0;
+  saveProgress(p);
+  return p;
+}
+
+function saveArabicSheetInProgress(sheet) {
+  const p = getProgress();
+  if (!p.arabicSheetsInProgress) p.arabicSheetsInProgress = {};
+  p.arabicSheetsInProgress[sheet.levelId] = {
+    levelId:      sheet.levelId,
+    questions:    sheet.questions,
+    currentIndex: sheet.currentIndex,
+    answers:      sheet.answers
+  };
+  saveProgress(p);
+}
+
+function getArabicSavedSheet(levelId) {
+  const p = getProgress();
+  if (!p.arabicSheetsInProgress) return null;
+  return p.arabicSheetsInProgress[levelId] || null;
+}
+
+function clearArabicSavedSheet(levelId) {
+  const p = getProgress();
+  if (!p.arabicSheetsInProgress) return;
+  delete p.arabicSheetsInProgress[levelId];
+  saveProgress(p);
+}
+
 // ── Typing progress ───────────────────────────────────────────
 function recordTypingSheetResult(levelId, accuracy) {
   const p = getProgress();
