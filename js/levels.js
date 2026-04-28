@@ -708,7 +708,7 @@ const LEVELS = [
   },
   // 48 ─ Area of Rectangle
   {
-    id: 48, name: 'Area of Rectangle', emoji: '▭', color: '#fdcb6e',
+    id: 48, name: 'Area of Rectangle', emoji: '▭', color: '#fdcb6e', grade: 3,
     generate(tier = 0) {
       const max = [10, 15, 20][Math.min(tier, 2)];
       const pool = [];
@@ -720,7 +720,7 @@ const LEVELS = [
   },
   // 49 ─ Area of Triangle
   {
-    id: 49, name: 'Area of Triangle', emoji: '🔺', color: '#e84393',
+    id: 49, name: 'Area of Triangle', emoji: '🔺', color: '#e84393', grade: 6,
     generate(tier = 0) {
       const max = [10, 14, 20][Math.min(tier, 2)];
       const pool = [];
@@ -732,7 +732,7 @@ const LEVELS = [
   },
   // 50 ─ Perimeter of Rectangle
   {
-    id: 50, name: 'Perimeter', emoji: '📐', color: '#0984e3',
+    id: 50, name: 'Perimeter', emoji: '📐', color: '#0984e3', grade: 3,
     generate(tier = 0) {
       const max = [10, 15, 25][Math.min(tier, 2)];
       const pool = [];
@@ -744,7 +744,7 @@ const LEVELS = [
   },
   // 51 ─ Square Roots (Perfect Squares)
   {
-    id: 51, name: 'Square Roots', emoji: '√', color: '#a29bfe',
+    id: 51, name: 'Square Roots', emoji: '√', color: '#a29bfe', grade: 8,
     generate(tier = 0) {
       const maxN = [9, 15, 20][Math.min(tier, 2)];
       const pool = [];
@@ -818,7 +818,7 @@ const LEVELS = [
   },
   // 56 ─ Absolute Value
   {
-    id: 56, name: 'Absolute Value', emoji: '||', color: '#74b9ff',
+    id: 56, name: 'Absolute Value', emoji: '||', color: '#74b9ff', grade: 6,
     generate(tier = 0) {
       const max = [15, 25, 50][Math.min(tier, 2)];
       const pool = [];
@@ -844,7 +844,7 @@ const LEVELS = [
   },
   // 58 ─ Volume of Rectangular Prism
   {
-    id: 58, name: 'Volume', emoji: '📦', color: '#55efc4',
+    id: 58, name: 'Volume', emoji: '📦', color: '#55efc4', grade: 5,
     generate(tier = 0) {
       const max = [6, 8, 12][Math.min(tier, 2)];
       const pool = [];
@@ -954,10 +954,170 @@ const LEVELS = [
       });
     }
   },
+
+  // ── CC GAP FILLS — grades 1–5 ────────────────────────────────
+
+  // 65 ─ Place Value (Tens & Ones)
+  {
+    id: 65, name: 'Place Value', emoji: '🔟', color: '#FF6B6B', grade: 1,
+    generate(tier = 0) {
+      const maxN = [49, 79, 99][Math.min(tier, 2)];
+      return uniqueRandom(() => {
+        const n = randInt(11, maxN);
+        const tens = Math.floor(n / 10);
+        const ones = n % 10;
+        if (randInt(0, 1) === 0)
+          return eqn(`How many tens in ${n}?`, tens);
+        else
+          return eqn(`How many ones in ${n}?`, ones);
+      });
+    }
+  },
+
+  // 66 ─ Skip Counting
+  {
+    id: 66, name: 'Skip Counting', emoji: '🦘', color: '#FF8E53', grade: 2,
+    generate(tier = 0) {
+      const stepChoices = [
+        [2, 5, 10],
+        [2, 3, 5, 10, 100],
+        [2, 3, 4, 5, 6, 10, 100],
+      ][Math.min(tier, 2)];
+      return uniqueRandom(() => {
+        const step  = stepChoices[randInt(0, stepChoices.length - 1)];
+        const start = randInt(1, 8) * step;
+        const shown = randInt(3, 4);
+        const seq   = Array.from({ length: shown }, (_, i) => start + i * step);
+        return eqn(`${seq.join(', ')}, ___`, start + shown * step);
+      });
+    }
+  },
+
+  // 67 ─ Even & Odd
+  {
+    id: 67, name: 'Even & Odd', emoji: '2️⃣', color: '#5F27CD', grade: 2,
+    generate(tier = 0) {
+      const maxN = [20, 50, 100][Math.min(tier, 2)];
+      const pool = [];
+      for (let n = 2; n <= maxN - 2; n += 2) {
+        pool.push(eqn(`Next even after ${n}`, n + 2));
+        pool.push(eqn(`Next odd after ${n - 1}`, n + 1));
+        if (tier >= 1) {
+          pool.push(eqn(`Next even after ${n + 1}`, n + 2));
+          pool.push(eqn(`Next odd after ${n}`, n + 1));
+        }
+      }
+      return fillSheet(pool);
+    }
+  },
+
+  // 68 ─ Equivalent Fractions
+  {
+    id: 68, name: 'Equivalent Fractions', emoji: '⚖️', color: '#0984e3', grade: 3,
+    generate(tier = 0) {
+      const pool = [];
+      const maxMult = [4, 6, 8][Math.min(tier, 2)];
+      const fracs = [['½',1,2],['⅓',1,3],['¼',1,4]];
+      if (tier >= 1) fracs.push(['⅕',1,5],['⅔',2,3],['¾',3,4]);
+      for (const [sym, num, den] of fracs) {
+        for (let mult = 2; mult <= maxMult; mult++) {
+          pool.push(eqn(`Find x:  ${sym} = x/${den * mult}`, num * mult));
+          pool.push(eqn(`Find x:  ${num * mult}/${den * mult} = ${sym.slice(0,1)}/x`, den));
+        }
+      }
+      return fillSheet(pool);
+    }
+  },
+
+  // 69 ─ Fractions: Add & Subtract (Like Denominators)
+  {
+    id: 69, name: 'Fractions: Add & Subtract', emoji: '➕', color: '#00B894', grade: 4,
+    generate(tier = 0) {
+      // Only use denominators whose reciprocals are terminating decimals
+      const denoms = [
+        [2, 4],
+        [2, 4, 5, 10],
+        [2, 4, 5, 8, 10],
+      ][Math.min(tier, 2)];
+      const pool = [];
+      for (const d of denoms) {
+        for (let a = 1; a < d; a++) {
+          for (let b = 1; b < d; b++) {
+            const sumAns = parseFloat(((a + b) / d).toFixed(3));
+            pool.push(arith(`${a}/${d} + ${b}/${d}`, sumAns));
+            if (a > b) {
+              const diffAns = parseFloat(((a - b) / d).toFixed(3));
+              if (diffAns > 0) pool.push(arith(`${a}/${d} − ${b}/${d}`, diffAns));
+            }
+          }
+        }
+      }
+      return fillSheet(pool);
+    }
+  },
+
+  // 70 ─ Fractions × Whole Number
+  {
+    id: 70, name: 'Fractions × Whole Number', emoji: '✖️', color: '#FDCB6E', grade: 4,
+    generate(tier = 0) {
+      const pool = [];
+      const fracs = [['½',1,2],['¼',1,4],['¾',3,4]];
+      if (tier >= 1) fracs.push(['⅕',1,5],['⅖',2,5],['⅗',3,5],['⅘',4,5]);
+      if (tier >= 2) fracs.push(['⅛',1,8],['⅜',3,8],['⅝',5,8]);
+      const maxW = [12, 20, 30][Math.min(tier, 2)];
+      for (const [sym, num, den] of fracs) {
+        for (let w = den; w <= maxW; w += den) {
+          const ans = (num * w) / den;
+          if (Number.isInteger(ans)) pool.push(arith(`${sym} × ${w}`, ans));
+        }
+      }
+      return fillSheet(pool);
+    }
+  },
+
+  // 71 ─ Fractions: Unlike Denominators
+  {
+    id: 71, name: 'Fractions: Unlike Denominators', emoji: '🧮', color: '#6C5CE7', grade: 5,
+    generate(tier = 0) {
+      const denoms = tier === 0 ? [2, 4, 5, 10] : [2, 4, 5, 8, 10, 20];
+      const pool = [];
+      for (const d1 of denoms) {
+        for (const d2 of denoms) {
+          if (d1 >= d2) continue;
+          for (let n1 = 1; n1 < d1; n1++) {
+            for (let n2 = 1; n2 < d2; n2++) {
+              const sum = parseFloat((n1 / d1 + n2 / d2).toFixed(3));
+              pool.push(arith(`${n1}/${d1} + ${n2}/${d2}`, sum));
+              const bigger = n1 / d1 >= n2 / d2 ? [n1, d1, n2, d2] : [n2, d2, n1, d1];
+              const diff = parseFloat((bigger[0] / bigger[1] - bigger[2] / bigger[3]).toFixed(3));
+              if (diff > 0) pool.push(arith(`${bigger[0]}/${bigger[1]} − ${bigger[2]}/${bigger[3]}`, diff));
+            }
+          }
+        }
+      }
+      return fillSheet(pool);
+    }
+  },
+
+  // 72 ─ Decimal Multiplication
+  {
+    id: 72, name: 'Decimal Multiplication', emoji: '🔢', color: '#e84393', grade: 5,
+    generate(tier = 0) {
+      const maxW = [9, 14, 19][Math.min(tier, 2)];
+      const maxB = [5, 7, 9][Math.min(tier, 2)];
+      return uniqueRandom(() => {
+        const a  = randInt(1, maxW);
+        const ad = randInt(1, 9);
+        const b  = randInt(2, maxB);
+        const result = parseFloat(((a + ad / 10) * b).toFixed(1));
+        return arith(`${a}.${ad} × ${b}`, result);
+      });
+    }
+  },
 ];
 
 // Placement test checkpoints (level IDs sampled during placement)
-const PLACEMENT_CHECKPOINTS = [2, 5, 60, 8, 62, 64, 11, 14, 18, 22, 25, 30, 38, 44, 52];
+const PLACEMENT_CHECKPOINTS = [2, 5, 60, 65, 8, 62, 64, 11, 68, 14, 18, 22, 25, 71, 30, 38, 44, 52];
 
 // First level ID of each grade (used for tab unlock logic)
 const GRADE_STARTS = { 1: 0, 2: 6, 3: 12, 4: 20, 5: 28, 6: 36, 7: 44, 8: 52 };
