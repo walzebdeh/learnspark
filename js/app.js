@@ -2070,6 +2070,13 @@ function moneySVG(q, d, n, p) {
   </svg>`;
 }
 
+// Convert "a/b OP c/d" text into stacked inline fraction HTML
+function fracExprHTML(expr) {
+  return esc(expr).replace(/(\d+)\/(\d+)/g,
+    (_, n, d) => `<span class="frac-inline"><span class="fn">${n}</span><span class="fd">${d}</span></span>`
+  );
+}
+
 function problemHTML(problem) {
   if (problem.type === 'time') {
     const m = problem.question.match(/^clock:(\d+):(\d+)$/);
@@ -2191,7 +2198,12 @@ function problemHTML(problem) {
     return `<div class="equation-display">${esc(q)}</div>`;
   }
 
-  // Default inline format (×, ÷, fractions)
+  // Fraction arithmetic: render a/b patterns as stacked fractions
+  if (/\d+\/\d+/.test(problem.question)) {
+    return `<div class="arithmetic-problem frac-expr">${fracExprHTML(problem.question)}</div>`;
+  }
+
+  // Default inline format
   return `<div class="arithmetic-problem">${esc(problem.question)}</div>`;
 }
 

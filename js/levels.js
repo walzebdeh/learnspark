@@ -1017,12 +1017,12 @@ const LEVELS = [
     generate(tier = 0) {
       const pool = [];
       const maxMult = [4, 6, 8][Math.min(tier, 2)];
-      const fracs = [['½',1,2],['⅓',1,3],['¼',1,4]];
-      if (tier >= 1) fracs.push(['⅕',1,5],['⅔',2,3],['¾',3,4]);
-      for (const [sym, num, den] of fracs) {
+      const fracs = [[1,2],[1,3],[1,4]];
+      if (tier >= 1) fracs.push([1,5],[2,3],[3,4]);
+      for (const [num, den] of fracs) {
         for (let mult = 2; mult <= maxMult; mult++) {
-          pool.push(eqn(`Find x:  ${sym} = x/${den * mult}`, num * mult));
-          pool.push(eqn(`Find x:  ${num * mult}/${den * mult} = ${sym.slice(0,1)}/x`, den));
+          pool.push(eqn(`Find x:  ${num}/${den} = x/${den * mult}`, num * mult));
+          pool.push(eqn(`Find x:  ${num * mult}/${den * mult} = ${num}/x`, den));
         }
       }
       return fillSheet(pool);
@@ -1061,14 +1061,14 @@ const LEVELS = [
     id: 70, name: 'Fractions × Whole Number', emoji: '✖️', color: '#FDCB6E', grade: 4,
     generate(tier = 0) {
       const pool = [];
-      const fracs = [['½',1,2],['¼',1,4],['¾',3,4]];
-      if (tier >= 1) fracs.push(['⅕',1,5],['⅖',2,5],['⅗',3,5],['⅘',4,5]);
-      if (tier >= 2) fracs.push(['⅛',1,8],['⅜',3,8],['⅝',5,8]);
+      const fracs = [[1,2],[1,4],[3,4]];
+      if (tier >= 1) fracs.push([1,5],[2,5],[3,5],[4,5]);
+      if (tier >= 2) fracs.push([1,8],[3,8],[5,8]);
       const maxW = [12, 20, 30][Math.min(tier, 2)];
-      for (const [sym, num, den] of fracs) {
+      for (const [num, den] of fracs) {
         for (let w = den; w <= maxW; w += den) {
           const ans = (num * w) / den;
-          if (Number.isInteger(ans)) pool.push(arith(`${sym} × ${w}`, ans));
+          if (Number.isInteger(ans)) pool.push(arith(`${num}/${den} × ${w}`, ans));
         }
       }
       return fillSheet(pool);

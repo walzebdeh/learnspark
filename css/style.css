@@ -2338,6 +2338,41 @@ html, body {
 }
 
 /* ============================================================
+   INLINE STACKED FRACTIONS (arithmetic problems)
+   ============================================================ */
+.frac-expr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.frac-inline {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  font-size: 2.2rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--text);
+}
+
+.frac-inline .fn {
+  border-bottom: 3px solid var(--text);
+  padding: 0 8px 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.frac-inline .fd {
+  padding: 4px 8px 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ============================================================
    ARABIC
    ============================================================ */
 .arabic-text {
