@@ -703,18 +703,20 @@ function renderLevelMap(app) {
 // ============================================================
 function startSheet(levelId) {
   const p    = getProgress();
-  const done = (p.levels[levelId] || {}).sheetsCompleted || 0;
-  const tier = Math.floor(done / 5); // difficulty increases every 5 sheets
+  const lp   = p.levels[levelId] || {};
+  const done = lp.sheetsCompleted || 0;
+  const tier = Math.floor(done / 5);
+  _excludeQs = new Set(lp.recentQs || []);
   clearSavedSheet(levelId);
+  const problems = LEVELS[levelId].generate(tier);
+  _excludeQs = new Set();
+  const p2 = getProgress();
+  if (!p2.levels[levelId]) p2.levels[levelId] = { sheetsCompleted: 0, completed: false };
+  p2.levels[levelId].recentQs = problems.map(pr => pr.question);
+  saveProgress(p2);
   setState({
     screen: 'sheet',
-    sheet: {
-      levelId,
-      problems:     LEVELS[levelId].generate(tier),
-      currentIndex: 0,
-      answers:      [],
-      feedback:     null  // null | 'correct' | 'wrong'
-    }
+    sheet: { levelId, problems, currentIndex: 0, answers: [], feedback: null }
   });
 }
 
@@ -1099,18 +1101,19 @@ function submitWordPlacement() {
 // WORD PRACTICE SHEET
 // ============================================================
 function startWordSheet(levelId) {
+  const p = getProgress();
+  _excludeQs = new Set((p.wordLevels?.[levelId] || {}).recentQs || []);
   clearWordSavedSheet(levelId);
+  const words = WORD_LEVELS[levelId].generate();
+  _excludeQs = new Set();
+  const p2 = getProgress();
+  if (!p2.wordLevels) p2.wordLevels = {};
+  if (!p2.wordLevels[levelId]) p2.wordLevels[levelId] = { sheetsCompleted: 0, completed: false };
+  p2.wordLevels[levelId].recentQs = words.map(w => w.word);
+  saveProgress(p2);
   setState({
     screen: 'wordSheet',
-    wordSheet: {
-      levelId,
-      words:           WORD_LEVELS[levelId].generate(),
-      currentIndex:    0,
-      answers:         [],
-      currentAttempts: 0,
-      hintVisible:     false,
-      feedback:        null
-    }
+    wordSheet: { levelId, words, currentIndex: 0, answers: [], currentAttempts: 0, hintVisible: false, feedback: null }
   });
 }
 
@@ -1458,19 +1461,23 @@ function startChoiceSheet(topicId, levelId) {
   }
   if (saved) clearChoiceSavedSheet(topicId, levelId);
   const topic = CHOICE_TOPICS[topicId];
-  const questions = shuffleArr(topic.levels[levelId].questions)
+  const p = getProgress();
+  const key = `${topicId}_${levelId}`;
+  const recentScenarios = new Set((p.choiceLevels?.[key] || {}).recentQs || []);
+  const allQs  = topic.levels[levelId].questions;
+  const fresh  = allQs.filter(q => !recentScenarios.has(q.scenario));
+  const src    = fresh.length >= CHOICES_PER_SHEET ? fresh : allQs;
+  const questions = shuffleArr(src)
     .slice(0, CHOICES_PER_SHEET)
     .map(shuffleQuestionOptions);
+  const p2 = getProgress();
+  if (!p2.choiceLevels) p2.choiceLevels = {};
+  if (!p2.choiceLevels[key]) p2.choiceLevels[key] = { sheetsCompleted: 0, completed: false };
+  p2.choiceLevels[key].recentQs = questions.map(q => q.scenario);
+  saveProgress(p2);
   setState({
     screen: 'choiceSheet',
-    choiceSheet: {
-      topicId,
-      levelId,
-      questions,
-      currentIndex: 0,
-      lastChoice: null,
-      answers: []
-    }
+    choiceSheet: { topicId, levelId, questions, currentIndex: 0, lastChoice: null, answers: [] }
   });
 }
 
@@ -1715,20 +1722,20 @@ function renderTypingLevelMap(app) {
 // TYPING SHEET
 // ============================================================
 function startTypingSheet(levelId) {
-  const level   = TYPING_LEVELS[levelId];
-  const prompts = shuffleArr([...level.prompts]).slice(0, TYPING_PROMPTS_PER_SHEET);
+  const p      = getProgress();
+  const level  = TYPING_LEVELS[levelId];
+  const recent = new Set((p.typingLevels?.[levelId] || {}).recentQs || []);
+  const fresh  = level.prompts.filter(pr => !recent.has(pr));
+  const src    = fresh.length >= TYPING_PROMPTS_PER_SHEET ? fresh : level.prompts;
+  const prompts = shuffleArr([...src]).slice(0, TYPING_PROMPTS_PER_SHEET);
+  const p2 = getProgress();
+  if (!p2.typingLevels) p2.typingLevels = {};
+  if (!p2.typingLevels[levelId]) p2.typingLevels[levelId] = { sheetsCompleted: 0, completed: false };
+  p2.typingLevels[levelId].recentQs = prompts;
+  saveProgress(p2);
   setState({
     screen: 'typingSheet',
-    typingSheet: {
-      levelId,
-      prompts,
-      currentIndex: 0,
-      typed:        '',
-      startTime:    null,
-      totalErrors:  0,
-      totalChars:   0,
-      wpm:          0,
-    }
+    typingSheet: { levelId, prompts, currentIndex: 0, typed: '', startTime: null, totalErrors: 0, totalChars: 0, wpm: 0 }
   });
 }
 
@@ -3084,8 +3091,16 @@ function startArabicSheet(levelId) {
     return;
   }
   if (saved) clearArabicSavedSheet(levelId);
+  const p = getProgress();
+  _excludeQs = new Set((p.arabicLevels?.[levelId] || {}).recentQs || []);
   const level     = ARABIC_LEVELS[levelId];
   const questions = level.generate(ARABIC_QUESTIONS_PER_SHEET);
+  _excludeQs = new Set();
+  const p2 = getProgress();
+  if (!p2.arabicLevels) p2.arabicLevels = {};
+  if (!p2.arabicLevels[levelId]) p2.arabicLevels[levelId] = { sheetsCompleted: 0, completed: false };
+  p2.arabicLevels[levelId].recentQs = questions.map(q => q.question);
+  saveProgress(p2);
   setState({
     screen: 'arabicSheet',
     arabicSheet: { levelId, questions, currentIndex: 0, lastChoice: null, answers: [] }

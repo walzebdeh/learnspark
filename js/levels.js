@@ -16,23 +16,48 @@ function shuffleArr(arr) {
   return a;
 }
 
-// Fill a sheet of n problems from a pool; cycles with fresh shuffles when pool < n
+// Questions shown on the previous sheet — set by app.js before each generate() call
+let _excludeQs = new Set();
+
+// Fill a sheet of n problems from a pool; prefers questions not in _excludeQs
 function fillSheet(pool, n = 20) {
   if (!pool.length) return [];
-  const out = [];
-  while (out.length < n) out.push(...shuffleArr(pool));
-  return out.slice(0, n);
+  const fresh = pool.filter(p => !_excludeQs.has(p.question));
+  if (fresh.length === 0) {
+    // Full cycle — shuffle the whole pool
+    const out = [];
+    while (out.length < n) out.push(...shuffleArr(pool));
+    return out.slice(0, n);
+  }
+  // Use fresh problems first; if fewer than n, append stale to reach n
+  const base = shuffleArr(fresh);
+  if (base.length >= n) return base.slice(0, n);
+  const stale = pool.filter(p => _excludeQs.has(p.question));
+  const extra = [];
+  while (base.length + extra.length < n) extra.push(...shuffleArr(stale.length ? stale : pool));
+  return [...base, ...extra].slice(0, n);
 }
 
 // For large solution spaces: generate randomly until n unique questions collected
 function uniqueRandom(generatorFn, n = 20) {
-  const seen = new Set();
+  // Start with excluded questions already "seen" so they won't be picked first
+  const seen = new Set(_excludeQs);
   const out  = [];
   let   tries = 0;
   while (out.length < n && tries < n * 200) {
     tries++;
     const p = generatorFn();
     if (p && !seen.has(p.question)) { seen.add(p.question); out.push(p); }
+  }
+  // Fallback: if pool is too constrained, retry without exclusions
+  if (out.length < n) {
+    const seen2 = new Set();
+    let tries2 = 0;
+    while (out.length < n && tries2 < n * 200) {
+      tries2++;
+      const p = generatorFn();
+      if (p && !seen2.has(p.question)) { seen2.add(p.question); out.push(p); }
+    }
   }
   return out;
 }

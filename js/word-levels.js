@@ -20,8 +20,9 @@ function scrambleWord(word) {
 }
 
 function pickWords(list, n) {
-  return [...list]
-    .sort(() => Math.random() - .5)
+  const fresh = list.filter(w => !_excludeQs.has(w));
+  const src   = fresh.length >= n ? fresh : list;
+  return shuffleArr([...src])
     .slice(0, n)
     .map(w => ({ word: w, scrambled: scrambleWord(w) }));
 }

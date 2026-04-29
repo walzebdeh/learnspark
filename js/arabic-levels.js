@@ -19,9 +19,11 @@ function arabicMC(question, prompt, correct, wrongPool) {
 
 // Generate n problems cycling through pairs [[question, answer], ...]
 function genArabicPairs(pairs, prompt, answerPool, n) {
-  const out = [];
+  const fresh = pairs.filter(([q]) => !_excludeQs.has(q));
+  const src   = fresh.length >= Math.ceil(n / 2) ? fresh : pairs;
+  const out   = [];
   while (out.length < n) {
-    for (const [q, a] of shuffleArr([...pairs])) {
+    for (const [q, a] of shuffleArr([...src])) {
       if (out.length >= n) break;
       out.push(arabicMC(q, prompt, a, answerPool));
     }
