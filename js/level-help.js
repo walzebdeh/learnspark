@@ -1,5 +1,94 @@
-// Concept help content for math levels (grades 5-8)
+// Concept help content for math levels (grades 3-8)
 const LEVEL_HELP = {
+  12: {
+    title: 'Multiplication Tables',
+    body: `<p>Multiplication is <strong>repeated addition</strong>.</p>
+<div class="help-ex">
+4 × 3 means "4 added 3 times"<br>
+4 + 4 + 4 = <strong>12</strong><br><br>
+<strong>Tip:</strong> Swap the numbers — 4 × 3 = 3 × 4 ✓
+</div>`
+  },
+  13: {
+    title: 'Division (Basic)',
+    body: `<p>Division is the <strong>opposite of multiplication</strong>.<br>Ask: "what number times the divisor equals this?"</p>
+<div class="help-ex">
+<strong>20 ÷ 4 = ?</strong><br>
+4 × <strong>5</strong> = 20 ✓<br>
+Answer: <strong>5</strong><br><br>
+<strong>30 ÷ 5 = ?</strong><br>
+5 × <strong>6</strong> = 30 ✓
+</div>`
+  },
+  14: {
+    title: 'Mixed × and ÷',
+    body: `<p>Multiplication and division are opposites — one undoes the other.</p>
+<div class="help-ex">
+3 × 7 = <strong>21</strong><br>
+21 ÷ 7 = <strong>3</strong> (same family!)<br><br>
+<strong>Tip:</strong> Think of a fact family:<br>
+4 × 6 = 24 &nbsp;→&nbsp; 24 ÷ 6 = 4
+</div>`
+  },
+  15: {
+    title: 'Fractions of a Number',
+    body: `<p><strong>½ of n</strong> → divide by 2<br>
+<strong>¼ of n</strong> → divide by 4<br>
+<strong>¾ of n</strong> → divide by 4, then × 3</p>
+<div class="help-ex">
+½ of 14 = 14 ÷ 2 = <strong>7</strong><br>
+¼ of 20 = 20 ÷ 4 = <strong>5</strong><br>
+¾ of 20 = 5 × 3 = <strong>15</strong>
+</div>`
+  },
+  16: {
+    title: '3-Digit Addition (No Carry)',
+    body: `<p>Add <strong>ones, then tens, then hundreds</strong> — each column stays under 10.</p>
+<div class="help-ex"><strong>213 + 145</strong><br>
+Ones: &nbsp;3 + 5 = 8<br>
+Tens: &nbsp;1 + 4 = 5<br>
+Hundreds: 2 + 1 = 3<br>
+Answer: <strong>358</strong></div>`
+  },
+  17: {
+    title: '3-Digit Addition (With Carry)',
+    body: `<p>Add right to left. When a column reaches 10 or more, <strong>carry 1</strong> to the next column.</p>
+<div class="help-ex"><strong>256 + 178</strong><br>
+Ones: 6+8=14 → write 4, carry 1<br>
+Tens: 5+7+1=13 → write 3, carry 1<br>
+Hundreds: 2+1+1=4<br>
+Answer: <strong>434</strong></div>`
+  },
+  18: {
+    title: '3-Digit Subtraction (No Borrow)',
+    body: `<p>Subtract <strong>ones, then tens, then hundreds</strong> — each top digit is bigger than the bottom.</p>
+<div class="help-ex"><strong>579 − 234</strong><br>
+Ones: &nbsp;9 − 4 = 5<br>
+Tens: &nbsp;7 − 3 = 4<br>
+Hundreds: 5 − 2 = 3<br>
+Answer: <strong>345</strong></div>`
+  },
+  19: {
+    title: '3-Digit Subtraction (With Borrow)',
+    body: `<p>If the top digit is too small, <strong>borrow 10 from the column to the left</strong>.</p>
+<div class="help-ex"><strong>423 − 168</strong><br>
+Ones: 3 < 8 → borrow: 13−8=5, tens becomes 1<br>
+Tens: 1 < 6 → borrow: 11−6=5, hundreds becomes 3<br>
+Hundreds: 3−1=2<br>
+Answer: <strong>255</strong></div>`
+  },
+  68: {
+    title: 'Equivalent Fractions',
+    body: `<p>Two fractions are equivalent when they have the <strong>same value</strong>.<br>
+Cross-multiply to find x.</p>
+<div class="help-ex">
+<strong>1/3 = x/12</strong><br>
+1 × 12 = 3 × x<br>
+12 = 3x<br>
+x = 12 ÷ 3 = <strong>4</strong>
+</div>
+<p>Shortcut: what did the denominator multiply by? Do the same to the numerator.</p>`
+  },
   28: {
     title: 'Multiplying 2-Digit Numbers',
     body: `<p>Break it into two simpler multiplications, then add.</p>
