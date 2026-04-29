@@ -2077,13 +2077,23 @@ function fracExprHTML(expr) {
   );
 }
 
-const UNICODE_FRACS = [
-  ['½','1/2'],['⅓','1/3'],['¼','1/4'],['⅕','1/5'],
-  ['⅔','2/3'],['¾','3/4'],['⅖','2/5'],['⅗','3/5'],
-  ['⅘','4/5'],['⅛','1/8'],['⅜','3/8'],['⅝','5/8'],['⅞','7/8']
-];
+const UNICODE_FRAC_PARTS = {
+  '½':[1,2],'⅓':[1,3],'¼':[1,4],'⅕':[1,5],
+  '⅔':[2,3],'¾':[3,4],'⅖':[2,5],'⅗':[3,5],
+  '⅘':[4,5],'⅛':[1,8],'⅜':[3,8],'⅝':[5,8],'⅞':[7,8]
+};
+const UNICODE_FRAC_RE = /[½⅓¼⅕⅔¾⅖⅗⅘⅛⅜⅝⅞]/g;
 function normFrac(s) {
-  for (const [u, r] of UNICODE_FRACS) s = s.split(u).join(r);
+  // "FRAC/x" or "FRAC/digits" — FRAC was used as numerator only (old type-2 cached strings)
+  s = s.replace(/([½⅓¼⅕⅔¾⅖⅗⅘⅛⅜⅝⅞])\/(x|\d+)/g, (_, f, after) => {
+    const p = UNICODE_FRAC_PARTS[f];
+    return p ? `${p[0]}/${after}` : `${f}/${after}`;
+  });
+  // Remaining standalone FRAC — replace with n/d (old type-1 cached strings)
+  s = s.replace(UNICODE_FRAC_RE, f => {
+    const p = UNICODE_FRAC_PARTS[f];
+    return p ? `${p[0]}/${p[1]}` : f;
+  });
   return s;
 }
 
