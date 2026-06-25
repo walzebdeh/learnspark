@@ -199,10 +199,12 @@ function renderWelcome(app) {
         <p class="subtitle">Ready to learn? Let's go!</p>
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
           <button class="btn btn-primary btn-large" id="btn-returning-user">🔑 Sign In</button>
+          <button class="btn btn-secondary btn-large" id="btn-new-user">🌟 New User? Register Here</button>
         </div>
       </div>`;
     app.appendChild(div);
     document.getElementById('btn-returning-user').onclick = () => setState({ welcomeMode: 'returning' });
+    document.getElementById('btn-new-user').onclick       = () => setState({ welcomeMode: 'new' });
 
   } else if (mode === 'new') {
     // ── New user form ────────────────────────────────────────
@@ -3261,22 +3263,25 @@ window.addEventListener('popstate', (e) => {
 
 // ── Boot ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (_activePlayer) {
-    // Session still active — reload from cloud
-    state.screen = 'loading';
-    render();
-    loadProgressFromCloud(_activePlayer).then(cloudData => {
-      if (cloudData) saveProgress(cloudData);
-      const p = getProgress();
-      if (p.placementDone) {
-        setState({ screen: 'levelMap', welcomeMode: null, allUnlocked: p.allUnlocked || false });
-      } else {
-        setState({ screen: 'welcome', welcomeMode: null });
-      }
+  // Sign in anonymously first so Firestore security rules allow reads/writes.
+  // All app logic runs only after auth is ready.
+  auth.signInAnonymously().catch(() => {}).finally(() => {
+    if (_activePlayer) {
+      state.screen = 'loading';
+      render();
+      loadProgressFromCloud(_activePlayer).then(cloudData => {
+        if (cloudData) saveProgress(cloudData);
+        const p = getProgress();
+        if (p.placementDone) {
+          setState({ screen: 'levelMap', welcomeMode: null, allUnlocked: p.allUnlocked || false });
+        } else {
+          setState({ screen: 'welcome', welcomeMode: null });
+        }
+        _appBooted = true;
+      });
+    } else {
+      render();
       _appBooted = true;
-    });
-  } else {
-    render(); // shows welcome landing
-    _appBooted = true;
-  }
+    }
+  });
 });

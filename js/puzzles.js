@@ -281,4 +281,41 @@ const PUZZLES = [
     solution: [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]],
     minMoves: 10,
   },
+
+  // ── id 18 ── Tower of Hanoi (6 disks) ─────────────────────
+  {
+    id: 18,
+    type: 'hanoi',
+    name: 'Hanoi — 6 Disks',
+    emoji: '🌋',
+    difficulty: '⭐⭐⭐⭐⭐ Legendary',
+    story: 'Six disks. Peg A to Peg C. One disk at a time — never place a larger disk on a smaller one. Minimum 63 moves needed. Good luck!',
+    disks: 6,
+    minMoves: 63,
+  },
+
+  // ── id 19 ── Maze: Space Station (hard 11×11) ──────────────
+  {
+    id: 19,
+    type: 'maze',
+    name: 'Space Station',
+    emoji: '🚀',
+    difficulty: '⭐⭐⭐⭐⭐ Legendary',
+    story: 'Navigate through the space station corridors to reach the escape pod! This 11×11 maze is full of dead ends and false paths.',
+    grid: [
+      [0,0,1,0,0,0,1,0,0,1,0],
+      [1,0,1,0,1,0,0,0,1,1,0],
+      [0,0,0,0,1,0,1,0,0,0,0],
+      [0,1,1,0,1,0,1,1,1,0,1],
+      [0,0,1,0,0,0,0,0,1,0,0],
+      [1,0,1,1,1,1,1,0,1,0,1],
+      [1,0,0,0,0,0,1,0,0,0,0],
+      [1,1,1,0,1,0,1,1,1,1,0],
+      [0,0,0,0,1,0,0,0,0,1,0],
+      [0,1,1,0,1,1,1,0,1,1,0],
+      [0,0,0,0,1,0,0,0,0,0,0],
+    ],
+    start: [0,0], end: [10,10],
+    minMoves: 20,
+  },
 ];
