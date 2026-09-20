@@ -3379,6 +3379,9 @@ function startEurekaSheet(moduleId, lessonId) {
   });
 }
 
+// ============================================================
+// EUREKA SHEET — Great Minds workbook style
+// ============================================================
 function renderEurekaSheet(app) {
   const s       = state.eurekaSheet;
   const mod     = EUREKA_G2[s.moduleId];
@@ -3388,52 +3391,96 @@ function renderEurekaSheet(app) {
   const pct     = Math.round((s.currentIndex / total) * 100);
   const score   = s.answers.filter(a => a.correct).length;
 
-  let bodyHTML = '';
+  const modelType    = eurekaGetModel(problem, lesson);
+  const unit         = eurekaGetUnit(problem);
+  const illustration = eurekaGetIllustration(problem);
+  const modelHTML    = eurekaBuildModel(modelType, problem);
+
+  let answerHTML = '';
   if (s.feedback !== null) {
     const last = s.answers[s.answers.length - 1];
-    bodyHTML = s.feedback === 'correct'
-      ? `<div class="feedback correct animate-pop">✓ Correct! 🎉</div>`
-      : `<div class="feedback wrong animate-pop">The answer is <strong>${esc(String(last.expected))}</strong></div>`;
+    answerHTML = s.feedback === 'correct'
+      ? `<div class="wk-feedback wk-correct animate-pop">✓ Correct! 🎉</div>`
+      : `<div class="wk-feedback wk-wrong animate-pop">
+           <div class="wk-wrong-label">Not quite!</div>
+           <div class="wk-wrong-answer">Answer: <strong>${esc(String(last.expected))}</strong></div>
+         </div>`;
   } else if (problem.type === 'mc') {
-    bodyHTML = `<div class="eureka-mc-grid">
-      ${problem.choices.map(ch =>
-        `<button class="eureka-mc-btn" data-choice="${esc(ch)}">${esc(ch)}</button>`
-      ).join('')}
-    </div>`;
+    answerHTML = `<div class="wk-section-label">Choose the best answer:</div>
+      <div class="eureka-mc-grid">${
+        problem.choices.map(ch =>
+          `<button class="eureka-mc-btn" data-choice="${esc(ch)}">${esc(ch)}</button>`
+        ).join('')
+      }</div>`;
   } else if (problem.type === 'tf') {
-    bodyHTML = `<div class="eureka-tf-row">
-      <button class="eureka-tf-btn true-btn" data-tf="true">✓ True</button>
-      <button class="eureka-tf-btn false-btn" data-tf="false">✗ False</button>
-    </div>`;
+    answerHTML = `<div class="wk-section-label">Is this true or false?</div>
+      <div class="eureka-tf-row">
+        <button class="eureka-tf-btn true-btn" data-tf="true">✓ True</button>
+        <button class="eureka-tf-btn false-btn" data-tf="false">✗ False</button>
+      </div>`;
   } else {
-    bodyHTML = `<div class="answer-row">
-      <input type="number" id="eureka-answer" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />
-      <button class="btn btn-primary" id="btn-eureka-check">Check ✓</button>
+    answerHTML = `<div class="wk-answer-row">
+      <div class="wk-answer-box-wrap">
+        <input type="number" id="eureka-answer" class="wk-answer-box" placeholder="?" autocomplete="off" inputmode="numeric" />
+        ${unit ? `<span class="wk-answer-unit">${esc(unit)}</span>` : ''}
+      </div>
+      <button class="btn btn-primary wk-check-btn" id="btn-eureka-check">Check ✓</button>
     </div>`;
   }
+
+  const showCanvas = s.feedback === null;
 
   const div = el('div', 'screen sheet-screen');
   div.innerHTML = `
     <div class="sheet-header">
-      <div class="sheet-header-left">
-        <button class="btn btn-ghost btn-sm" id="btn-eureka-exit">✕ Exit</button>
-      </div>
+      <button class="btn btn-ghost btn-sm" id="btn-eureka-exit">✕ Exit</button>
       <div class="sheet-title" style="color:${mod.color}">Module ${mod.module} — ${esc(lesson.title)}</div>
       <div class="sheet-correct">✓ ${score}</div>
     </div>
     <div class="sheet-progress-bar">
       <div class="sheet-progress-fill" style="width:${pct}%"></div>
     </div>
-    <div class="sheet-counter">Problem ${s.currentIndex + 1} of ${total}</div>
-    <div class="card problem-card eureka-problem-card">
-      <div class="eureka-question">${esc(problem.q)}</div>
-      ${bodyHTML}
+
+    <div class="wk-page">
+      <div class="wk-problem-num">Problem ${s.currentIndex + 1} of ${total}</div>
+
+      <div class="wk-illustration" aria-hidden="true">${illustration}</div>
+
+      <div class="wk-question">${esc(problem.q)}</div>
+
+      ${modelHTML ? `<div class="wk-model-area">
+        <div class="wk-section-label">Draw a model:</div>
+        ${modelHTML}
+      </div>` : ''}
+
+      ${showCanvas ? `<div class="wk-canvas-area">
+        <div class="wk-canvas-header">
+          <span>✏️ My Work Space</span>
+          <button class="wk-clear-btn" id="btn-eureka-clear" type="button">Clear</button>
+        </div>
+        <canvas id="eureka-canvas" class="wk-canvas"></canvas>
+      </div>` : ''}
+
+      <div class="wk-answer-section">
+        ${answerHTML}
+      </div>
     </div>`;
 
   app.appendChild(div);
 
   document.getElementById('btn-eureka-exit').onclick = () =>
     setState({ screen: 'eurekaLesson', eurekaSheet: null });
+
+  if (showCanvas) {
+    const canvas = document.getElementById('eureka-canvas');
+    if (canvas) {
+      canvas.width  = canvas.offsetWidth || 380;
+      canvas.height = 140;
+      _eurekaSetupCanvas(canvas);
+      document.getElementById('btn-eureka-clear').onclick = () =>
+        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
 
   if (s.feedback !== null) return;
 
@@ -3456,6 +3503,265 @@ function renderEurekaSheet(app) {
     document.getElementById('btn-eureka-check').onclick = go;
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
   }
+}
+
+function _eurekaSetupCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#1a237e';
+  ctx.lineWidth   = 2.5;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+
+  let drawing = false, lx = 0, ly = 0;
+
+  const pos = (e, touch) => {
+    const r   = canvas.getBoundingClientRect();
+    const src = touch ? e.touches[0] : e;
+    return [
+      (src.clientX - r.left) * (canvas.width  / r.width),
+      (src.clientY - r.top)  * (canvas.height / r.height),
+    ];
+  };
+
+  const start = (e, t) => { drawing = true; [lx, ly] = pos(e, t); e.preventDefault(); };
+  const move  = (e, t) => {
+    if (!drawing) return;
+    e.preventDefault();
+    const [x, y] = pos(e, t);
+    ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(x, y); ctx.stroke();
+    [lx, ly] = [x, y];
+  };
+  const stop = () => { drawing = false; };
+
+  canvas.addEventListener('mousedown',  e => start(e, false));
+  canvas.addEventListener('mousemove',  e => move(e, false));
+  canvas.addEventListener('mouseup',    stop);
+  canvas.addEventListener('mouseleave', stop);
+  canvas.addEventListener('touchstart', e => start(e, true),  { passive: false });
+  canvas.addEventListener('touchmove',  e => move(e, true),   { passive: false });
+  canvas.addEventListener('touchend',   stop);
+}
+
+// ── Metadata derivation ──────────────────────────────────────
+
+function eurekaGetModel(problem, lesson) {
+  const t = lesson.title.toLowerCase();
+  const q = problem.q.toLowerCase();
+  if (t.includes('making ten'))                                          return 'frame10';
+  if (q.includes(' groups of ') || t.includes('array') || t.includes('repeated addition')) return 'array';
+  if (/\d+\s*[+\-−]\s*___/.test(problem.q) || /___\s*[+\-−]\s*\d+/.test(problem.q))       return 'bond';
+  if (q.includes(' cm') || q.includes(' m ') || t.includes('length') || t.includes('measur')) return 'ruler';
+  if (t.includes('telling time') || (q.includes('hour') && q.includes('minute')))          return 'clock';
+  if (t.includes('half') || t.includes('third') || t.includes('fourth') || t.includes('fraction')) return 'frac';
+  if (q.includes('quarter') || q.includes('dime') || q.includes('nickel') || q.includes('penny') || t.includes('coin')) return 'coin';
+  if (t.includes('hundreds') || t.includes('place value') || q.includes('hundreds') || q.includes('digit')) return 'place';
+  return 'tape';
+}
+
+function eurekaGetUnit(problem) {
+  if (problem.type !== 'input') return '';
+  const q = problem.q;
+  const checks = [
+    [/pencil/i,           'pencils'],  [/apple/i,             'apples'],
+    [/crayon/i,           'crayons'],  [/stamp/i,             'stamps'],
+    [/marble/i,           'marbles'],  [/bead/i,              'beads'],
+    [/\bbook\b/i,         'books'],    [/student/i,           'students'],
+    [/\bchair\b/i,        'chairs'],   [/flower/i,            'flowers'],
+    [/bird|chicken|duck/i,'birds'],    [/\bpage\b/i,          'pages'],
+    [/\bpoint\b/i,        'points'],   [/\bcan\b/i,           'cans'],
+    [/ cm\b/i,            'cm'],       [/tile/i,              'tiles'],
+    [/\btoy\b/i,          'toys'],     [/square/i,            'squares'],
+    [/minute/i,           'min'],      [/cents|¢/i,           '¢'],
+    [/person|people|passenger/i, 'people'],
+  ];
+  for (const [re, unit] of checks) if (re.test(q)) return unit;
+  return '';
+}
+
+function eurekaGetIllustration(problem) {
+  const q = problem.q.toLowerCase();
+  const map = [
+    [/pencil/,                              '✏️✏️✏️'],
+    [/apple/,                               '🍎🍎🍎'],
+    [/crayon/,                              '🖍️🖍️🖍️'],
+    [/ cm\b|ruler|worm|snake|ribbon/,       '📏'],
+    [/rope|string/,                         '〰️'],
+    [/\bbook\b|page|read|library/,          '📚📚'],
+    [/cent|quarter|dime|nickel|penny|dollar|¢|coin/, '🪙💵'],
+    [/duck|chicken|bird|farm/,              '🐔🦆🐣'],
+    [/flower|garden|plant/,                 '🌸🌺🌻'],
+    [/star/,                                '⭐⭐⭐'],
+    [/o'clock|minute|hour|clock|lunch|practice|movie/, '🕐⏰'],
+    [/pizza|pie(?!.{0,5}chart)/,            '🍕'],
+    [/cake|chocolate|bar of/,              '🍫'],
+    [/marble/,                              '⚪🔵🟡'],
+    [/stamp/,                               '📬📬📬'],
+    [/bead/,                                '🔵🔴🟡🟢'],
+    [/toy/,                                 '🧸🎮🎲'],
+    [/race|path|walk|run/,                  '🏃🏁'],
+    [/\bbag\b/,                             '🎒'],
+    [/groups of|equal group/,              '⭕⭕⭕'],
+    [/array|row.*col|col.*row/,            '⬜⬜⬜'],
+    [/fraction|half|third|fourth|quarter(?!.*coin)/, '🔵🔵🔵🔵'],
+    [/ladder|bat|broom|stick/,             '📐'],
+    [/train/,                               '🚂🚃🚃'],
+    [/school/,                              '🏫'],
+    [/hundred|tens place|ones place|digit/, '🔢'],
+    [/compare|greater|smaller|larger|longest|shortest/, '⚖️'],
+    [/person|people|passenger/,            '👤👤👤'],
+  ];
+  for (const [re, emojis] of map) if (re.test(q)) return emojis;
+  return '🧮';
+}
+
+// ── Visual model builders ────────────────────────────────────
+
+function eurekaBuildModel(type, problem) {
+  const nums = (problem.q.match(/\d[\d,]*/g) || []).map(n => parseInt(n.replace(/,/g, '')));
+
+  switch (type) {
+    case 'frame10': {
+      const n = nums.length ? Math.min(nums[0], 10) : 5;
+      return _wkFrame10(n);
+    }
+    case 'bond': {
+      const [a, b] = nums;
+      const whole = (a !== undefined && b !== undefined) ? Math.max(a, b) : '?';
+      const part  = a !== undefined ? (b !== undefined ? Math.min(a, b) : a) : '?';
+      return _wkBond(whole, part, '?');
+    }
+    case 'tape': {
+      if (nums.length >= 2) {
+        const hi = Math.max(nums[0], nums[nums.length - 1]);
+        const lo = Math.min(nums[0], nums[nums.length - 1]);
+        return _wkTape(hi, lo, '?');
+      }
+      return _wkTape('?', '?', '?');
+    }
+    case 'array': {
+      const r = Math.min(nums[0] || 3, 6);
+      const c = Math.min(nums[1] || 4, 8);
+      return _wkArray(r, c);
+    }
+    case 'ruler': {
+      const maxN = nums.length ? Math.min(Math.max(...nums.slice(0, 3)), 100) : 20;
+      return _wkRuler(maxN);
+    }
+    case 'place': return _wkPlaceValue(nums);
+    case 'frac':  return _wkFrac(problem);
+    case 'coin':  return _wkCoin(problem);
+    case 'clock': return '<div class="model-clock-emoji">🕐⏰</div>';
+    default:      return '';
+  }
+}
+
+function _wkFrame10(n) {
+  let rows = '';
+  for (let row = 0; row < 2; row++) {
+    let cells = '';
+    for (let col = 0; col < 5; col++) {
+      const i = row * 5 + col;
+      cells += `<div class="frame-cell${i < n ? ' frame-filled' : ''}"></div>`;
+    }
+    rows += `<div class="frame-row">${cells}</div>`;
+  }
+  return `<div class="model-frame10">${rows}</div>`;
+}
+
+function _wkBond(whole, part1, part2) {
+  const p2dash = part2 === '?' ? 'stroke-dasharray="6,4"' : '';
+  return `<svg class="model-bond" viewBox="0 0 220 150" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="110" cy="34" r="28" fill="white" stroke="#444" stroke-width="2.5"/>
+    <text x="110" y="40" text-anchor="middle" font-size="17" font-weight="bold" fill="#333">${whole}</text>
+    <line x1="88"  y1="58" x2="55"  y2="96" stroke="#666" stroke-width="2"/>
+    <line x1="132" y1="58" x2="165" y2="96" stroke="#666" stroke-width="2"/>
+    <circle cx="55"  cy="116" r="26" fill="#fff9e8" stroke="#d48800" stroke-width="2.5"/>
+    <text x="55"  y="122" text-anchor="middle" font-size="17" font-weight="bold" fill="#333">${part1}</text>
+    <circle cx="165" cy="116" r="26" fill="#eaf7ea" stroke="#2a8c2a" stroke-width="2.5" ${p2dash}/>
+    <text x="165" y="122" text-anchor="middle" font-size="17" font-weight="bold" fill="${part2 === '?' ? '#e07000' : '#333'}">${part2}</text>
+  </svg>`;
+}
+
+function _wkTape(whole, part1, part2) {
+  const total = (typeof whole === 'number' && whole > 0) ? whole : 100;
+  const p1num = typeof part1 === 'number' ? part1 : 0;
+  const w1 = part1 !== '?' ? Math.max(10, Math.round((p1num / total) * 100)) : 50;
+  const w2 = 100 - w1;
+  return `<div class="model-tape-wrap">
+    <div class="model-tape-bar">
+      <div class="tape-part tape-known" style="width:${w1}%"><span>${part1}</span></div>
+      <div class="tape-part tape-unknown" style="width:${w2}%"><span>${part2}</span></div>
+    </div>
+    <div class="tape-total-row">
+      <span class="tape-brace">⟵</span>
+      <span class="tape-total-num">${whole}</span>
+      <span class="tape-brace">⟶</span>
+    </div>
+  </div>`;
+}
+
+function _wkArray(rows, cols) {
+  let html = '<div class="model-array">';
+  for (let r = 0; r < rows; r++) {
+    html += '<div class="array-row">';
+    for (let c = 0; c < cols; c++) html += '<div class="array-dot"></div>';
+    html += '</div>';
+  }
+  return html + '</div>';
+}
+
+function _wkRuler(maxN) {
+  const step  = maxN <= 10 ? 1 : maxN <= 30 ? 2 : maxN <= 60 ? 5 : 10;
+  const ticks = Math.min(Math.floor(maxN / step) + 1, 12);
+  let marks = '';
+  for (let i = 0; i < ticks; i++)
+    marks += `<div class="ruler-tick"><span>${i * step}</span></div>`;
+  return `<div class="model-ruler"><div class="ruler-track">${marks}</div></div>`;
+}
+
+function _wkPlaceValue(nums) {
+  const n = nums.find(x => x >= 100 && x < 1000) || nums.find(x => x >= 10) || nums[0] || 0;
+  const h = Math.floor(n / 100), t = Math.floor((n % 100) / 10), o = n % 10;
+  const col = (label, count, cls) =>
+    `<div class="pv-col"><div class="pv-head">${label}</div>${'<div class="pv-block ' + cls + '"></div>'.repeat(Math.min(count, 9))}</div>`;
+  return `<div class="model-place-value">${col('Hundreds', h, 'pv-h')}${col('Tens', t, 'pv-t')}${col('Ones', o, 'pv-o')}</div>`;
+}
+
+function _wkFrac(problem) {
+  const q = problem.q.toLowerCase();
+  let parts = 2, filled = 1;
+  if (q.includes('1/3') || q.includes('third'))   { parts = 3; filled = 1; }
+  if (q.includes('2/3'))                           { parts = 3; filled = 2; }
+  if ((q.includes('1/4') || (q.includes('quarter') && !q.includes('coin')))) { parts = 4; filled = 1; }
+  if (q.includes('2/4') || q.includes('2 slices')) { parts = 4; filled = 2; }
+  if (q.includes('3/4') || q.includes('3 slices')) { parts = 4; filled = 3; }
+  const cx = 55, cy = 55, r = 45;
+  let paths = '';
+  for (let i = 0; i < parts; i++) {
+    const a0 = (i * 360 / parts - 90) * Math.PI / 180;
+    const a1 = ((i + 1) * 360 / parts - 90) * Math.PI / 180;
+    const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0);
+    const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+    const fill = i < filled ? '#ffd54f' : '#e8e8e8';
+    paths += `<path d="M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 0,1 ${x1.toFixed(1)},${y1.toFixed(1)} Z" fill="${fill}" stroke="#555" stroke-width="1.5"/>`;
+  }
+  return `<svg class="model-frac" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">${paths}</svg>`;
+}
+
+function _wkCoin(problem) {
+  const q = problem.q.toLowerCase();
+  let html = '';
+  const rpt = (tag, n) => tag.repeat(Math.min(n, 5));
+  const q_t = '<span class="coin-icon coin-q">25¢</span>';
+  const d_t = '<span class="coin-icon coin-d">10¢</span>';
+  const n_t = '<span class="coin-icon coin-n">5¢</span>';
+  const p_t = '<span class="coin-icon coin-p">1¢</span>';
+  if (q.includes('quarter')) html += rpt(q_t, (q.match(/quarter/g)||[]).length);
+  if (q.includes('dime'))    html += rpt(d_t, (q.match(/dime/g)||[]).length);
+  if (q.includes('nickel'))  html += rpt(n_t, (q.match(/nickel/g)||[]).length);
+  if (q.includes('penn'))    html += rpt(p_t, (q.match(/penn/g)||[]).length);
+  if (!html) html = q_t + d_t;
+  return `<div class="model-coin">${html}</div>`;
 }
 
 function submitEurekaAnswer(given) {

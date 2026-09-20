@@ -2608,6 +2608,310 @@ html, body {
 }
 
 /* ============================================================
+   EUREKA WORKSHEET (Great Minds workbook style)
+   ============================================================ */
+
+.wk-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 14px 28px;
+  max-width: 600px;
+  margin: 0 auto;
+  overflow-y: auto;
+}
+
+.wk-problem-num {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #888);
+  text-align: right;
+  letter-spacing: 0.04em;
+}
+
+.wk-illustration {
+  text-align: center;
+  font-size: 1.9rem;
+  letter-spacing: 6px;
+  padding: 6px 0 2px;
+  line-height: 1.4;
+  min-height: 48px;
+}
+
+.wk-question {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--card-bg, #fff);
+  border-radius: 10px;
+  padding: 14px 16px;
+  border: 2px solid var(--border, #ddd);
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+}
+
+.wk-section-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-secondary, #888);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 8px;
+}
+
+.wk-model-area {
+  background: var(--card-bg, #fff);
+  border-radius: 10px;
+  padding: 12px 14px 16px;
+  border: 1.5px dashed var(--border, #ddd);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+/* Ten Frame */
+.model-frame10 {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+  border: 2.5px solid #555;
+  padding: 4px;
+  border-radius: 5px;
+  background: white;
+}
+.frame-row  { display: flex; gap: 3px; }
+.frame-cell {
+  width: 36px; height: 36px;
+  border: 1.5px solid #999;
+  border-radius: 3px;
+  background: white;
+}
+.frame-filled { background: #e84040; border-color: #c03030; }
+
+/* Number Bond SVG */
+.model-bond { width: 200px; height: auto; display: block; }
+
+/* Tape Diagram */
+.model-tape-wrap { width: 100%; }
+.model-tape-bar  {
+  display: flex;
+  height: 46px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 2px solid #444;
+}
+.tape-part {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  min-width: 24px;
+  padding: 0 4px;
+}
+.tape-known   { background: #90caf9; color: #1a237e; border-right: 1.5px solid #444; }
+.tape-unknown { background: #fff9e8; color: #e07000; border: 2px dashed #e07000; }
+.tape-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #444;
+  margin-top: 4px;
+}
+.tape-brace { color: #aaa; font-size: 0.9rem; }
+
+/* Array */
+.model-array     { display: inline-flex; flex-direction: column; gap: 7px; }
+.array-row       { display: flex; gap: 7px; }
+.array-dot       { width: 22px; height: 22px; border-radius: 50%; background: #1a237e; opacity: 0.82; }
+
+/* Ruler / Number Line */
+.model-ruler { width: 100%; padding-bottom: 20px; }
+.ruler-track {
+  display: flex;
+  border-bottom: 3px solid #555;
+}
+.ruler-tick {
+  flex: 1;
+  height: 10px;
+  border-left: 2px solid #888;
+  position: relative;
+}
+.ruler-tick:last-child { border-right: 2px solid #888; }
+.ruler-tick span {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: #555;
+  white-space: nowrap;
+}
+
+/* Place Value */
+.model-place-value {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: flex-start;
+}
+.pv-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 60px;
+}
+.pv-head {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  text-align: center;
+}
+.pv-block {
+  width: 28px; height: 28px;
+  border-radius: 4px;
+  border: 2px solid;
+}
+.pv-h { background: #bbdefb; border-color: #1565c0; }
+.pv-t { background: #fff176; border-color: #f57f17; }
+.pv-o { background: #ffccbc; border-color: #bf360c; }
+
+/* Fraction Circle */
+.model-frac { width: 110px; height: 110px; display: block; }
+
+/* Coins */
+.model-coin {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 2px 0;
+}
+.coin-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 800;
+  border: 2.5px solid;
+}
+.coin-q { background: #ffd700; border-color: #b8860b; color: #5a3e00; }
+.coin-d { background: #d0d0d0; border-color: #888;    color: #333;    }
+.coin-n { background: #d4c48c; border-color: #9a7c30; color: #5a3e00; }
+.coin-p { background: #cd7f32; border-color: #8b4513; color: #fff;    }
+
+/* Clock */
+.model-clock-emoji { font-size: 2.8rem; text-align: center; }
+
+/* Drawing Canvas */
+.wk-canvas-area {
+  background: var(--card-bg, #fff);
+  border-radius: 10px;
+  border: 1.5px solid var(--border, #ddd);
+  overflow: hidden;
+}
+.wk-canvas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: var(--surface, #f5f5f5);
+  border-bottom: 1px solid var(--border, #ddd);
+  color: var(--text-secondary, #888);
+}
+.wk-clear-btn {
+  font-size: 0.74rem;
+  padding: 3px 10px;
+  border: 1.5px solid var(--border, #ddd);
+  border-radius: 20px;
+  background: var(--card-bg, #fff);
+  cursor: pointer;
+  color: var(--text-secondary, #888);
+  transition: all .15s;
+}
+.wk-clear-btn:hover { background: #fee2e2; border-color: #f87171; color: #dc2626; }
+.wk-canvas {
+  display: block;
+  width: 100%;
+  height: 140px;
+  touch-action: none;
+  background: white;
+  cursor: crosshair;
+}
+
+/* Answer Section */
+.wk-answer-section { padding: 2px 0 6px; }
+
+.wk-answer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.wk-answer-box-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border: 2.5px solid #1a237e;
+  border-radius: 8px;
+  padding: 5px 12px 5px 5px;
+}
+.wk-answer-box {
+  width: 70px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #1a237e;
+  -moz-appearance: textfield;
+}
+.wk-answer-box::-webkit-outer-spin-button,
+.wk-answer-box::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.wk-answer-unit {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #555;
+  white-space: nowrap;
+}
+.wk-check-btn { padding: 10px 20px; }
+
+/* Feedback */
+.wk-feedback {
+  border-radius: 12px;
+  padding: 18px 20px;
+  text-align: center;
+}
+.wk-correct {
+  background: #dcfce7;
+  border: 2px solid #16a34a;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #15803d;
+}
+.wk-wrong {
+  background: #fef2f2;
+  border: 2px solid #ef4444;
+  color: #dc2626;
+  padding: 14px 18px;
+}
+.wk-wrong-label  { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+.wk-wrong-answer { font-size: 1.1rem; }
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 480px) {
