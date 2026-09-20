@@ -71,202 +71,271 @@ function count(n)       { return { type: 'count', display: n, question: 'How man
 // BASIC MATH — levels 0-15
 // ============================================================
 const LEVELS = [
-  // 0 ─ Counting to 10
+  // ============================================================
+  // GRADE 2 — EUREKA MATH (Great Minds)
+  // San Diego Unified School District
+  // ============================================================
+
+  // ── Module 1: Sums and Differences to 100 ───────────────────
+
+  // 0 ─ Fluency Sprint: Add & Subtract within 20
   {
-    id: 0, name: 'Counting to 10', emoji: '⭐', color: '#FF6B6B',
+    id: 0, name: 'Add & Subtract within 20', emoji: '⚡', color: '#FF6B6B',
+    eureka: 'Module 1 — Fluency Sprint',
     generate(tier = 0) {
-      const max = tier >= 2 ? 15 : 10;
-      return fillSheet(Array.from({ length: max }, (_, i) => count(i + 1)));
-    }
-  },
-  // 1 ─ Counting to 20
-  {
-    id: 1, name: 'Counting to 20', emoji: '🌟', color: '#FF8E53',
-    generate() {
-      return fillSheet(Array.from({ length: 10 }, (_, i) => count(i + 11)));
-    }
-  },
-  // 2 ─ Addition to 10
-  {
-    id: 2, name: 'Addition to 10', emoji: '➕', color: '#FECA57',
-    generate() {
       const pool = [];
-      for (let a = 1; a <= 9; a++)
-        for (let b = 1; b <= 10 - a; b++)
-          pool.push(arith(`${a} + ${b}`, a + b));
-      return fillSheet(pool);
-    }
-  },
-  // 3 ─ Addition to 18
-  {
-    id: 3, name: 'Addition to 18', emoji: '➕', color: '#54A0FF',
-    generate(tier = 0) {
-      const minSum = [4, 10, 14][Math.min(tier, 2)];
-      const pool = [];
-      for (let a = 2; a <= 9; a++)
-        for (let b = 2; b <= 9; b++)
-          if (a + b >= minSum)
-            pool.push(arith(`${a} + ${b}`, a + b));
-      return fillSheet(pool);
-    }
-  },
-  // 4 ─ Subtraction (no negatives)
-  {
-    id: 4, name: 'Subtraction (no negatives)', emoji: '➖', color: '#5F27CD',
-    generate(tier = 0) {
-      const maxB = [5, 7, 9][Math.min(tier, 2)];
-      const pool = [];
-      for (let b = 1; b <= maxB; b++)
-        for (let a = b + 1; a <= 10; a++)
+      // addition facts
+      for (let a = 1; a <= 10; a++)
+        for (let b = 1; b <= 10; b++)
+          if (a + b <= 20) pool.push(arith(`${a} + ${b}`, a + b));
+      // subtraction facts
+      for (let a = 2; a <= 20; a++)
+        for (let b = 1; b < a; b++)
           pool.push(arith(`${a} − ${b}`, a - b));
       return fillSheet(pool);
     }
   },
-  // 5 ─ Mixed + and −
+
+  // 1 ─ Number Bonds — Missing Part (bonds to 10)
   {
-    id: 5, name: 'Mixed + and −', emoji: '🔀', color: '#00D2D3',
+    id: 1, name: 'Number Bonds to 10', emoji: '🔗', color: '#FF8E53',
+    eureka: 'Module 1 — Number Bonds',
     generate(tier = 0) {
-      const minVal = [2, 6, 10][Math.min(tier, 2)];
       const pool = [];
-      for (let a = 1; a <= 9; a++) {
-        for (let b = 1; b <= 9; b++) {
-          if (a + b >= minVal) pool.push(arith(`${a} + ${b}`, a + b));
-          if (a > b)           pool.push(arith(`${a} − ${b}`, a - b));
-        }
+      // bonds to 10: a + ? = 10
+      for (let a = 1; a <= 9; a++) pool.push(eqn(`${a} + __ = 10`, 10 - a));
+      // bonds to 10: ? + b = 10
+      for (let b = 1; b <= 9; b++) pool.push(eqn(`__ + ${b} = 10`, 10 - b));
+      if (tier >= 1) {
+        // bonds to other numbers up to 20
+        for (let total = 11; total <= 20; total++)
+          for (let a = 1; a < total; a++)
+            pool.push(eqn(`${a} + __ = ${total}`, total - a));
       }
       return fillSheet(pool);
     }
   },
-  // 6 ─ Adding to Double Digits
+
+  // 2 ─ Make Ten — Add Across 10
   {
-    id: 6, name: 'Adding to Double Digits', emoji: '🔢', color: '#FF9FF3',
+    id: 2, name: 'Make Ten Strategy', emoji: '🔟', color: '#FECA57',
+    eureka: 'Module 1 — Make Ten',
     generate(tier = 0) {
-      const maxA = [30, 60, 99][Math.min(tier, 2)];
+      // sums 11–20 where bridging through 10 is the key strategy
+      const pool = [];
+      for (let a = 6; a <= 9; a++)
+        for (let b = 2; b <= 9; b++)
+          if (a + b >= 11 && a + b <= 20)
+            pool.push(arith(`${a} + ${b}`, a + b));
+      if (tier >= 1) {
+        // missing addend across 10: 9 + __ = 15
+        for (let a = 6; a <= 9; a++)
+          for (let s = 11; s <= 18; s++)
+            if (s - a >= 2) pool.push(eqn(`${a} + __ = ${s}`, s - a));
+      }
+      return fillSheet(pool);
+    }
+  },
+
+  // 3 ─ Two-Digit + One-Digit (within 100)
+  {
+    id: 3, name: '2-Digit + 1-Digit', emoji: '➕', color: '#54A0FF',
+    eureka: 'Module 1 — Add within 100',
+    generate(tier = 0) {
+      const maxA = [49, 79, 99][Math.min(tier, 2)];
       return uniqueRandom(() => {
         const a = randInt(10, maxA), b = randInt(1, 9);
         return arith(`${a} + ${b}`, a + b);
       });
     }
   },
-  // 7 ─ 2-Digit Addition (No Carry)
+
+  // 4 ─ Two-Digit + Two-Digit within 100
   {
-    id: 7, name: '2-Digit Addition (No Carry)', emoji: '💯', color: '#1DD1A1',
+    id: 4, name: '2-Digit + 2-Digit within 100', emoji: '💯', color: '#1DD1A1',
+    eureka: 'Module 1 — Add within 100',
     generate(tier = 0) {
-      const maxD = [3, 4, 4][Math.min(tier, 2)];
-      const pool = [];
-      for (let a1 = 1; a1 <= maxD; a1++)
-        for (let b1 = 1; b1 <= maxD; b1++)
-          for (let a0 = 0; a0 <= maxD; a0++)
-            for (let b0 = 0; b0 <= maxD; b0++)
-              if (a0 + b0 < 10)
-                pool.push(arith(`${a1*10+a0} + ${b1*10+b0}`, (a1*10+a0) + (b1*10+b0)));
-      return fillSheet(pool);
-    }
-  },
-  // 8 ─ 2-Digit Addition (With Carry)
-  {
-    id: 8, name: '2-Digit Addition (With Carry)', emoji: '🔝', color: '#F368E0',
-    generate(tier = 0) {
-      const minN = [15, 25, 35][Math.min(tier, 2)];
       return uniqueRandom(() => {
-        const a = randInt(minN, 89), b = randInt(minN, 89);
-        if ((a % 10) + (b % 10) >= 10 && a + b <= 99)
-          return arith(`${a} + ${b}`, a + b);
+        const a = randInt(10, tier >= 1 ? 89 : 59);
+        const b = randInt(10, 99 - a);
+        return arith(`${a} + ${b}`, a + b);
       });
     }
   },
-  // 9 ─ 2-Digit Subtraction (No Borrow)
+
+  // 5 ─ Two-Digit Subtraction within 100
   {
-    id: 9, name: '2-Digit Subtraction (No Borrow)', emoji: '⬇️', color: '#EE5A24',
+    id: 5, name: '2-Digit Subtraction within 100', emoji: '➖', color: '#5F27CD',
+    eureka: 'Module 1 — Subtract within 100',
     generate(tier = 0) {
-      const maxD = [3, 4, 9][Math.min(tier, 2)];
-      const pool = [];
-      for (let a1 = 2; a1 <= 9; a1++)
-        for (let b1 = 1; b1 < a1; b1++)
-          for (let a0 = 1; a0 <= maxD; a0++)
-            for (let b0 = 0; b0 <= a0; b0++)
-              pool.push(arith(`${a1*10+a0} − ${b1*10+b0}`, (a1*10+a0) - (b1*10+b0)));
-      return fillSheet(pool);
-    }
-  },
-  // 10 ─ 2-Digit Subtraction (With Borrow)
-  {
-    id: 10, name: '2-Digit Subtraction (With Borrow)', emoji: '📉', color: '#C0392B',
-    generate(tier = 0) {
-      const minA = [21, 31, 51][Math.min(tier, 2)];
       return uniqueRandom(() => {
-        const a = randInt(minA, 99), b = randInt(12, a - 1);
-        if ((a % 10) < (b % 10))
-          return arith(`${a} − ${b}`, a - b);
+        const a = randInt(tier >= 1 ? 30 : 20, 99);
+        const b = randInt(10, a - 1);
+        return arith(`${a} − ${b}`, a - b);
       });
     }
   },
-  // 11 ─ Multiply by 2, 5, 10
+
+  // ── Module 3: Place Value, Counting & Comparison to 1,000 ───
+
+  // 6 ─ Skip Count by 5s
   {
-    id: 11, name: 'Multiply by 2, 5, and 10', emoji: '✖️', color: '#6C5CE7',
+    id: 6, name: 'Skip Count by 5s', emoji: '🖐️', color: '#FF9FF3',
+    eureka: 'Module 3 — Skip Counting',
     generate(tier = 0) {
-      const tables = [[2], [2, 5], [2, 5, 10]][Math.min(tier, 2)];
+      const maxStart = [95, 195, 495][Math.min(tier, 2)];
       const pool = [];
-      for (const t of tables)
-        for (let n = 1; n <= 10; n++)
-          pool.push(arith(`${t} × ${n}`, t * n));
+      for (let n = 5; n <= maxStart; n += 5)
+        pool.push(eqn(`${n}, __, ${n + 10} — skip by 5`, n + 5));
       return fillSheet(pool);
     }
   },
-  // 12 ─ All Multiplication Tables
+
+  // 7 ─ Skip Count by 10s and 100s
   {
-    id: 12, name: 'All Multiplication Tables', emoji: '🗂️', color: '#0984E3',
-    generate(tier = 0) {
-      const maxT = [5, 8, 10][Math.min(tier, 2)];
-      const pool = [];
-      for (let a = 2; a <= maxT; a++)
-        for (let b = 2; b <= maxT; b++)
-          pool.push(arith(`${a} × ${b}`, a * b));
-      return fillSheet(pool);
-    }
-  },
-  // 13 ─ Division (Basic)
-  {
-    id: 13, name: 'Division (Basic)', emoji: '➗', color: '#00B894',
-    generate(tier = 0) {
-      const maxD = [5, 7, 10][Math.min(tier, 2)];
-      const pool = [];
-      for (let b = 2; b <= maxD; b++)
-        for (let q = 1; q <= 10; q++)
-          pool.push(arith(`${b * q} ÷ ${b}`, q));
-      return fillSheet(pool);
-    }
-  },
-  // 14 ─ Mixed × and ÷
-  {
-    id: 14, name: 'Mixed × and ÷', emoji: '🔁', color: '#FDCB6E',
-    generate(tier = 0) {
-      const maxT = [5, 8, 10][Math.min(tier, 2)];
-      const pool = [];
-      for (let a = 2; a <= maxT; a++) {
-        for (let b = 2; b <= maxT; b++) {
-          pool.push(arith(`${a} × ${b}`, a * b));
-          pool.push(arith(`${a * b} ÷ ${b}`, a));
-        }
-      }
-      return fillSheet(pool);
-    }
-  },
-  // 15 ─ Fractions: Halves & Quarters
-  {
-    id: 15, name: 'Fractions: Halves & Quarters', emoji: '🍕', color: '#E17055',
+    id: 7, name: 'Skip Count by 10s & 100s', emoji: '💨', color: '#00D2D3',
+    eureka: 'Module 3 — Skip Counting',
     generate(tier = 0) {
       const pool = [];
-      // halves
-      for (let n = 2; n <= 20; n += 2)
-        pool.push(arith(`½ of ${n}`, n / 2));
+      // by 10s up to 200
+      for (let n = 10; n <= 190; n += 10)
+        pool.push(eqn(`${n}, __, ${n + 20} — skip by 10`, n + 10));
       if (tier >= 1) {
-        // quarters
-        for (let n = 4; n <= 20; n += 4) {
-          pool.push(arith(`¼ of ${n}`, n / 4));
-          pool.push(arith(`¾ of ${n}`, (n * 3) / 4));
+        // by 100s up to 900
+        for (let n = 100; n <= 800; n += 100)
+          pool.push(eqn(`${n}, __, ${n + 200} — skip by 100`, n + 100));
+      }
+      return fillSheet(pool);
+    }
+  },
+
+  // 8 ─ Expanded Form
+  {
+    id: 8, name: 'Expanded Form', emoji: '🏗️', color: '#F368E0',
+    eureka: 'Module 3 — Place Value',
+    generate(tier = 0) {
+      const pool = [];
+      if (tier === 0) {
+        // two-digit expanded form: 40 + 7 = ?
+        for (let tens = 1; tens <= 9; tens++)
+          for (let ones = 0; ones <= 9; ones++)
+            if (ones > 0) pool.push(arith(`${tens * 10} + ${ones}`, tens * 10 + ones));
+      } else {
+        // three-digit expanded form: 300 + 40 + 6 = ?
+        for (let h = 1; h <= 9; h++)
+          for (let t = 0; t <= 9; t++)
+            for (let o = 1; o <= 9; o++)
+              pool.push(arith(`${h*100} + ${t*10} + ${o}`, h*100 + t*10 + o));
+      }
+      return fillSheet(pool);
+    }
+  },
+
+  // 9 ─ Place Value — Name the Digit
+  {
+    id: 9, name: 'Place Value — Find the Digit', emoji: '🔍', color: '#EE5A24',
+    eureka: 'Module 3 — Place Value',
+    generate(tier = 0) {
+      const pool = [];
+      const places = tier >= 1
+        ? ['ones', 'tens', 'hundreds']
+        : ['ones', 'tens'];
+      for (let n = 10; n <= (tier >= 1 ? 999 : 99); n++) {
+        for (const place of places) {
+          let digit;
+          if (place === 'ones')     digit = n % 10;
+          if (place === 'tens')     digit = Math.floor(n / 10) % 10;
+          if (place === 'hundreds') digit = Math.floor(n / 100);
+          if (digit !== undefined)
+            pool.push(eqn(`${place}s digit of ${n}`, digit));
         }
       }
+      return fillSheet(pool);
+    }
+  },
+
+  // ── Modules 4–5: Add & Subtract within 200 and 1,000 ────────
+
+  // 10 ─ Add within 200
+  {
+    id: 10, name: 'Add within 200', emoji: '📈', color: '#6C5CE7',
+    eureka: 'Module 4 — Add within 200',
+    generate(tier = 0) {
+      return uniqueRandom(() => {
+        const a = randInt(tier >= 1 ? 51 : 11, 189);
+        const b = randInt(10, 200 - a);
+        return arith(`${a} + ${b}`, a + b);
+      });
+    }
+  },
+
+  // 11 ─ Subtract within 200
+  {
+    id: 11, name: 'Subtract within 200', emoji: '📉', color: '#0984E3',
+    eureka: 'Module 4 — Subtract within 200',
+    generate(tier = 0) {
+      return uniqueRandom(() => {
+        const a = randInt(tier >= 1 ? 101 : 21, 200);
+        const b = randInt(10, a - 1);
+        return arith(`${a} − ${b}`, a - b);
+      });
+    }
+  },
+
+  // 12 ─ Add within 1,000
+  {
+    id: 12, name: 'Add within 1,000', emoji: '🔢', color: '#00B894',
+    eureka: 'Module 5 — Add within 1,000',
+    generate(tier = 0) {
+      return uniqueRandom(() => {
+        const a = randInt(100, tier >= 1 ? 899 : 699);
+        const b = randInt(100, 999 - a);
+        return arith(`${a} + ${b}`, a + b);
+      });
+    }
+  },
+
+  // 13 ─ Subtract within 1,000
+  {
+    id: 13, name: 'Subtract within 1,000', emoji: '🔻', color: '#FDCB6E',
+    eureka: 'Module 5 — Subtract within 1,000',
+    generate(tier = 0) {
+      return uniqueRandom(() => {
+        const a = randInt(200, 999);
+        const b = randInt(100, a - 1);
+        return arith(`${a} − ${b}`, a - b);
+      });
+    }
+  },
+
+  // ── Module 6: Foundations of Multiplication & Division ───────
+
+  // 14 ─ Equal Groups — Repeated Addition
+  {
+    id: 14, name: 'Equal Groups', emoji: '🟰', color: '#E17055',
+    eureka: 'Module 6 — Foundations of Multiplication',
+    generate(tier = 0) {
+      const maxG = [5, 8, 10][Math.min(tier, 2)];
+      const maxN = [5, 8, 10][Math.min(tier, 2)];
+      const pool = [];
+      for (let groups = 2; groups <= maxG; groups++)
+        for (let n = 2; n <= maxN; n++)
+          pool.push(arith(`${groups} groups of ${n}`, groups * n));
+      return fillSheet(pool);
+    }
+  },
+
+  // 15 ─ Arrays (rows × columns)
+  {
+    id: 15, name: 'Arrays', emoji: '⬛', color: '#C0392B',
+    eureka: 'Module 6 — Arrays & Repeated Addition',
+    generate(tier = 0) {
+      const maxR = [4, 6, 10][Math.min(tier, 2)];
+      const maxC = [4, 6, 10][Math.min(tier, 2)];
+      const pool = [];
+      for (let r = 2; r <= maxR; r++)
+        for (let c = 2; c <= maxC; c++)
+          pool.push(arith(`${r} rows × ${c} columns`, r * c));
       return fillSheet(pool);
     }
   },
