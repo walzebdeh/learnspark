@@ -2458,6 +2458,156 @@ html, body {
 }
 
 /* ============================================================
+   EUREKA MATH TAB
+   ============================================================ */
+
+/* Module grid — 2 columns on all screens, 4 on wide */
+.eureka-module-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+@media (min-width: 600px) {
+  .eureka-module-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Module card */
+.eureka-module-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px 14px 16px;
+  text-align: center;
+  cursor: pointer;
+  border-top: 5px solid var(--mod-color, var(--primary));
+  transition: transform .15s, box-shadow .15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.eureka-module-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,.15); }
+.emc-emoji   { font-size: 2.2rem; line-height: 1; }
+.emc-badge   { font-size: .7rem; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: var(--mod-color, var(--primary)); }
+.emc-title   { font-size: .82rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+.emc-bar     { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.emc-bar-fill { height: 100%; background: var(--mod-color, var(--primary)); border-radius: 3px; transition: width .4s; }
+.emc-progress { font-size: .72rem; color: var(--muted); font-weight: 700; }
+
+/* Lesson list */
+.eureka-lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+.eureka-lesson-card {
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  border-left: 5px solid var(--mod-color, var(--primary));
+  transition: transform .15s, box-shadow .15s;
+}
+.eureka-lesson-card:hover { transform: translateX(4px); box-shadow: 0 6px 24px rgba(0,0,0,.12); }
+.eureka-lesson-card.done  { background: #f0fff6; }
+.elc-icon  { font-size: 1.8rem; flex-shrink: 0; }
+.elc-info  { flex: 1; }
+.elc-name  { font-size: .95rem; font-weight: 800; color: var(--text); }
+.elc-meta  { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+.elc-count { font-size: .78rem; font-weight: 700; color: var(--mod-color, var(--primary)); white-space: nowrap; }
+
+/* Eureka problem card */
+.eureka-problem-card {
+  padding: 32px 28px 28px;
+}
+.eureka-question {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.45;
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+/* Multiple choice — 2×2 grid */
+.eureka-mc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.eureka-mc-btn {
+  background: #f0f4ff;
+  border: 2px solid #d0d8ff;
+  border-radius: 14px;
+  padding: 16px 10px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+  cursor: pointer;
+  transition: background .12s, border-color .12s, transform .1s;
+  font-family: inherit;
+}
+.eureka-mc-btn:hover {
+  background: #e0e8ff;
+  border-color: var(--primary);
+  transform: scale(1.03);
+}
+.eureka-mc-btn:active { transform: scale(.97); }
+
+/* True / False buttons */
+.eureka-tf-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+.eureka-tf-btn {
+  flex: 1;
+  max-width: 200px;
+  padding: 18px 12px;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.25rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .1s, box-shadow .12s;
+  font-family: inherit;
+}
+.eureka-tf-btn:hover  { transform: scale(1.04); box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+.eureka-tf-btn:active { transform: scale(.97); }
+.true-btn  { background: #26de81; color: #fff; }
+.false-btn { background: #ff4757; color: #fff; }
+
+/* Eureka results header */
+.eureka-result-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.eureka-mod-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.eureka-lesson-lbl {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 480px) {

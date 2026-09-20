@@ -29,6 +29,10 @@ let state = {
   arabicSheet: null,
   arabicSheetResult: null,
   arabicGrade: null,
+  eurekaModule: null,
+  eurekaLesson: null,
+  eurekaSheet: null,
+  eurekaResult: null,
 };
 
 let _appBooted = false;
@@ -85,6 +89,10 @@ function render() {
       case 'arabicLevelMap':     renderArabicLevelMap(app);     break;
       case 'arabicSheet':        renderArabicSheet(app);        break;
       case 'arabicSheetResults': renderArabicSheetResults(app); break;
+      case 'eurekaMap':          renderEurekaMap(app);          break;
+      case 'eurekaLesson':       renderEurekaLesson(app);       break;
+      case 'eurekaSheet':        renderEurekaSheet(app);        break;
+      case 'eurekaResults':      renderEurekaResults(app);      break;
     }
   } catch(e) {
     console.error('Render error:', e);
@@ -94,6 +102,8 @@ function render() {
       <button onclick="setState({screen:'welcome'})" style="margin-top:16px;padding:12px 28px;border-radius:12px;border:none;background:#fff;font-weight:700;cursor:pointer">Go Home</button>
     </div>`;
   }
+  const _eBtn = document.getElementById('tab-eureka');
+  if (_eBtn && state.screen !== 'eurekaMap') _eBtn.onclick = () => setState({ screen: 'eurekaMap' });
 }
 
 // ── PIN entry overlay ─────────────────────────────────────────
@@ -626,6 +636,7 @@ function renderLevelMap(app) {
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
+        <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -933,6 +944,7 @@ function renderWordLevelMap(app) {
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
+        <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -1693,6 +1705,7 @@ function renderTypingLevelMap(app) {
         <button class="mode-tab active" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
+        <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -2431,6 +2444,7 @@ function renderPuzzleMap(app) {
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab active" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
+        <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -3049,6 +3063,7 @@ function renderArabicLevelMap(app) {
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab active" id="tab-arabic">🌙 عربي</button>
+        <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -3246,6 +3261,285 @@ function renderArabicSheetResults(app) {
 
   document.getElementById('btn-again').onclick = () => startArabicSheet(r.levelId);
   document.getElementById('btn-map').onclick   = () => setState({ screen: 'arabicLevelMap', arabicSheetResult: null });
+}
+
+// ============================================================
+// EUREKA MAP
+// ============================================================
+function renderEurekaMap(app) {
+  const p  = getProgress();
+  const ep = p.eurekaProgress || {};
+  const div = el('div', 'screen levelmap-screen');
+
+  const cardsHTML = EUREKA_G2.map(mod => {
+    const total = mod.lessons.length;
+    const done  = mod.lessons.filter(l => (ep[`${mod.id}_${l.id}`] || {}).done).length;
+    const pct   = Math.round((done / total) * 100);
+    return `
+      <div class="eureka-module-card" data-mod="${mod.id}" style="--mod-color:${mod.color}">
+        <div class="emc-emoji">${mod.emoji}</div>
+        <div class="emc-badge">Module ${mod.module}</div>
+        <div class="emc-title">${esc(mod.title)}</div>
+        <div class="emc-bar"><div class="emc-bar-fill" style="width:${pct}%"></div></div>
+        <div class="emc-progress">${done} / ${total} lessons</div>
+      </div>`;
+  }).join('');
+
+  div.innerHTML = `
+    <div class="mode-tabs-wrap">
+      <div class="mode-tabs">
+        <button class="mode-tab" id="tab-math">🔢 Math</button>
+        <button class="mode-tab" id="tab-words">📝 Words</button>
+        <button class="mode-tab" id="tab-choices">💡 Choices</button>
+        <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
+        <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
+        <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
+        <button class="mode-tab active" id="tab-eureka">📚 Eureka</button>
+      </div>
+    </div>
+    <div class="levelmap-header">
+      <h2>Eureka Math — Grade 2 ✨</h2>
+      <p>Great Minds Curriculum</p>
+      ${totalScoreBadge(p)}
+      <button class="btn btn-ghost btn-sm" id="btn-switch-player">Sign Out</button>
+    </div>
+    <div class="eureka-module-grid">${cardsHTML}</div>`;
+
+  app.appendChild(div);
+
+  document.getElementById('btn-switch-player').onclick = () =>
+    { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); };
+  document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
+  document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
+  document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
+  document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
+  document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
+  document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
+
+  div.querySelectorAll('.eureka-module-card').forEach(card => {
+    card.addEventListener('click', () =>
+      setState({ screen: 'eurekaLesson', eurekaModule: parseInt(card.dataset.mod, 10) })
+    );
+  });
+}
+
+// ============================================================
+// EUREKA LESSON LIST
+// ============================================================
+function renderEurekaLesson(app) {
+  const p   = getProgress();
+  const ep  = p.eurekaProgress || {};
+  const mod = EUREKA_G2[state.eurekaModule];
+  const div = el('div', 'screen levelmap-screen');
+
+  const lessonsHTML = mod.lessons.map(lesson => {
+    const lp   = ep[`${mod.id}_${lesson.id}`] || {};
+    const done = lp.done || false;
+    const best = lp.bestScore || 0;
+    return `
+      <div class="eureka-lesson-card${done ? ' done' : ''}" data-lesson="${lesson.id}" style="--mod-color:${mod.color}">
+        <div class="elc-icon">${done ? '✅' : '📄'}</div>
+        <div class="elc-info">
+          <div class="elc-name">${esc(lesson.name)}: ${esc(lesson.title)}</div>
+          <div class="elc-meta">${done ? `Best score: ${best} / 10` : 'Not yet attempted'}</div>
+        </div>
+        <div class="elc-count">${lesson.problems.length} problems →</div>
+      </div>`;
+  }).join('');
+
+  div.innerHTML = `
+    <div class="levelmap-header">
+      <button class="btn btn-ghost btn-sm" id="btn-back">← All Modules</button>
+      <h2 style="color:${mod.color}">${mod.emoji} Module ${mod.module}</h2>
+      <p style="font-weight:800;font-size:1.05rem">${esc(mod.title)}</p>
+    </div>
+    <div class="eureka-lesson-list">${lessonsHTML}</div>`;
+
+  app.appendChild(div);
+
+  document.getElementById('btn-back').onclick = () => setState({ screen: 'eurekaMap' });
+
+  div.querySelectorAll('.eureka-lesson-card').forEach(card => {
+    card.addEventListener('click', () =>
+      startEurekaSheet(state.eurekaModule, parseInt(card.dataset.lesson, 10))
+    );
+  });
+}
+
+// ============================================================
+// EUREKA SHEET
+// ============================================================
+function startEurekaSheet(moduleId, lessonId) {
+  const lesson = EUREKA_G2[moduleId].lessons[lessonId];
+  setState({
+    screen: 'eurekaSheet',
+    eurekaModule: moduleId,
+    eurekaLesson: lessonId,
+    eurekaSheet: { moduleId, lessonId, problems: lesson.problems, currentIndex: 0, answers: [], feedback: null }
+  });
+}
+
+function renderEurekaSheet(app) {
+  const s       = state.eurekaSheet;
+  const mod     = EUREKA_G2[s.moduleId];
+  const lesson  = mod.lessons[s.lessonId];
+  const problem = s.problems[s.currentIndex];
+  const total   = s.problems.length;
+  const pct     = Math.round((s.currentIndex / total) * 100);
+  const score   = s.answers.filter(a => a.correct).length;
+
+  let bodyHTML = '';
+  if (s.feedback !== null) {
+    const last = s.answers[s.answers.length - 1];
+    bodyHTML = s.feedback === 'correct'
+      ? `<div class="feedback correct animate-pop">✓ Correct! 🎉</div>`
+      : `<div class="feedback wrong animate-pop">The answer is <strong>${esc(String(last.expected))}</strong></div>`;
+  } else if (problem.type === 'mc') {
+    bodyHTML = `<div class="eureka-mc-grid">
+      ${problem.choices.map(ch =>
+        `<button class="eureka-mc-btn" data-choice="${esc(ch)}">${esc(ch)}</button>`
+      ).join('')}
+    </div>`;
+  } else if (problem.type === 'tf') {
+    bodyHTML = `<div class="eureka-tf-row">
+      <button class="eureka-tf-btn true-btn" data-tf="true">✓ True</button>
+      <button class="eureka-tf-btn false-btn" data-tf="false">✗ False</button>
+    </div>`;
+  } else {
+    bodyHTML = `<div class="answer-row">
+      <input type="number" id="eureka-answer" class="answer-input" placeholder="?" autocomplete="off" inputmode="numeric" />
+      <button class="btn btn-primary" id="btn-eureka-check">Check ✓</button>
+    </div>`;
+  }
+
+  const div = el('div', 'screen sheet-screen');
+  div.innerHTML = `
+    <div class="sheet-header">
+      <div class="sheet-header-left">
+        <button class="btn btn-ghost btn-sm" id="btn-eureka-exit">✕ Exit</button>
+      </div>
+      <div class="sheet-title" style="color:${mod.color}">Module ${mod.module} — ${esc(lesson.title)}</div>
+      <div class="sheet-correct">✓ ${score}</div>
+    </div>
+    <div class="sheet-progress-bar">
+      <div class="sheet-progress-fill" style="width:${pct}%"></div>
+    </div>
+    <div class="sheet-counter">Problem ${s.currentIndex + 1} of ${total}</div>
+    <div class="card problem-card eureka-problem-card">
+      <div class="eureka-question">${esc(problem.q)}</div>
+      ${bodyHTML}
+    </div>`;
+
+  app.appendChild(div);
+
+  document.getElementById('btn-eureka-exit').onclick = () =>
+    setState({ screen: 'eurekaLesson', eurekaSheet: null });
+
+  if (s.feedback !== null) return;
+
+  if (problem.type === 'mc') {
+    div.querySelectorAll('.eureka-mc-btn').forEach(btn =>
+      btn.addEventListener('click', () => submitEurekaAnswer(btn.dataset.choice))
+    );
+  } else if (problem.type === 'tf') {
+    div.querySelectorAll('.eureka-tf-btn').forEach(btn =>
+      btn.addEventListener('click', () => submitEurekaAnswer(btn.dataset.tf === 'true'))
+    );
+  } else {
+    const inp = document.getElementById('eureka-answer');
+    inp.focus();
+    const go = () => {
+      const val = parseFloat(inp.value);
+      if (isNaN(val)) { shake(inp); return; }
+      submitEurekaAnswer(val);
+    };
+    document.getElementById('btn-eureka-check').onclick = go;
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  }
+}
+
+function submitEurekaAnswer(given) {
+  const s       = state.eurekaSheet;
+  const problem = s.problems[s.currentIndex];
+  const correct = given === problem.answer;
+
+  s.answers.push({ given, correct, expected: problem.answer });
+  s.feedback = correct ? 'correct' : 'wrong';
+  render();
+
+  setTimeout(() => {
+    s.feedback = null;
+    s.currentIndex++;
+    if (s.currentIndex >= s.problems.length) finishEurekaSheet();
+    else render();
+  }, correct ? 700 : 1400);
+}
+
+function finishEurekaSheet() {
+  const s     = state.eurekaSheet;
+  const score = s.answers.filter(a => a.correct).length;
+  const done  = score >= 7;
+
+  const p = getProgress();
+  if (!p.eurekaProgress) p.eurekaProgress = {};
+  const key  = `${s.moduleId}_${s.lessonId}`;
+  const prev = p.eurekaProgress[key] || {};
+  p.eurekaProgress[key] = {
+    done:      done || (prev.done || false),
+    bestScore: Math.max(score, prev.bestScore || 0),
+    attempts:  (prev.attempts || 0) + 1,
+  };
+  saveProgress(p);
+
+  setState({
+    screen: 'eurekaResults',
+    eurekaSheet: null,
+    eurekaResult: { moduleId: s.moduleId, lessonId: s.lessonId, score, total: s.problems.length, done }
+  });
+}
+
+// ============================================================
+// EUREKA RESULTS
+// ============================================================
+function renderEurekaResults(app) {
+  const r      = state.eurekaResult;
+  const mod    = EUREKA_G2[r.moduleId];
+  const lesson = mod.lessons[r.lessonId];
+  const pct    = Math.round((r.score / r.total) * 100);
+
+  const stars   = pct === 100 ? '⭐⭐⭐' : pct >= 70 ? '⭐⭐⭐' : pct >= 50 ? '⭐⭐' : '⭐';
+  const message = pct === 100 ? 'Perfect score! Amazing! 🎊'
+                : pct >= 70  ? 'Great job! Lesson complete! 🎉'
+                : pct >= 50  ? 'Good try! Keep practicing! 💪'
+                :               'Keep going — you can do it! 🌟';
+
+  const div = el('div', 'screen results-screen');
+  div.innerHTML = `
+    <div class="card results-card">
+      <div class="eureka-result-header">
+        <span class="eureka-mod-badge" style="background:${mod.color}">Module ${mod.module}</span>
+        <span class="eureka-lesson-lbl">${esc(lesson.title)}</span>
+      </div>
+      <div class="results-stars animate-pop">${stars}</div>
+      <h2 class="results-message">${message}</h2>
+      <div class="results-score-box">
+        <div class="score-big">${r.score} / ${r.total}</div>
+        <div class="score-pct">${pct}%</div>
+      </div>
+      ${r.done
+        ? `<div class="results-counted">✅ Lesson complete! Well done!</div>`
+        : `<div class="results-not-counted">Score below 70% — try again to mark it complete!</div>`}
+      <div class="results-actions">
+        <button class="btn btn-primary btn-large" id="btn-again">Try Again 🔄</button>
+        <button class="btn btn-secondary" id="btn-map">Back to Module 🗺️</button>
+      </div>
+    </div>`;
+
+  app.appendChild(div);
+
+  document.getElementById('btn-again').onclick = () => startEurekaSheet(r.moduleId, r.lessonId);
+  document.getElementById('btn-map').onclick   = () =>
+    setState({ screen: 'eurekaLesson', eurekaModule: r.moduleId, eurekaResult: null });
 }
 
 // ── Back-button (History API) ─────────────────────────────────
