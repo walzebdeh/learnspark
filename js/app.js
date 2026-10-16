@@ -92,6 +92,7 @@ function render() {
       case 'arabicSheetResults': renderArabicSheetResults(app); break;
       case 'eurekaMap':          renderEurekaMap(app);          break;
       case 'eurekaLesson':       renderEurekaLesson(app);       break;
+      case 'eurekaLearn':        renderEurekaLearn(app);        break;
       case 'eurekaSheet':        renderEurekaSheet(app);        break;
       case 'eurekaResults':      renderEurekaResults(app);      break;
     }
@@ -636,7 +637,6 @@ function renderLevelMap(app) {
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
-        <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
       </div>
     </div>
@@ -679,7 +679,6 @@ function renderLevelMap(app) {
   document.getElementById('tab-choices').onclick  = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
   document.getElementById('tab-typing').onclick   = () => setState({ screen: 'typingLevelMap' });
   document.getElementById('tab-puzzles').onclick  = () => setState({ screen: 'puzzleMap' });
-  document.getElementById('tab-arabic').onclick   = () => setState({ screen: 'arabicLevelMap' });
 
   div.querySelectorAll('.grade-tab:not([disabled])').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -944,7 +943,6 @@ function renderWordLevelMap(app) {
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
-        <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
       </div>
     </div>
@@ -1012,7 +1010,6 @@ function renderWordLevelMap(app) {
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
   document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
   document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
-  document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
 
   div.querySelectorAll('.level-card:not(.locked)').forEach(card => {
     card.addEventListener('click', () => {
@@ -1359,7 +1356,6 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab active" id="tab-choices">💡 Choices</button>
           <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
           <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
-          <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1378,8 +1374,7 @@ function renderChoiceLevelMap(app) {
     document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
     document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
     document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
-    document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
-    document.getElementById('btn-back-topics').onclick = () => setState({ choiceTopic: null });
+      document.getElementById('btn-back-topics').onclick = () => setState({ choiceTopic: null });
     document.getElementById('btn-unlock-all').onclick  = () => setState({ allUnlocked: !state.allUnlocked });
 
     div.querySelectorAll('.level-card:not(.locked)').forEach(card => {
@@ -1413,7 +1408,6 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab active" id="tab-choices">💡 Choices</button>
           <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
           <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
-          <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1432,8 +1426,7 @@ function renderChoiceLevelMap(app) {
     document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
     document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
     document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
-    document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
-    document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); }
+      document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); }
     document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
 
     div.querySelectorAll('.topic-card').forEach(card => {
@@ -1705,7 +1698,6 @@ function renderTypingLevelMap(app) {
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab active" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
-        <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
       </div>
     </div>
@@ -1725,7 +1717,6 @@ function renderTypingLevelMap(app) {
   document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
   document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
-  document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
   document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); };
   document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
 
@@ -2444,7 +2435,6 @@ function renderPuzzleMap(app) {
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab active" id="tab-puzzles">🧩 Puzzles</button>
-        <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
       </div>
     </div>
@@ -2462,7 +2452,6 @@ function renderPuzzleMap(app) {
   document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
   document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
-  document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
 
   div.querySelectorAll('.pz-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -3063,7 +3052,6 @@ function renderArabicLevelMap(app) {
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
-        <button class="mode-tab active" id="tab-arabic">🌙 عربي</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
       </div>
     </div>
@@ -3333,7 +3321,6 @@ function renderEurekaMap(app) {
   document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
   document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
   document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
-  document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
   document.getElementById('btn-g2').onclick = () => setState({ eurekaGrade: 2 });
   document.getElementById('btn-g3').onclick = () => setState({ eurekaGrade: 3 });
 
@@ -3383,9 +3370,52 @@ function renderEurekaLesson(app) {
 
   div.querySelectorAll('.eureka-lesson-card').forEach(card => {
     card.addEventListener('click', () =>
-      startEurekaSheet(state.eurekaModule, parseInt(card.dataset.lesson, 10))
+      setState({ screen: 'eurekaLearn', eurekaLesson: parseInt(card.dataset.lesson, 10) })
     );
   });
+}
+
+// ============================================================
+// EUREKA LEARN — concept explanation before practice
+// ============================================================
+function renderEurekaLearn(app) {
+  const mod    = getEurekaData()[state.eurekaModule];
+  const lesson = mod.lessons[state.eurekaLesson];
+  const ex     = lesson.explain || {};
+
+  const exampleLines = (ex.example || '').split('\n').map(l => `<div class="el-example-line">${esc(l)}</div>`).join('');
+
+  const div = el('div', 'screen levelmap-screen');
+  div.innerHTML = `
+    <div class="levelmap-header">
+      <button class="btn btn-ghost btn-sm" id="btn-learn-back">← Lessons</button>
+      <h2 style="color:${mod.color}">${mod.emoji} ${esc(lesson.name)}</h2>
+      <p style="font-weight:800;font-size:1.05rem">${esc(lesson.title)}</p>
+    </div>
+    <div class="el-card">
+      <div class="el-scene">${lesson.scene || mod.emoji}</div>
+      <div class="el-section">
+        <div class="el-label">💡 Key Idea</div>
+        <div class="el-concept">${esc(ex.concept || '')}</div>
+      </div>
+      <div class="el-section">
+        <div class="el-label">📝 Worked Example</div>
+        <div class="el-example">${exampleLines}</div>
+      </div>
+      <div class="el-section el-tip-row">
+        <div class="el-label">⭐ Tip</div>
+        <div class="el-tip">${esc(ex.tip || '')}</div>
+      </div>
+      <button class="btn btn-primary btn-large el-start-btn" id="btn-start-sheet">
+        Start Practice ✏️
+      </button>
+    </div>`;
+
+  app.appendChild(div);
+  document.getElementById('btn-learn-back').onclick = () =>
+    setState({ screen: 'eurekaLesson', eurekaLesson: null });
+  document.getElementById('btn-start-sheet').onclick = () =>
+    startEurekaSheet(state.eurekaModule, state.eurekaLesson);
 }
 
 // ============================================================

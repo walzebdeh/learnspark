@@ -2496,10 +2496,59 @@ html, body {
 .emc-progress { font-size: .72rem; color: var(--muted); font-weight: 700; }
 .emc-weeks   { font-size: .68rem; color: var(--muted); font-weight: 600; background: color-mix(in srgb, var(--mod-color, var(--primary)) 12%, transparent); border-radius: 20px; padding: 2px 8px; }
 
-/* Grade selector */
+/* Grade selector — high-contrast regardless of theme */
 .eureka-grade-selector { display: flex; gap: 8px; justify-content: center; margin: 8px 0 4px; }
-.eg-btn { padding: 6px 18px; border-radius: 20px; border: 2px solid var(--primary); background: transparent; color: var(--primary); font-weight: 800; font-size: .85rem; cursor: pointer; transition: background .15s, color .15s; }
-.eg-btn.active { background: var(--primary); color: #fff; }
+.eg-btn {
+  padding: 6px 22px; border-radius: 20px;
+  border: 2px solid #888; background: var(--surface);
+  color: var(--text); font-weight: 800; font-size: .85rem;
+  cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+}
+.eg-btn.active {
+  background: #2563eb; border-color: #2563eb; color: #fff;
+}
+.eg-btn:not(.active):hover { border-color: #2563eb; color: #2563eb; }
+
+/* Eureka Learn screen */
+.el-card {
+  background: var(--surface);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 24px 20px 28px;
+  display: flex; flex-direction: column; gap: 18px;
+  max-width: 520px; margin: 0 auto; width: 100%;
+}
+.el-scene {
+  font-size: 2rem; text-align: center; letter-spacing: .1em;
+  background: var(--bg); border-radius: 12px; padding: 14px 10px;
+  line-height: 1.5; white-space: pre-wrap;
+}
+.el-section { display: flex; flex-direction: column; gap: 6px; }
+.el-label {
+  font-size: .72rem; font-weight: 900; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--primary);
+}
+.el-concept {
+  font-size: .95rem; font-weight: 600; color: var(--text);
+  line-height: 1.55; white-space: pre-wrap;
+}
+.el-example {
+  background: var(--bg); border-radius: 10px;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 2px;
+}
+.el-example-line {
+  font-size: .88rem; font-family: monospace; color: var(--text);
+  line-height: 1.6; white-space: pre-wrap;
+}
+.el-tip-row { background: #fffbeb; border-radius: 10px; padding: 10px 14px; }
+@media (prefers-color-scheme: dark) { .el-tip-row { background: #2d2500; } }
+:root[data-theme="dark"] .el-tip-row { background: #2d2500; }
+:root[data-theme="light"] .el-tip-row { background: #fffbeb; }
+.el-tip { font-size: .9rem; font-weight: 700; color: #92400e; line-height: 1.5; }
+@media (prefers-color-scheme: dark) { .el-tip { color: #fcd34d; } }
+:root[data-theme="dark"] .el-tip { color: #fcd34d; }
+:root[data-theme="light"] .el-tip { color: #92400e; }
+.el-start-btn { margin-top: 4px; }
 
 /* Lesson list */
 .eureka-lesson-list {
