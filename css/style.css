@@ -1175,26 +1175,29 @@ html, body {
 
 .mode-tabs {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   background: rgba(255,255,255,.2);
   border-radius: 50px;
-  padding: 6px;
+  padding: 5px;
   width: 100%;
 }
 
 .mode-tab {
   flex: 1;
+  min-width: 0;
   background: transparent;
   color: rgba(255,255,255,.8);
   border: none;
   border-radius: 50px;
-  padding: 10px 4px;
+  padding: 8px 2px;
   font-family: 'Nunito', sans-serif;
   font-weight: 800;
-  font-size: .9rem;
+  font-size: .72rem;
   cursor: pointer;
   white-space: nowrap;
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: background .2s, color .2s;
 }
 
@@ -2969,13 +2972,145 @@ html, body {
 /* ============================================================
    RESPONSIVE
    ============================================================ */
+/* ============================================================
+   NOETIC MATH CONTEST
+   ============================================================ */
+
+/* Topic grid */
+.noetic-topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+.noetic-topic-card {
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  border-top: 4px solid var(--ntc, var(--primary));
+  padding: 16px 12px 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  text-align: center;
+}
+.noetic-topic-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.14); }
+.ntc-emoji  { font-size: 2rem; }
+.ntc-name   { font-size: .82rem; font-weight: 800; color: var(--text); line-height: 1.3; }
+.ntc-count  { font-size: .72rem; color: var(--muted); font-weight: 600; }
+.ntc-badge  { font-size: .68rem; font-weight: 800; background: color-mix(in srgb, var(--ntc, var(--primary)) 14%, transparent);
+              color: var(--ntc, var(--primary)); border-radius: 20px; padding: 2px 8px; margin-top: 2px; }
+.ntc-new    { background: #dcfce7; color: #166534; }
+
+/* Mock contest banner */
+.noetic-mock-banner {
+  margin: 4px 16px 24px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%);
+  border-radius: 18px;
+  padding: 18px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(55,48,163,.35);
+}
+.nmb-left   { display: flex; flex-direction: column; gap: 4px; }
+.nmb-title  { font-size: 1.05rem; font-weight: 900; color: #fff; }
+.nmb-sub    { font-size: .78rem; color: rgba(255,255,255,.7); font-weight: 600; }
+.nmb-best   { font-size: .8rem; color: #fbbf24; font-weight: 800; margin-top: 2px; }
+.nmb-btn    { flex-shrink: 0; white-space: nowrap; }
+
+/* Drill tip */
+.noetic-tip {
+  font-size: .82rem; color: var(--muted); font-weight: 600;
+  background: var(--bg); border-radius: 10px; padding: 8px 12px;
+  margin-bottom: 4px; line-height: 1.5;
+}
+
+/* Contest timer */
+.noetic-timer { font-weight: 900; font-size: .9rem; min-width: 72px; text-align: right; }
+
+/* Problem number with answered count */
+.noetic-answered-count {
+  font-size: .72rem; color: var(--muted); font-weight: 700; margin-left: 8px;
+}
+
+/* Contest nav row */
+.noetic-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 14px 0 10px;
+}
+
+/* Problem dot navigation */
+.noetic-dot-row {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+  padding: 6px 0 8px;
+}
+.noetic-dot {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--border);
+  cursor: pointer; transition: background .12s, border-color .12s;
+  font-size: .65rem; display: flex; align-items: center; justify-content: center;
+}
+.noetic-dot.marked  { background: color-mix(in srgb, var(--primary) 18%, transparent); border-color: var(--primary); }
+.noetic-dot.active  { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent); }
+
+/* Results */
+.noetic-breakdown {
+  margin: 0 16px 12px;
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+.nb-head { font-size: .72rem; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
+.nb-row  {
+  display: grid; grid-template-columns: 1fr 48px 80px;
+  align-items: center; gap: 10px;
+  font-size: .82rem; font-weight: 700; color: var(--text);
+  padding: 5px 0; border-bottom: 1px solid var(--border);
+}
+.nb-row:last-child { border-bottom: none; }
+.nb-score { text-align: right; font-variant-numeric: tabular-nums; }
+.nb-bar   { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.nb-fill  { height: 100%; border-radius: 3px; transition: width .3s; }
+
+.nr-score-line { font-size: 1.1rem; font-weight: 900; color: var(--primary); margin: 2px 0; }
+
+.noetic-review-list {
+  display: flex; flex-direction: column; gap: 0;
+  margin: 0 16px 8px;
+  border-radius: 14px; overflow: hidden;
+  box-shadow: var(--shadow);
+  background: var(--surface);
+}
+.noetic-review-row {
+  display: grid; grid-template-columns: 28px 1fr auto;
+  align-items: center; gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: .8rem;
+}
+.noetic-review-row:last-child { border-bottom: none; }
+.noetic-review-row.nr-correct { background: color-mix(in srgb, #22c55e 6%, transparent); }
+.noetic-review-row.nr-wrong   { background: color-mix(in srgb, #ef4444 6%, transparent); }
+.nr-num   { font-weight: 900; color: var(--muted); font-size: .72rem; }
+.nr-q     { color: var(--text); font-weight: 600; line-height: 1.35; }
+.nr-ans   { display: flex; align-items: center; gap: 4px; flex-shrink: 0; font-size: .78rem; }
+.nr-tick  { color: #16a34a; font-weight: 900; font-size: 1rem; }
+.nr-cross { color: #dc2626; font-weight: 900; }
+.nr-given    { color: #dc2626; font-weight: 700; text-decoration: line-through; }
+.nr-arrow    { color: var(--muted); }
+.nr-expected { color: #16a34a; font-weight: 800; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 @media (max-width: 480px) {
   .card { padding: 24px 18px; }
   .arithmetic-problem { font-size: 2.8rem; }
   .levels-grid { grid-template-columns: repeat(2, 1fr); }
   .answer-input { width: 110px; font-size: 1.7rem; }
   .letter-tile { width: 40px; height: 44px; font-size: 1.3rem; }
-  .mode-tab { padding: 8px 4px; font-size: .75rem; }
+  .mode-tab { padding: 6px 1px; font-size: .65rem; }
   .rc-river   { width: 140px; }
   .rc-char    { width: 68px; }
   .rc-on-boat { width: 52px; }

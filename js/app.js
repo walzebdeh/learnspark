@@ -34,7 +34,12 @@ let state = {
   eurekaSheet: null,
   eurekaResult: null,
   eurekaGrade: 2,
+  noeticDrill: null,
+  noeticContest: null,
+  noeticResult: null,
 };
+
+let _noeticTimer = null;
 
 let _appBooted = false;
 
@@ -95,6 +100,10 @@ function render() {
       case 'eurekaLearn':        renderEurekaLearn(app);        break;
       case 'eurekaSheet':        renderEurekaSheet(app);        break;
       case 'eurekaResults':      renderEurekaResults(app);      break;
+      case 'noeticMap':          renderNoeticMap(app);          break;
+      case 'noeticDrill':        renderNoeticDrill(app);        break;
+      case 'noeticContest':      renderNoeticContest(app);      break;
+      case 'noeticResults':      renderNoeticResults(app);      break;
     }
   } catch(e) {
     console.error('Render error:', e);
@@ -104,8 +113,11 @@ function render() {
       <button onclick="setState({screen:'welcome'})" style="margin-top:16px;padding:12px 28px;border-radius:12px;border:none;background:#fff;font-weight:700;cursor:pointer">Go Home</button>
     </div>`;
   }
+  if (state.screen !== 'noeticContest') clearNoeticTimer();
   const _eBtn = document.getElementById('tab-eureka');
   if (_eBtn && state.screen !== 'eurekaMap') _eBtn.onclick = () => setState({ screen: 'eurekaMap' });
+  const _nBtn = document.getElementById('tab-noetic');
+  if (_nBtn && state.screen !== 'noeticMap') _nBtn.onclick = () => setState({ screen: 'noeticMap' });
 }
 
 // ── PIN entry overlay ─────────────────────────────────────────
@@ -638,6 +650,7 @@ function renderLevelMap(app) {
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
+        <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -944,6 +957,7 @@ function renderWordLevelMap(app) {
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
+        <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -1699,6 +1713,7 @@ function renderTypingLevelMap(app) {
         <button class="mode-tab active" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
+        <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -2436,6 +2451,7 @@ function renderPuzzleMap(app) {
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab active" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
+        <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -3053,6 +3069,7 @@ function renderArabicLevelMap(app) {
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
+        <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -3296,8 +3313,8 @@ function renderEurekaMap(app) {
         <button class="mode-tab" id="tab-choices">💡 Choices</button>
         <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
-        <button class="mode-tab" id="tab-arabic">🌙 عربي</button>
         <button class="mode-tab active" id="tab-eureka">📚 Eureka</button>
+        <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -3323,6 +3340,7 @@ function renderEurekaMap(app) {
   document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
   document.getElementById('btn-g2').onclick = () => setState({ eurekaGrade: 2 });
   document.getElementById('btn-g3').onclick = () => setState({ eurekaGrade: 3 });
+  document.getElementById('tab-noetic').onclick = () => setState({ screen: 'noeticMap' });
 
   div.querySelectorAll('.eureka-module-card').forEach(card => {
     card.addEventListener('click', () =>
@@ -3904,6 +3922,398 @@ function renderEurekaResults(app) {
   document.getElementById('btn-again').onclick = () => startEurekaSheet(r.moduleId, r.lessonId);
   document.getElementById('btn-map').onclick   = () =>
     setState({ screen: 'eurekaLesson', eurekaModule: r.moduleId, eurekaResult: null });
+}
+
+// ============================================================
+// NOETIC MATH CONTEST — Grade 2 Competition Practice
+// ============================================================
+
+function clearNoeticTimer() {
+  if (_noeticTimer) { clearInterval(_noeticTimer); _noeticTimer = null; }
+}
+
+function noeticCheck(given, expected) {
+  const g = String(given ?? '').trim().toLowerCase();
+  if (typeof expected === 'number') return parseFloat(g) === expected;
+  return g === String(expected).trim().toLowerCase();
+}
+
+function startNoeticDrill(topicId) {
+  const topic = NOETIC_G2[topicId];
+  setState({
+    screen: 'noeticDrill',
+    noeticDrill: { topicId, problems: topic.problems, currentIndex: 0, answers: [], feedback: null }
+  });
+}
+
+function startNoeticContest() {
+  const problems = buildNoeticMock();
+  setState({
+    screen: 'noeticContest',
+    noeticContest: { problems, currentIndex: 0, answers: {}, startTime: Date.now(), submitted: false }
+  });
+}
+
+function submitNoeticContest() {
+  const c = state.noeticContest;
+  if (!c || c.submitted) return;
+  clearNoeticTimer();
+  const breakdown = {};
+  NOETIC_G2.forEach(t => { breakdown[t.name] = { correct: 0, total: 0 }; });
+  let score = 0;
+  c.problems.forEach((prob, i) => {
+    const given   = c.answers[i] ?? '';
+    const correct = noeticCheck(given, prob.answer);
+    if (correct) score++;
+    const t = prob._topic || '?';
+    if (breakdown[t]) { breakdown[t].total++; if (correct) breakdown[t].correct++; }
+  });
+  const p2 = getProgress();
+  if (!p2.noeticProgress) p2.noeticProgress = {};
+  p2.noeticProgress.mockBest = Math.max(score, p2.noeticProgress.mockBest || 0);
+  saveProgress(p2);
+  setState({
+    screen: 'noeticResults',
+    noeticResult: { mode: 'contest', problems: c.problems, answers: c.answers, score, breakdown },
+    noeticContest: { ...c, submitted: true }
+  });
+}
+
+// ── Noetic Map ──────────────────────────────────────────────
+function renderNoeticMap(app) {
+  const p  = getProgress();
+  const np = p.noeticProgress || {};
+
+  const topicsHTML = NOETIC_G2.map(topic => {
+    const tp   = np[`topic_${topic.id}`] || {};
+    const best = tp.bestScore || 0;
+    const done = tp.done || false;
+    return `
+      <div class="noetic-topic-card" data-topic="${topic.id}" style="--ntc:${topic.color}">
+        <div class="ntc-emoji">${topic.emoji}</div>
+        <div class="ntc-name">${esc(topic.name)}</div>
+        <div class="ntc-count">${topic.problems.length} problems</div>
+        ${done ? `<div class="ntc-badge">Best: ${best}/${topic.problems.length}</div>` : '<div class="ntc-badge ntc-new">New</div>'}
+      </div>`;
+  }).join('');
+
+  const mockBest = np.mockBest;
+
+  const div = el('div', 'screen levelmap-screen');
+  div.innerHTML = `
+    <div class="mode-tabs-wrap">
+      <div class="mode-tabs">
+        <button class="mode-tab" id="tab-math">🔢 Math</button>
+        <button class="mode-tab" id="tab-words">📝 Words</button>
+        <button class="mode-tab" id="tab-choices">💡 Choices</button>
+        <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
+        <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
+        <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
+        <button class="mode-tab active" id="tab-noetic">🏆 Noetic</button>
+      </div>
+    </div>
+    <div class="levelmap-header">
+      <h2>🏆 Noetic Math Contest</h2>
+      <p>Grade 2 — Competition Practice</p>
+      ${totalScoreBadge(p)}
+      <button class="btn btn-ghost btn-sm" id="btn-noetic-signout">Sign Out</button>
+    </div>
+    <div class="noetic-topic-grid">${topicsHTML}</div>
+    <div class="noetic-mock-banner" id="btn-mock-start">
+      <div class="nmb-left">
+        <div class="nmb-title">🏆 Mock Contest</div>
+        <div class="nmb-sub">20 random questions · 45 minute timer · just like the real thing!</div>
+        ${mockBest !== undefined ? `<div class="nmb-best">🎖 Best score: ${mockBest}/20</div>` : ''}
+      </div>
+      <button class="btn btn-warn nmb-btn" id="btn-mock-go">Start Contest →</button>
+    </div>`;
+
+  app.appendChild(div);
+
+  document.getElementById('btn-noetic-signout').onclick = () =>
+    { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); };
+  document.getElementById('tab-math').onclick    = () => setState({ screen: 'levelMap' });
+  document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
+  document.getElementById('tab-choices').onclick = () => setState({ screen: 'choiceLevelMap', choiceTopic: null });
+  document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
+  document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
+  document.getElementById('tab-eureka').onclick  = () => setState({ screen: 'eurekaMap' });
+  document.getElementById('btn-mock-go').onclick = () => startNoeticContest();
+  document.getElementById('btn-mock-start').addEventListener('click', e => {
+    if (e.target.closest('#btn-mock-go')) return; // handled above
+  });
+
+  div.querySelectorAll('.noetic-topic-card').forEach(card => {
+    card.addEventListener('click', () => startNoeticDrill(parseInt(card.dataset.topic, 10)));
+  });
+}
+
+// ── Noetic Drill (topic practice) ───────────────────────────
+function renderNoeticDrill(app) {
+  const s       = state.noeticDrill;
+  const topic   = NOETIC_G2[s.topicId];
+  const problem = s.problems[s.currentIndex];
+  const total   = s.problems.length;
+  const score   = s.answers.filter(a => a.correct).length;
+  const pct     = Math.round((s.currentIndex / total) * 100);
+  const isLast  = s.currentIndex >= total - 1;
+  const isText  = typeof problem.answer === 'string';
+
+  let bodyHTML = '';
+  if (s.feedback !== null) {
+    const last = s.answers[s.answers.length - 1];
+    bodyHTML = s.feedback === 'correct'
+      ? `<div class="wk-feedback wk-correct animate-pop">✓ Correct! 🎉</div>`
+      : `<div class="wk-feedback wk-wrong animate-pop">
+           <div class="wk-wrong-label">Not quite!</div>
+           <div class="wk-wrong-answer">Answer: <strong>${esc(String(last.expected))}</strong></div>
+         </div>`;
+  } else {
+    bodyHTML = `<div class="wk-answer-row">
+      <div class="wk-answer-box-wrap">
+        <input type="${isText ? 'text' : 'number'}" id="noetic-answer" class="wk-answer-box"
+               placeholder="?" autocomplete="off" inputmode="${isText ? 'text' : 'numeric'}" />
+        ${problem.unit ? `<span class="wk-answer-unit">${esc(problem.unit)}</span>` : ''}
+      </div>
+      <button class="btn btn-primary wk-check-btn" id="btn-noetic-check">Check ✓</button>
+    </div>`;
+  }
+
+  const nextOrDone = s.feedback !== null
+    ? `<button class="btn btn-primary btn-large" id="btn-noetic-next" style="margin-top:10px">
+         ${isLast ? '🏁 See Results' : 'Next Problem →'}
+       </button>`
+    : '';
+
+  const div = el('div', 'screen sheet-screen');
+  div.innerHTML = `
+    <div class="sheet-header">
+      <button class="btn btn-ghost btn-sm" id="btn-noetic-exit">✕ Exit</button>
+      <div class="sheet-title" style="color:${topic.color}">${topic.emoji} ${esc(topic.name)}</div>
+      <div class="sheet-correct">✓ ${score}</div>
+    </div>
+    <div class="wk-progress-bar"><div class="wk-progress-fill" style="width:${pct}%"></div></div>
+    <div class="wk-sheet-body">
+      <div class="wk-problem-number">${topic.emoji} Problem ${s.currentIndex + 1} of ${total}</div>
+      <div class="noetic-tip">💡 ${esc(topic.tip)}</div>
+      <div class="wk-q-text">${esc(problem.q).replace(/\n/g, '<br>')}</div>
+      ${bodyHTML}
+      ${nextOrDone}
+    </div>`;
+
+  app.appendChild(div);
+
+  document.getElementById('btn-noetic-exit').onclick = () =>
+    setState({ screen: 'noeticMap', noeticDrill: null });
+
+  if (s.feedback === null) {
+    const inp   = document.getElementById('noetic-answer');
+    const check = document.getElementById('btn-noetic-check');
+    const doCheck = () => {
+      const val = inp.value.trim();
+      if (!val) return;
+      const correct    = noeticCheck(val, problem.answer);
+      const newAnswers = [...s.answers, { given: val, expected: problem.answer, correct }];
+      setState({ noeticDrill: { ...s, answers: newAnswers, feedback: correct ? 'correct' : 'wrong' } });
+    };
+    check.onclick = doCheck;
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') doCheck(); });
+    setTimeout(() => inp.focus(), 50);
+  } else {
+    const nextBtn = document.getElementById('btn-noetic-next');
+    if (nextBtn) nextBtn.onclick = () => {
+      if (isLast) {
+        const finalScore = s.answers.filter(a => a.correct).length;
+        const p = getProgress();
+        if (!p.noeticProgress) p.noeticProgress = {};
+        const key  = `topic_${s.topicId}`;
+        const prev = p.noeticProgress[key] || {};
+        p.noeticProgress[key] = { done: true, bestScore: Math.max(finalScore, prev.bestScore || 0) };
+        saveProgress(p);
+        setState({
+          screen: 'noeticResults',
+          noeticResult: { mode: 'drill', topicId: s.topicId, problems: s.problems, answers: s.answers, score: finalScore }
+        });
+      } else {
+        setState({ noeticDrill: { ...s, currentIndex: s.currentIndex + 1, feedback: null } });
+      }
+    };
+  }
+}
+
+// ── Noetic Contest ───────────────────────────────────────────
+function renderNoeticContest(app) {
+  const c      = state.noeticContest;
+  const prob   = c.problems[c.currentIndex];
+  const total  = c.problems.length;
+  const cur    = c.currentIndex;
+  const isLast = cur >= total - 1;
+  const isText = typeof prob.answer === 'string';
+  const saved  = c.answers[cur] ?? '';
+  const answered = Object.values(c.answers).filter(v => v !== '').length;
+
+  const div = el('div', 'screen sheet-screen');
+  div.innerHTML = `
+    <div class="sheet-header">
+      <button class="btn btn-ghost btn-sm" id="btn-contest-exit">✕ Exit</button>
+      <div class="sheet-title">🏆 Mock Contest</div>
+      <div class="sheet-correct noetic-timer" id="noetic-timer">⏱ 45:00</div>
+    </div>
+    <div class="wk-progress-bar">
+      <div class="wk-progress-fill" style="width:${Math.round((answered / total) * 100)}%"></div>
+    </div>
+    <div class="wk-sheet-body">
+      <div class="wk-problem-number">Problem ${cur + 1} of ${total}
+        <span class="noetic-answered-count">${answered}/${total} answered</span>
+      </div>
+      <div class="wk-q-text">${esc(prob.q).replace(/\n/g, '<br>')}</div>
+      <div class="wk-answer-row">
+        <div class="wk-answer-box-wrap">
+          <input type="${isText ? 'text' : 'number'}" id="noetic-contest-input" class="wk-answer-box"
+                 placeholder="?" autocomplete="off" inputmode="${isText ? 'text' : 'numeric'}"
+                 value="${esc(saved)}" />
+          ${prob.unit ? `<span class="wk-answer-unit">${esc(prob.unit)}</span>` : ''}
+        </div>
+      </div>
+      <div class="noetic-nav">
+        ${cur > 0 ? `<button class="btn btn-ghost" id="btn-cprev">← Prev</button>` : '<span></span>'}
+        ${isLast
+          ? `<button class="btn btn-warn" id="btn-csubmit">Submit All ✓</button>`
+          : `<button class="btn btn-primary" id="btn-cnext">Next →</button>`}
+      </div>
+      <div class="noetic-dot-row">
+        ${c.problems.map((_, i) => {
+          const marked = c.answers[i] !== undefined && c.answers[i] !== '';
+          return `<div class="noetic-dot${i === cur ? ' active' : ''}${marked ? ' marked' : ''}" data-ci="${i}"></div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  app.appendChild(div);
+
+  // Timer — updates timer display without re-render
+  clearNoeticTimer();
+  const tickTimer = () => {
+    const el2 = document.getElementById('noetic-timer');
+    if (!el2) { clearNoeticTimer(); return; }
+    const elapsed = Math.floor((Date.now() - c.startTime) / 1000);
+    const left = Math.max(0, 45 * 60 - elapsed);
+    const mm   = Math.floor(left / 60);
+    const ss   = left % 60;
+    el2.textContent = `⏱ ${mm}:${String(ss).padStart(2, '0')}`;
+    el2.style.color = left < 120 ? '#ef4444' : '';
+    if (left === 0) { clearNoeticTimer(); submitNoeticContest(); }
+  };
+  tickTimer();
+  _noeticTimer = setInterval(tickTimer, 1000);
+
+  const inp        = document.getElementById('noetic-contest-input');
+  const saveAnswer = () => ({ ...c, answers: { ...c.answers, [cur]: inp.value.trim() } });
+
+  document.getElementById('btn-contest-exit').onclick = () => {
+    if (confirm('Exit the contest? Your progress will be lost.')) {
+      clearNoeticTimer();
+      setState({ screen: 'noeticMap', noeticContest: null });
+    }
+  };
+
+  const prevBtn = document.getElementById('btn-cprev');
+  if (prevBtn) prevBtn.onclick = () =>
+    setState({ noeticContest: { ...saveAnswer(), currentIndex: cur - 1 } });
+
+  const nextBtn = document.getElementById('btn-cnext');
+  if (nextBtn) nextBtn.onclick = () =>
+    setState({ noeticContest: { ...saveAnswer(), currentIndex: cur + 1 } });
+
+  const subBtn = document.getElementById('btn-csubmit');
+  if (subBtn) subBtn.onclick = () => {
+    const updated = saveAnswer();
+    state.noeticContest = updated;
+    submitNoeticContest();
+  };
+
+  div.querySelectorAll('.noetic-dot').forEach(dot => {
+    dot.addEventListener('click', () =>
+      setState({ noeticContest: { ...saveAnswer(), currentIndex: parseInt(dot.dataset.ci, 10) } })
+    );
+  });
+
+  inp.focus();
+}
+
+// ── Noetic Results ───────────────────────────────────────────
+function renderNoeticResults(app) {
+  const r = state.noeticResult;
+  if (!r) { setState({ screen: 'noeticMap' }); return; }
+
+  const { mode, problems, answers, score } = r;
+  const total     = problems.length;
+  const pct       = Math.round((score / total) * 100);
+  const isContest = mode === 'contest';
+  const medal     = score === total ? '🥇' : score >= total * 0.8 ? '🥈' : score >= total * 0.6 ? '🥉' : '📝';
+  const msg       = score === total ? 'Perfect Score! 🎉 Amazing!' :
+                    score >= total * 0.8 ? 'Great work! You\'re contest-ready! 💪' :
+                    score >= total * 0.6 ? 'Good effort! Keep practicing!' :
+                    'Keep going — every problem makes you stronger!';
+
+  const reviewHTML = problems.map((prob, i) => {
+    const given   = isContest ? (answers[i] ?? '') : (answers[i]?.given ?? '');
+    const correct = noeticCheck(given, prob.answer);
+    return `
+      <div class="noetic-review-row${correct ? ' nr-correct' : ' nr-wrong'}">
+        <div class="nr-num">${i + 1}</div>
+        <div class="nr-q">${esc(prob.q).replace(/\n/g, ' · ')}</div>
+        <div class="nr-ans">
+          ${correct
+            ? `<span class="nr-tick">✓</span>`
+            : `<span class="nr-cross">✗</span>
+               <span class="nr-given">${esc(String(given || '—'))}</span>
+               <span class="nr-arrow">→</span>
+               <span class="nr-expected">${esc(String(prob.answer))}</span>`}
+        </div>
+      </div>`;
+  }).join('');
+
+  let breakdownHTML = '';
+  if (isContest && r.breakdown) {
+    breakdownHTML = `<div class="noetic-breakdown">
+      <div class="nb-head">Topic Breakdown</div>
+      ${NOETIC_G2.map(t => {
+        const b = r.breakdown[t.name] || { correct: 0, total: 0 };
+        const bpct = b.total ? Math.round((b.correct / b.total) * 100) : 0;
+        return `<div class="nb-row">
+          <span>${t.emoji} ${esc(t.name)}</span>
+          <span class="nb-score">${b.correct}/${b.total}</span>
+          <div class="nb-bar"><div class="nb-fill" style="width:${bpct}%;background:var(--primary)"></div></div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  const topicName = !isContest ? esc(NOETIC_G2[r.topicId]?.name || '') : '';
+
+  const div = el('div', 'screen levelmap-screen');
+  div.innerHTML = `
+    <div class="levelmap-header">
+      <button class="btn btn-ghost btn-sm" id="btn-nr-back">← Back</button>
+      <h2>${medal} ${isContest ? 'Contest Results' : topicName + ' Results'}</h2>
+      <p class="nr-score-line">${score} / ${total} correct &nbsp;·&nbsp; ${pct}%</p>
+      <p style="font-weight:700;font-size:.95rem;color:var(--text)">${msg}</p>
+    </div>
+    ${breakdownHTML}
+    <div class="noetic-review-list">${reviewHTML}</div>
+    <div style="display:flex;gap:10px;justify-content:center;padding:16px 0 32px">
+      <button class="btn btn-primary" id="btn-nr-again">${isContest ? '🔄 New Contest' : '🔄 Try Again'}</button>
+      <button class="btn btn-ghost" id="btn-nr-map">🏠 All Topics</button>
+    </div>`;
+
+  app.appendChild(div);
+
+  document.getElementById('btn-nr-back').onclick  = () => setState({ screen: 'noeticMap', noeticResult: null });
+  document.getElementById('btn-nr-map').onclick   = () => setState({ screen: 'noeticMap', noeticResult: null });
+  document.getElementById('btn-nr-again').onclick = () => {
+    if (isContest) startNoeticContest(); else startNoeticDrill(r.topicId);
+  };
 }
 
 // ── Back-button (History API) ─────────────────────────────────
