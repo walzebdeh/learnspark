@@ -3391,10 +3391,8 @@ function renderEurekaSheet(app) {
   const pct     = Math.round((s.currentIndex / total) * 100);
   const score   = s.answers.filter(a => a.correct).length;
 
-  const modelType    = eurekaGetModel(problem, lesson);
   const unit         = eurekaGetUnit(problem);
   const illustration = eurekaGetIllustration(problem);
-  const modelHTML    = eurekaBuildModel(modelType, problem);
 
   let answerHTML = '';
   if (s.feedback !== null) {
@@ -3448,14 +3446,9 @@ function renderEurekaSheet(app) {
 
       <div class="wk-question">${esc(problem.q)}</div>
 
-      ${modelHTML ? `<div class="wk-model-area">
-        <div class="wk-section-label">Draw a model:</div>
-        ${modelHTML}
-      </div>` : ''}
-
       ${showCanvas ? `<div class="wk-canvas-area">
         <div class="wk-canvas-header">
-          <span>✏️ My Work Space</span>
+          <span>✏️ My Work Space — draw your model here</span>
           <button class="wk-clear-btn" id="btn-eureka-clear" type="button">Clear</button>
         </div>
         <canvas id="eureka-canvas" class="wk-canvas"></canvas>
@@ -3475,7 +3468,7 @@ function renderEurekaSheet(app) {
     const canvas = document.getElementById('eureka-canvas');
     if (canvas) {
       canvas.width  = canvas.offsetWidth || 380;
-      canvas.height = 140;
+      canvas.height = 200;
       _eurekaSetupCanvas(canvas);
       document.getElementById('btn-eureka-clear').onclick = () =>
         canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
@@ -3561,18 +3554,29 @@ function eurekaGetModel(problem, lesson) {
 function eurekaGetUnit(problem) {
   if (problem.type !== 'input') return '';
   const q = problem.q;
+
+  // Explicit answer-unit phrases take highest priority
+  if (/in cents\??$|change.*cents|how many cents|cents left/i.test(q)) return '¢';
+  if (/cents|¢/i.test(q))    return '¢';
+  if (/ cm\b/i.test(q))      return 'cm';
+  if (/ km\b/i.test(q))      return 'km';
+  if (/\bmeters?\b/i.test(q)) return 'm';
+  if (/how many minutes?/i.test(q)) return 'min';
+  if (/how many hours?/i.test(q))   return 'hours';
+
+  // Object-based fallback (order matters — more specific first)
   const checks = [
-    [/pencil/i,           'pencils'],  [/apple/i,             'apples'],
-    [/crayon/i,           'crayons'],  [/stamp/i,             'stamps'],
-    [/marble/i,           'marbles'],  [/bead/i,              'beads'],
-    [/\bbook\b/i,         'books'],    [/student/i,           'students'],
-    [/\bchair\b/i,        'chairs'],   [/flower/i,            'flowers'],
-    [/bird|chicken|duck/i,'birds'],    [/\bpage\b/i,          'pages'],
-    [/\bpoint\b/i,        'points'],   [/\bcan\b/i,           'cans'],
-    [/ cm\b/i,            'cm'],       [/tile/i,              'tiles'],
-    [/\btoy\b/i,          'toys'],     [/square/i,            'squares'],
-    [/minute/i,           'min'],      [/cents|¢/i,           '¢'],
+    [/pencil/i,               'pencils'],  [/apple/i,    'apples'],
+    [/crayon/i,               'crayons'],  [/stamp/i,    'stamps'],
+    [/marble/i,               'marbles'],  [/bead/i,     'beads'],
+    [/student/i,              'students'], [/\bchair\b/i,'chairs'],
+    [/flower/i,               'flowers'],  [/bird|chicken|duck/i,'birds'],
+    [/\bpage\b/i,             'pages'],    [/\bpoint\b/i,'points'],
+    [/\bcan\b(?!\s*m)/i,      'cans'],     [/tile/i,     'tiles'],
+    [/\btoy\b/i,              'toys'],     [/square/i,   'squares'],
+    [/minute/i,               'min'],
     [/person|people|passenger/i, 'people'],
+    [/\bbook\b/i,             'books'],
   ];
   for (const [re, unit] of checks) if (re.test(q)) return unit;
   return '';
