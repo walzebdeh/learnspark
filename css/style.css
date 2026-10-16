@@ -2494,6 +2494,12 @@ html, body {
 .emc-bar     { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-top: 6px; }
 .emc-bar-fill { height: 100%; background: var(--mod-color, var(--primary)); border-radius: 3px; transition: width .4s; }
 .emc-progress { font-size: .72rem; color: var(--muted); font-weight: 700; }
+.emc-weeks   { font-size: .68rem; color: var(--muted); font-weight: 600; background: color-mix(in srgb, var(--mod-color, var(--primary)) 12%, transparent); border-radius: 20px; padding: 2px 8px; }
+
+/* Grade selector */
+.eureka-grade-selector { display: flex; gap: 8px; justify-content: center; margin: 8px 0 4px; }
+.eg-btn { padding: 6px 18px; border-radius: 20px; border: 2px solid var(--primary); background: transparent; color: var(--primary); font-weight: 800; font-size: .85rem; cursor: pointer; transition: background .15s, color .15s; }
+.eg-btn.active { background: var(--primary); color: #fff; }
 
 /* Lesson list */
 .eureka-lesson-list {

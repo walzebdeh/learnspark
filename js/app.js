@@ -33,6 +33,7 @@ let state = {
   eurekaLesson: null,
   eurekaSheet: null,
   eurekaResult: null,
+  eurekaGrade: 2,
 };
 
 let _appBooted = false;
@@ -3266,20 +3267,34 @@ function renderArabicSheetResults(app) {
 // ============================================================
 // EUREKA MAP
 // ============================================================
+function getEurekaData() {
+  return state.eurekaGrade === 3 ? EUREKA_G3 : EUREKA_G2;
+}
+
+function eurekaProgressKey(moduleId, lessonId) {
+  return state.eurekaGrade === 3 ? `g3_${moduleId}_${lessonId}` : `${moduleId}_${lessonId}`;
+}
+
 function renderEurekaMap(app) {
   const p  = getProgress();
   const ep = p.eurekaProgress || {};
+  const data = getEurekaData();
+  const g    = state.eurekaGrade;
   const div = el('div', 'screen levelmap-screen');
 
-  const cardsHTML = EUREKA_G2.map(mod => {
+  const cardsHTML = data.map(mod => {
     const total = mod.lessons.length;
-    const done  = mod.lessons.filter(l => (ep[`${mod.id}_${l.id}`] || {}).done).length;
+    const done  = mod.lessons.filter(l => {
+      const key = g === 3 ? `g3_${mod.id}_${l.id}` : `${mod.id}_${l.id}`;
+      return (ep[key] || {}).done;
+    }).length;
     const pct   = Math.round((done / total) * 100);
     return `
       <div class="eureka-module-card" data-mod="${mod.id}" style="--mod-color:${mod.color}">
         <div class="emc-emoji">${mod.emoji}</div>
         <div class="emc-badge">Module ${mod.module}</div>
         <div class="emc-title">${esc(mod.title)}</div>
+        <div class="emc-weeks">📅 Weeks ${mod.weekStart}–${mod.weekEnd}</div>
         <div class="emc-bar"><div class="emc-bar-fill" style="width:${pct}%"></div></div>
         <div class="emc-progress">${done} / ${total} lessons</div>
       </div>`;
@@ -3298,8 +3313,12 @@ function renderEurekaMap(app) {
       </div>
     </div>
     <div class="levelmap-header">
-      <h2>Eureka Math — Grade 2 ✨</h2>
+      <h2>Eureka Math ✨</h2>
       <p>Great Minds Curriculum</p>
+      <div class="eureka-grade-selector">
+        <button class="eg-btn${g === 2 ? ' active' : ''}" id="btn-g2">Grade 2</button>
+        <button class="eg-btn${g === 3 ? ' active' : ''}" id="btn-g3">Grade 3</button>
+      </div>
       ${totalScoreBadge(p)}
       <button class="btn btn-ghost btn-sm" id="btn-switch-player">Sign Out</button>
     </div>
@@ -3315,6 +3334,8 @@ function renderEurekaMap(app) {
   document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
   document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
   document.getElementById('tab-arabic').onclick  = () => setState({ screen: 'arabicLevelMap' });
+  document.getElementById('btn-g2').onclick = () => setState({ eurekaGrade: 2 });
+  document.getElementById('btn-g3').onclick = () => setState({ eurekaGrade: 3 });
 
   div.querySelectorAll('.eureka-module-card').forEach(card => {
     card.addEventListener('click', () =>
@@ -3329,16 +3350,17 @@ function renderEurekaMap(app) {
 function renderEurekaLesson(app) {
   const p   = getProgress();
   const ep  = p.eurekaProgress || {};
-  const mod = EUREKA_G2[state.eurekaModule];
+  const mod = getEurekaData()[state.eurekaModule];
   const div = el('div', 'screen levelmap-screen');
 
   const lessonsHTML = mod.lessons.map(lesson => {
-    const lp   = ep[`${mod.id}_${lesson.id}`] || {};
+    const key  = eurekaProgressKey(mod.id, lesson.id);
+    const lp   = ep[key] || {};
     const done = lp.done || false;
     const best = lp.bestScore || 0;
     return `
       <div class="eureka-lesson-card${done ? ' done' : ''}" data-lesson="${lesson.id}" style="--mod-color:${mod.color}">
-        <div class="elc-icon">${done ? '✅' : '📄'}</div>
+        <div class="elc-icon">${lesson.scene || (done ? '✅' : '📄')}</div>
         <div class="elc-info">
           <div class="elc-name">${esc(lesson.name)}: ${esc(lesson.title)}</div>
           <div class="elc-meta">${done ? `Best score: ${best} / 10` : 'Not yet attempted'}</div>
@@ -3370,7 +3392,7 @@ function renderEurekaLesson(app) {
 // EUREKA SHEET
 // ============================================================
 function startEurekaSheet(moduleId, lessonId) {
-  const lesson = EUREKA_G2[moduleId].lessons[lessonId];
+  const lesson = getEurekaData()[moduleId].lessons[lessonId];
   setState({
     screen: 'eurekaSheet',
     eurekaModule: moduleId,
@@ -3384,7 +3406,7 @@ function startEurekaSheet(moduleId, lessonId) {
 // ============================================================
 function renderEurekaSheet(app) {
   const s       = state.eurekaSheet;
-  const mod     = EUREKA_G2[s.moduleId];
+  const mod     = getEurekaData()[s.moduleId];
   const lesson  = mod.lessons[s.lessonId];
   const problem = s.problems[s.currentIndex];
   const total   = s.problems.length;
@@ -3392,7 +3414,7 @@ function renderEurekaSheet(app) {
   const score   = s.answers.filter(a => a.correct).length;
 
   const unit         = eurekaGetUnit(problem);
-  const illustration = eurekaGetIllustration(problem);
+  const illustration = eurekaGetIllustration(problem, lesson);
 
   let answerHTML = '';
   if (s.feedback !== null) {
@@ -3582,7 +3604,9 @@ function eurekaGetUnit(problem) {
   return '';
 }
 
-function eurekaGetIllustration(problem) {
+function eurekaGetIllustration(problem, lesson) {
+  if (problem.scene) return problem.scene;
+  if (lesson && lesson.scene) return lesson.scene;
   const q = problem.q.toLowerCase();
   const map = [
     [/pencil/,                              '✏️✏️✏️'],
@@ -3792,7 +3816,7 @@ function finishEurekaSheet() {
 
   const p = getProgress();
   if (!p.eurekaProgress) p.eurekaProgress = {};
-  const key  = `${s.moduleId}_${s.lessonId}`;
+  const key  = eurekaProgressKey(s.moduleId, s.lessonId);
   const prev = p.eurekaProgress[key] || {};
   p.eurekaProgress[key] = {
     done:      done || (prev.done || false),
@@ -3813,7 +3837,7 @@ function finishEurekaSheet() {
 // ============================================================
 function renderEurekaResults(app) {
   const r      = state.eurekaResult;
-  const mod    = EUREKA_G2[r.moduleId];
+  const mod    = getEurekaData()[r.moduleId];
   const lesson = mod.lessons[r.lessonId];
   const pct    = Math.round((r.score / r.total) * 100);
 
