@@ -3020,6 +3020,27 @@ html, body {
 .nmb-best   { font-size: .8rem; color: #fbbf24; font-weight: 800; margin-top: 2px; }
 .nmb-btn    { flex-shrink: 0; white-space: nowrap; }
 
+/* Problem number header */
+.noetic-problem-num {
+  font-size: .8rem; font-weight: 800; color: rgba(255,255,255,.75);
+  letter-spacing: .04em; text-align: left;
+}
+
+/* Question text card */
+.noetic-q {
+  background: #fff;
+  color: #1a1a2e;
+  border-radius: 16px;
+  padding: 20px 20px 18px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 2;
+  box-shadow: 0 3px 14px rgba(0,0,0,.12);
+  border: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /* Drill tip */
 .noetic-tip {
   font-size: .82rem; color: var(--muted); font-weight: 600;

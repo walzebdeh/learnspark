@@ -4094,9 +4094,9 @@ function renderNoeticDrill(app) {
     </div>
     <div class="wk-progress-bar"><div class="wk-progress-fill" style="width:${pct}%"></div></div>
     <div class="wk-sheet-body">
-      <div class="wk-problem-number">${topic.emoji} Problem ${s.currentIndex + 1} of ${total}</div>
+      <div class="noetic-problem-num">${topic.emoji} Problem ${s.currentIndex + 1} of ${total}</div>
       <div class="noetic-tip">💡 ${esc(topic.tip)}</div>
-      <div class="wk-q-text">${esc(problem.q).replace(/\n/g, '<br>')}</div>
+      <div class="noetic-q">${esc(problem.q).replace(/\n/g, '<br>')}</div>
       ${bodyHTML}
       ${nextOrDone}
     </div>`;
@@ -4163,10 +4163,10 @@ function renderNoeticContest(app) {
       <div class="wk-progress-fill" style="width:${Math.round((answered / total) * 100)}%"></div>
     </div>
     <div class="wk-sheet-body">
-      <div class="wk-problem-number">Problem ${cur + 1} of ${total}
+      <div class="noetic-problem-num">Problem ${cur + 1} of ${total}
         <span class="noetic-answered-count">${answered}/${total} answered</span>
       </div>
-      <div class="wk-q-text">${esc(prob.q).replace(/\n/g, '<br>')}</div>
+      <div class="noetic-q">${esc(prob.q).replace(/\n/g, '<br>')}</div>
       <div class="wk-answer-row">
         <div class="wk-answer-box-wrap">
           <input type="${isText ? 'text' : 'number'}" id="noetic-contest-input" class="wk-answer-box"
