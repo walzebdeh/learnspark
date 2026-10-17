@@ -2982,7 +2982,9 @@ html, body {
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 12px;
   padding: 0 16px 16px;
+  width: 100%;
 }
+.noetic-mock-banner { width: calc(100% - 32px); }
 .noetic-topic-card {
   background: var(--surface);
   border-radius: 16px;
