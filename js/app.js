@@ -1339,31 +1339,23 @@ function renderChoiceLevelMap(app) {
     let cardsHTML = topic.levels.map((level, idx) => {
       const key         = `${topic.id}_${idx}`;
       const lp          = choiceLevels[key] || { sheetsCompleted: 0, completed: false };
-      const curLevel    = curLevels[topic.id] || 0;
       const isCompleted = lp.completed;
-      const isCurrent   = idx === curLevel;
-      const isUnlocked  = state.allUnlocked || idx <= curLevel;
       const sheets      = lp.sheetsCompleted || 0;
       const pct         = Math.min(100, Math.round((sheets / CHOICE_SHEETS_TO_COMPLETE) * 100));
       const savedHere   = savedSheets[key];
 
-      let cls = 'level-card';
-      if (isCompleted)      cls += ' completed';
-      else if (isCurrent)   cls += ' current';
-      else if (!isUnlocked) cls += ' locked';
+      let cls = 'level-card' + (isCompleted ? ' completed' : ' current');
 
       return `
         <div class="${cls}" data-level="${idx}" style="--lvl-color:${topic.color}">
-          <div class="lc-emoji">${isCompleted ? '✅' : isUnlocked ? topic.emoji : '🔒'}</div>
+          <div class="lc-emoji">${isCompleted ? '✅' : topic.emoji}</div>
           <div class="lc-name">${esc(level.name)}</div>
-          ${isUnlocked && !isCompleted ? `
+          ${!isCompleted ? `
             <div class="lc-bar"><div class="lc-bar-fill" style="width:${pct}%"></div></div>
             <div class="lc-count">${sheets} / ${CHOICE_SHEETS_TO_COMPLETE} sheets</div>
           ` : ''}
           ${savedHere ? `<div class="lc-resume">▶ Q${savedHere.currentIndex + 1} / ${savedHere.questions.length}</div>` : ''}
           ${isCompleted ? '<div class="lc-done">Mastered! 🌟</div>' : ''}
-          ${!isUnlocked ? '<div class="lc-locked">Locked 🔒</div>' : ''}
-          ${isCurrent && !isCompleted ? '<div class="lc-current-badge">Current</div>' : ''}
         </div>`;
     }).join('');
 
@@ -1375,6 +1367,8 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab active" id="tab-choices">💡 Choices</button>
           <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
           <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
+          <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
+          <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1382,9 +1376,6 @@ function renderChoiceLevelMap(app) {
         <p>Choose a level to practice</p>
         ${totalScoreBadge(progress)}
         <button class="btn btn-ghost btn-sm" id="btn-back-topics">← All Topics</button>
-        <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
-          ${state.allUnlocked ? '🔓 Locks Off' : '🔒 Unlock All'}
-        </button>
       </div>
       <div class="levels-grid">${cardsHTML}</div>`;
     app.appendChild(div);
@@ -1393,10 +1384,11 @@ function renderChoiceLevelMap(app) {
     document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
     document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
     document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
-      document.getElementById('btn-back-topics').onclick = () => setState({ choiceTopic: null });
-    document.getElementById('btn-unlock-all').onclick  = () => setState({ allUnlocked: !state.allUnlocked });
+    document.getElementById('tab-eureka').onclick  = () => setState({ screen: 'eurekaMap' });
+    document.getElementById('tab-noetic').onclick  = () => setState({ screen: 'noeticMap' });
+    document.getElementById('btn-back-topics').onclick = () => setState({ choiceTopic: null });
 
-    div.querySelectorAll('.level-card:not(.locked)').forEach(card => {
+    div.querySelectorAll('.level-card').forEach(card => {
       card.addEventListener('click', () => {
         const levelId = parseInt(card.dataset.level, 10);
         startChoiceSheet(state.choiceTopic, levelId);
@@ -1427,6 +1419,8 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab active" id="tab-choices">💡 Choices</button>
           <button class="mode-tab" id="tab-typing">⌨️ Typing</button>
           <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
+          <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
+          <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1434,9 +1428,6 @@ function renderChoiceLevelMap(app) {
         <p>Choose a topic to practice</p>
         ${totalScoreBadge(progress)}
         <button class="btn btn-ghost btn-sm" id="btn-switch-player">Sign Out</button>
-        <button class="btn btn-sm ${state.allUnlocked ? 'btn-warn' : 'btn-ghost'}" id="btn-unlock-all">
-          ${state.allUnlocked ? '🔓 Locks Off' : '🔒 Unlock All'}
-        </button>
       </div>
       <div class="topics-grid">${topicCardsHTML}</div>`;
     app.appendChild(div);
@@ -1445,8 +1436,9 @@ function renderChoiceLevelMap(app) {
     document.getElementById('tab-words').onclick   = () => setState({ screen: 'wordLevelMap' });
     document.getElementById('tab-typing').onclick  = () => setState({ screen: 'typingLevelMap' });
     document.getElementById('tab-puzzles').onclick = () => setState({ screen: 'puzzleMap' });
-      document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); }
-    document.getElementById('btn-unlock-all').onclick    = () => setState({ allUnlocked: !state.allUnlocked });
+    document.getElementById('tab-eureka').onclick  = () => setState({ screen: 'eurekaMap' });
+    document.getElementById('tab-noetic').onclick  = () => setState({ screen: 'noeticMap' });
+    document.getElementById('btn-switch-player').onclick = () => { setActivePlayer(null); setState({ screen: 'welcome', welcomeMode: null }); }
 
     div.querySelectorAll('.topic-card').forEach(card => {
       card.addEventListener('click', () => {
