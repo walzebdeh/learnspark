@@ -19,14 +19,12 @@ const PRAYERS = [
       { id: 'sunnah_b', label: 'Sunnah before (4)', count: 4, type: 'sunnah' },
       { id: 'fard',     label: 'Fard (4)',           count: 4, type: 'fard'   },
       { id: 'sunnah_a', label: 'Sunnah after (2)',   count: 2, type: 'sunnah' },
-      { id: 'nafl',     label: 'Nafl (2)',            count: 2, type: 'nafl'   },
     ]
   },
   {
     id: 'asr', name: 'Asr', arabic: 'العصر', emoji: '🌤️', color: '#10b981', timeKey: 'Asr',
     rakaats: [
-      { id: 'sunnah', label: 'Sunnah (4)', count: 4, type: 'sunnah' },
-      { id: 'fard',   label: 'Fard (4)',   count: 4, type: 'fard'   },
+      { id: 'fard', label: 'Fard (4)', count: 4, type: 'fard' },
     ]
   },
   {
@@ -34,7 +32,6 @@ const PRAYERS = [
     rakaats: [
       { id: 'fard',   label: 'Fard (3)',   count: 3, type: 'fard'   },
       { id: 'sunnah', label: 'Sunnah (2)', count: 2, type: 'sunnah' },
-      { id: 'nafl',   label: 'Nafl (2)',   count: 2, type: 'nafl'   },
     ]
   },
   {
@@ -43,7 +40,6 @@ const PRAYERS = [
       { id: 'sunnah_b', label: 'Sunnah before (4)', count: 4, type: 'sunnah' },
       { id: 'fard',     label: 'Fard (4)',           count: 4, type: 'fard'   },
       { id: 'sunnah_a', label: 'Sunnah after (2)',   count: 2, type: 'sunnah' },
-      { id: 'nafl',     label: 'Nafl (2)',            count: 2, type: 'nafl'   },
       { id: 'witr',     label: 'Witr (3)',            count: 3, type: 'witr'   },
     ]
   },
