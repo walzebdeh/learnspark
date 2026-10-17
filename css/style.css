@@ -3123,6 +3123,9 @@ html, body {
 .nr-given    { color: #dc2626; font-weight: 700; text-decoration: line-through; }
 .nr-arrow    { color: var(--muted); }
 .nr-expected { color: #16a34a; font-weight: 800; }
+.noetic-wrong-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+.noetic-wrong-actions .btn { flex: 1; min-width: 90px; }
+.nr-hint { background: #fef9c3; color: #713f12; border-radius: 10px; padding: 10px 14px; font-size: .88rem; line-height: 1.5; margin-top: 10px; font-weight: 600; }
 
 /* ============================================================
    ISLAMIC TAB

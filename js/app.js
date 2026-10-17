@@ -4070,14 +4070,20 @@ function renderNoeticDrill(app) {
   const isText  = typeof problem.answer === 'string';
 
   let bodyHTML = '';
-  if (s.feedback !== null) {
-    const last = s.answers[s.answers.length - 1];
-    bodyHTML = s.feedback === 'correct'
-      ? `<div class="wk-feedback wk-correct animate-pop">✓ Correct! 🎉</div>`
-      : `<div class="wk-feedback wk-wrong animate-pop">
-           <div class="wk-wrong-label">Not quite!</div>
-           <div class="wk-wrong-answer">Answer: <strong>${esc(String(last.expected))}</strong></div>
-         </div>`;
+  if (s.feedback === 'correct') {
+    bodyHTML = `<div class="wk-feedback wk-correct animate-pop">✓ Correct! 🎉</div>`;
+  } else if (s.feedback === 'wrong') {
+    const hint = problem.hint || topic.tip;
+    bodyHTML = `
+      <div class="wk-feedback wk-wrong animate-pop">
+        <div class="wk-wrong-label">Hmm, not quite! Try again?</div>
+        ${s.hintShown ? `<div class="nr-hint">💡 ${esc(hint)}</div>` : ''}
+      </div>
+      <div class="noetic-wrong-actions">
+        <button class="btn btn-ghost btn-sm" id="btn-noetic-retry">🔄 Try Again</button>
+        ${!s.hintShown ? `<button class="btn btn-ghost btn-sm" id="btn-noetic-hint">💡 Show Hint</button>` : ''}
+        <button class="btn btn-ghost btn-sm" id="btn-noetic-skip">→ Move On</button>
+      </div>`;
   } else {
     bodyHTML = `<div class="wk-answer-row">
       <div class="wk-answer-box-wrap">
@@ -4089,7 +4095,7 @@ function renderNoeticDrill(app) {
     </div>`;
   }
 
-  const nextOrDone = s.feedback !== null
+  const nextOrDone = s.feedback === 'correct'
     ? `<button class="btn btn-primary btn-large" id="btn-noetic-next" style="margin-top:10px">
          ${isLast ? '🏁 See Results' : 'Next Problem →'}
        </button>`
@@ -4116,38 +4122,54 @@ function renderNoeticDrill(app) {
   document.getElementById('btn-noetic-exit').onclick = () =>
     setState({ screen: 'noeticMap', noeticDrill: null });
 
+  const advanceDrill = (answers) => {
+    if (isLast) {
+      const finalScore = answers.filter(a => a.correct).length;
+      const p = getProgress();
+      if (!p.noeticProgress) p.noeticProgress = {};
+      const key  = `topic_${s.topicId}`;
+      const prev = p.noeticProgress[key] || {};
+      p.noeticProgress[key] = { done: true, bestScore: Math.max(finalScore, prev.bestScore || 0) };
+      saveProgress(p);
+      setState({
+        screen: 'noeticResults',
+        noeticResult: { mode: 'drill', topicId: s.topicId, problems: s.problems, answers, score: finalScore }
+      });
+    } else {
+      setState({ noeticDrill: { ...s, answers, currentIndex: s.currentIndex + 1, feedback: null, hintShown: false, pendingAnswer: null } });
+    }
+  };
+
   if (s.feedback === null) {
     const inp   = document.getElementById('noetic-answer');
     const check = document.getElementById('btn-noetic-check');
     const doCheck = () => {
       const val = inp.value.trim();
       if (!val) return;
-      const correct    = noeticCheck(val, problem.answer);
-      const newAnswers = [...s.answers, { given: val, expected: problem.answer, correct }];
-      setState({ noeticDrill: { ...s, answers: newAnswers, feedback: correct ? 'correct' : 'wrong' } });
+      const correct = noeticCheck(val, problem.answer);
+      if (correct) {
+        const newAnswers = [...s.answers, { given: val, expected: problem.answer, correct: true }];
+        setState({ noeticDrill: { ...s, answers: newAnswers, feedback: 'correct' } });
+      } else {
+        setState({ noeticDrill: { ...s, feedback: 'wrong', pendingAnswer: val } });
+      }
     };
     check.onclick = doCheck;
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') doCheck(); });
     setTimeout(() => inp.focus(), 50);
-  } else {
-    const nextBtn = document.getElementById('btn-noetic-next');
-    if (nextBtn) nextBtn.onclick = () => {
-      if (isLast) {
-        const finalScore = s.answers.filter(a => a.correct).length;
-        const p = getProgress();
-        if (!p.noeticProgress) p.noeticProgress = {};
-        const key  = `topic_${s.topicId}`;
-        const prev = p.noeticProgress[key] || {};
-        p.noeticProgress[key] = { done: true, bestScore: Math.max(finalScore, prev.bestScore || 0) };
-        saveProgress(p);
-        setState({
-          screen: 'noeticResults',
-          noeticResult: { mode: 'drill', topicId: s.topicId, problems: s.problems, answers: s.answers, score: finalScore }
-        });
-      } else {
-        setState({ noeticDrill: { ...s, currentIndex: s.currentIndex + 1, feedback: null } });
-      }
+  } else if (s.feedback === 'wrong') {
+    document.getElementById('btn-noetic-retry').onclick = () =>
+      setState({ noeticDrill: { ...s, feedback: null, hintShown: false } });
+    const hintBtn = document.getElementById('btn-noetic-hint');
+    if (hintBtn) hintBtn.onclick = () =>
+      setState({ noeticDrill: { ...s, hintShown: true } });
+    document.getElementById('btn-noetic-skip').onclick = () => {
+      const newAnswers = [...s.answers, { given: s.pendingAnswer || '', expected: problem.answer, correct: false }];
+      advanceDrill(newAnswers);
     };
+  } else if (s.feedback === 'correct') {
+    const nextBtn = document.getElementById('btn-noetic-next');
+    if (nextBtn) nextBtn.onclick = () => advanceDrill(s.answers);
   }
 }
 
