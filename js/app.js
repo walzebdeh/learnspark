@@ -4115,9 +4115,50 @@ function renderNoeticDrill(app) {
       <div class="noetic-q">${esc(problem.q).replace(/\n/g, '<br>')}</div>
       ${bodyHTML}
       ${nextOrDone}
+      <div class="scratch-wrap">
+        <div class="scratch-label">✏️ Scratch Work <button class="scratch-clear" id="btn-scratch-clear">Clear</button></div>
+        <canvas id="noetic-scratch" class="scratch-pad"></canvas>
+      </div>
     </div>`;
 
   app.appendChild(div);
+
+  // ── Scratch pad ──────────────────────────────────────────────
+  (function bindScratch() {
+    const canvas = document.getElementById('noetic-scratch');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const resize = () => {
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      canvas.width  = w * devicePixelRatio;
+      canvas.height = h * devicePixelRatio;
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+      ctx.strokeStyle = '#1a1a2e';
+      ctx.lineWidth   = 2;
+      ctx.lineCap     = 'round';
+      ctx.lineJoin    = 'round';
+      try { ctx.putImageData(img, 0, 0); } catch(e) {}
+    };
+    resize();
+    let drawing = false, lx = 0, ly = 0;
+    const pt = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const src = e.touches ? e.touches[0] : e;
+      return { x: src.clientX - r.left, y: src.clientY - r.top };
+    };
+    const start = (e) => { e.preventDefault(); drawing = true; const p = pt(e); lx = p.x; ly = p.y; ctx.beginPath(); ctx.moveTo(lx, ly); };
+    const move  = (e) => { e.preventDefault(); if (!drawing) return; const p = pt(e); ctx.lineTo(p.x, p.y); ctx.stroke(); lx = p.x; ly = p.y; };
+    const stop  = ()  => { drawing = false; };
+    canvas.addEventListener('pointerdown', start, { passive: false });
+    canvas.addEventListener('pointermove', move,  { passive: false });
+    canvas.addEventListener('pointerup',   stop);
+    canvas.addEventListener('pointerleave',stop);
+    document.getElementById('btn-scratch-clear').onclick = () => {
+      ctx.clearRect(0, 0, canvas.width / devicePixelRatio, canvas.height / devicePixelRatio);
+    };
+  })();
 
   document.getElementById('btn-noetic-exit').onclick = () =>
     setState({ screen: 'noeticMap', noeticDrill: null });
