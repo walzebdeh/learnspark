@@ -47,6 +47,8 @@ function _histSnap() {
   return { screen: state.screen, puzzleGame: state.puzzleGame, choiceTopic: state.choiceTopic, allUnlocked: state.allUnlocked, arabicGrade: state.arabicGrade };
 }
 
+const _TAB_SCREENS = new Set(['levelMap','wordLevelMap','choiceLevelMap','typingLevelMap','puzzleMap','eurekaMap','noeticMap']);
+
 function setState(partial) {
   const prevScreen = state.screen;
   Object.assign(state, partial);
@@ -55,6 +57,9 @@ function setState(partial) {
       history.pushState(_histSnap(), '');
     } else {
       history.replaceState(_histSnap(), '');
+    }
+    if (_TAB_SCREENS.has(partial.screen)) {
+      try { localStorage.setItem('lastTab', partial.screen); } catch(e) {}
     }
   }
   render();
@@ -4341,7 +4346,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cloudData) saveProgress(cloudData);
         const p = getProgress();
         if (p.placementDone) {
-          setState({ screen: 'levelMap', welcomeMode: null, allUnlocked: p.allUnlocked || false });
+          let startTab = 'levelMap';
+          try { const t = localStorage.getItem('lastTab'); if (t && _TAB_SCREENS.has(t)) startTab = t; } catch(e) {}
+          setState({ screen: startTab, welcomeMode: null, allUnlocked: p.allUnlocked || false });
         } else {
           setState({ screen: 'welcome', welcomeMode: null });
         }
