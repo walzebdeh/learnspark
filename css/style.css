@@ -3123,8 +3123,11 @@ html, body {
 .nr-given    { color: #dc2626; font-weight: 700; text-decoration: line-through; }
 .nr-arrow    { color: var(--muted); }
 .nr-expected { color: #16a34a; font-weight: 800; }
-.noetic-wrong-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
-.noetic-wrong-actions .btn { flex: 1; min-width: 90px; }
+.noetic-wrong-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 14px; }
+.noetic-wrong-actions .btn { flex: 1; min-width: 100px; font-size: .92rem; font-weight: 800; border-radius: 14px; padding: 11px 8px; border: none; color: #fff; }
+#btn-noetic-retry { background: #3b82f6; }
+#btn-noetic-hint  { background: #f59e0b; color: #1a1a1a; }
+#btn-noetic-skip  { background: #6b7280; }
 .nr-hint { background: #fef9c3; color: #713f12; border-radius: 10px; padding: 10px 14px; font-size: .88rem; line-height: 1.5; margin-top: 10px; font-weight: 600; }
 
 /* ============================================================
