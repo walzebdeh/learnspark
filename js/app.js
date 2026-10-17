@@ -37,6 +37,7 @@ let state = {
   noeticDrill: null,
   noeticContest: null,
   noeticResult: null,
+  islamicScreen: 'salah',
 };
 
 let _noeticTimer = null;
@@ -47,7 +48,7 @@ function _histSnap() {
   return { screen: state.screen, puzzleGame: state.puzzleGame, choiceTopic: state.choiceTopic, allUnlocked: state.allUnlocked, arabicGrade: state.arabicGrade };
 }
 
-const _TAB_SCREENS = new Set(['levelMap','wordLevelMap','choiceLevelMap','typingLevelMap','puzzleMap','eurekaMap','noeticMap']);
+const _TAB_SCREENS = new Set(['levelMap','wordLevelMap','choiceLevelMap','typingLevelMap','puzzleMap','eurekaMap','noeticMap','islamicMap']);
 
 function setState(partial) {
   const prevScreen = state.screen;
@@ -109,6 +110,7 @@ function render() {
       case 'noeticDrill':        renderNoeticDrill(app);        break;
       case 'noeticContest':      renderNoeticContest(app);      break;
       case 'noeticResults':      renderNoeticResults(app);      break;
+      case 'islamicMap':         renderIslamicTab(app);         break;
     }
   } catch(e) {
     console.error('Render error:', e);
@@ -123,6 +125,8 @@ function render() {
   if (_eBtn && state.screen !== 'eurekaMap') _eBtn.onclick = () => setState({ screen: 'eurekaMap' });
   const _nBtn = document.getElementById('tab-noetic');
   if (_nBtn && state.screen !== 'noeticMap') _nBtn.onclick = () => setState({ screen: 'noeticMap' });
+  const _iBtn = document.getElementById('tab-islamic');
+  if (_iBtn && state.screen !== 'islamicMap') _iBtn.onclick = () => setState({ screen: 'islamicMap' });
 }
 
 // ── PIN entry overlay ─────────────────────────────────────────
@@ -656,6 +660,7 @@ function renderLevelMap(app) {
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
         <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
+        <button class="mode-tab" id="tab-islamic">☪️ Islamic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -963,6 +968,7 @@ function renderWordLevelMap(app) {
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
         <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
+        <button class="mode-tab" id="tab-islamic">☪️ Islamic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -1369,6 +1375,7 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
           <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
           <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
+        <button class="mode-tab" id="tab-islamic">☪️ Islamic</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1421,6 +1428,7 @@ function renderChoiceLevelMap(app) {
           <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
           <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
           <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
+        <button class="mode-tab" id="tab-islamic">☪️ Islamic</button>
         </div>
       </div>
       <div class="levelmap-header">
@@ -1711,6 +1719,7 @@ function renderTypingLevelMap(app) {
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
         <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
+        <button class="mode-tab" id="tab-islamic">☪️ Islamic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -2449,6 +2458,7 @@ function renderPuzzleMap(app) {
         <button class="mode-tab active" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
         <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
+        <button class="mode-tab" id="tab-islamic">☪️ Islamic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -3067,6 +3077,7 @@ function renderArabicLevelMap(app) {
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
         <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
+        <button class="mode-tab" id="tab-islamic">☪️ Islamic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -3312,6 +3323,7 @@ function renderEurekaMap(app) {
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab active" id="tab-eureka">📚 Eureka</button>
         <button class="mode-tab" id="tab-noetic">🏆 Noetic</button>
+        <button class="mode-tab" id="tab-islamic">☪️ Islamic</button>
       </div>
     </div>
     <div class="levelmap-header">
@@ -4007,6 +4019,7 @@ function renderNoeticMap(app) {
         <button class="mode-tab" id="tab-puzzles">🧩 Puzzles</button>
         <button class="mode-tab" id="tab-eureka">📚 Eureka</button>
         <button class="mode-tab active" id="tab-noetic">🏆 Noetic</button>
+        <button class="mode-tab" id="tab-islamic">☪️ Islamic</button>
       </div>
     </div>
     <div class="levelmap-header">

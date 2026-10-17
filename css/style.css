@@ -3125,6 +3125,122 @@ html, body {
 .nr-expected { color: #16a34a; font-weight: 800; }
 
 /* ============================================================
+   ISLAMIC TAB
+   ============================================================ */
+
+.islamic-screen {
+  background: linear-gradient(160deg, #064e3b 0%, #065f46 40%, #1e3a5f 100%);
+  min-height: 100vh;
+}
+.isl-header {
+  display: flex; align-items: center; justify-content: space-between; padding: 10px 18px 8px;
+}
+.isl-header-title { font-size: 1.05rem; font-weight: 900; color: #fff; }
+.isl-header-pts   { font-size: .9rem; font-weight: 800; color: #fbbf24; background: rgba(0,0,0,.25); padding: 4px 12px; border-radius: 20px; }
+.isl-subtabs { display: flex; gap: 6px; padding: 0 14px 10px; }
+.isl-stab {
+  flex: 1; padding: 9px 4px; border-radius: 12px; border: none; cursor: pointer;
+  font-size: .82rem; font-weight: 800; background: rgba(255,255,255,.12); color: rgba(255,255,255,.7);
+  transition: background .15s, color .15s;
+}
+.isl-stab.active { background: #fbbf24; color: #1a1a1a; }
+.isl-body { padding: 0 14px 32px; display: flex; flex-direction: column; gap: 12px; width: 100%; box-sizing: border-box; }
+.isl-city-card { background: rgba(255,255,255,.1); border-radius: 18px; padding: 20px; text-align: center; color: #fff; width: 100%; box-sizing: border-box; }
+.isl-city-icon  { font-size: 2rem; margin-bottom: 6px; }
+.isl-city-title { font-size: 1rem; font-weight: 800; margin-bottom: 14px; }
+.isl-city-inputs { display: flex; flex-direction: column; gap: 8px; }
+.isl-input {
+  background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.3);
+  border-radius: 12px; padding: 10px 14px; color: #fff; font-size: .95rem; font-weight: 600;
+  width: 100%; box-sizing: border-box;
+}
+.isl-input::placeholder { color: rgba(255,255,255,.5); }
+.isl-times { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 6px; -webkit-overflow-scrolling: touch; width: 100%; }
+.isl-times::-webkit-scrollbar { display: none; }
+.isl-times-wrap { width: 100%; }
+.isl-time-card {
+  flex-shrink: 0; min-width: 72px; background: rgba(255,255,255,.12); border-radius: 14px;
+  padding: 10px 8px; text-align: center; border: 2px solid transparent;
+}
+.isl-time-card.next { background: rgba(251,191,36,.25); border-color: #fbbf24; }
+.isl-tc-em   { font-size: 1.3rem; }
+.isl-tc-name { font-size: .62rem; font-weight: 800; color: rgba(255,255,255,.7); text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+.isl-tc-val  { font-size: .8rem; font-weight: 900; color: #fff; margin-top: 2px; }
+.isl-tc-next { font-size: .58rem; font-weight: 900; color: #fbbf24; margin-top: 2px; text-transform: uppercase; }
+.isl-times-loading { color: rgba(255,255,255,.6); font-size: .85rem; padding: 8px 0; }
+.isl-times-err     { color: #fca5a5; font-size: .85rem; padding: 8px 0; }
+.isl-prayers { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.isl-prayer  { background: rgba(255,255,255,.1); border-radius: 16px; overflow: hidden; border-left: 4px solid var(--pc); width: 100%; box-sizing: border-box; }
+.isl-prayer.fard-done { background: rgba(255,255,255,.14); }
+.isl-prayer.done      { background: rgba(16,185,129,.18); border-left-color: #10b981; }
+.isl-prayer-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px 10px; }
+.isl-prayer-emoji { font-size: 1.5rem; flex-shrink: 0; }
+.isl-prayer-names { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.isl-prayer-en    { font-size: .9rem; font-weight: 900; color: #fff; }
+.isl-prayer-ar    { font-size: 1rem; font-weight: 700; color: rgba(255,255,255,.75); direction: rtl; }
+.isl-prayer-time  { font-size: .8rem; font-weight: 800; color: #fbbf24; flex-shrink: 0; }
+.isl-done-badge   { font-size: .65rem; font-weight: 900; padding: 3px 8px; border-radius: 20px; background: #10b981; color: #fff; flex-shrink: 0; }
+.isl-done-badge.frd { background: rgba(251,191,36,.3); color: #fbbf24; }
+.isl-raks  { display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,.1); }
+.isl-rak {
+  display: flex; align-items: center; gap: 10px; padding: 9px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.07); cursor: pointer;
+  transition: background .12s; -webkit-tap-highlight-color: transparent;
+}
+.isl-rak:last-child { border-bottom: none; }
+.isl-rak:active { background: rgba(255,255,255,.08); }
+.isl-rak.checked { background: rgba(16,185,129,.12); }
+.isl-rak-check { font-size: 1.1rem; flex-shrink: 0; }
+.isl-rak-info  { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.isl-rak-name  { font-size: .85rem; font-weight: 700; color: #fff; }
+.isl-rak-type  { font-size: .7rem; font-weight: 700; color: rgba(255,255,255,.5); }
+.isl-rak.isl-rak-fard .isl-rak-type  { color: #fbbf24; }
+.isl-rak.isl-rak-witr .isl-rak-type  { color: #a5f3fc; }
+.isl-rak-pts   { font-size: .72rem; font-weight: 900; color: #fbbf24; flex-shrink: 0; }
+.isl-change-city { color: rgba(255,255,255,.5); font-size: .78rem; align-self: flex-start; }
+.isl-dhikr-list { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+.isl-dhikr {
+  background: rgba(255,255,255,.08); border-radius: 20px; padding: 18px 16px 14px;
+  border-top: 3px solid var(--dc); width: 100%; box-sizing: border-box;
+}
+.isl-dhikr.done { background: rgba(255,255,255,.13); }
+.isl-dh-arabic {
+  font-size: 1.9rem; font-weight: 700; color: #fff; text-align: center;
+  direction: rtl; line-height: 1.7; margin-bottom: 4px;
+  font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', serif;
+}
+.isl-dh-translit { font-size: .82rem; font-weight: 700; color: #fbbf24; text-align: center; margin-bottom: 2px; letter-spacing: .03em; }
+.isl-dh-meaning  { font-size: .78rem; color: rgba(255,255,255,.65); text-align: center; margin-bottom: 12px; }
+.isl-dh-bar  { height: 6px; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.isl-dh-fill { height: 100%; background: var(--dc); border-radius: 3px; transition: width .3s; }
+.isl-dh-row  { display: flex; align-items: center; justify-content: space-between; }
+.isl-dh-cnt  { font-size: .85rem; font-weight: 800; color: rgba(255,255,255,.8); }
+.isl-dh-actions { display: flex; gap: 8px; align-items: center; }
+.isl-dh-reset { background: rgba(255,255,255,.12); border: none; border-radius: 8px; color: rgba(255,255,255,.6); font-size: .9rem; padding: 5px 10px; cursor: pointer; }
+.isl-dh-btn {
+  background: var(--dc); border: none; border-radius: 12px; color: #fff;
+  font-size: .88rem; font-weight: 900; padding: 8px 20px; cursor: pointer;
+  min-width: 80px; transition: transform .1s; -webkit-tap-highlight-color: transparent;
+}
+.isl-dh-btn:active { transform: scale(.92); }
+.isl-dh-btn.done { background: #10b981; }
+.isl-rew-top { background: rgba(251,191,36,.15); border-radius: 18px; padding: 20px; text-align: center; border: 2px solid rgba(251,191,36,.3); width: 100%; box-sizing: border-box; }
+.isl-big-pts    { font-size: 2.4rem; font-weight: 900; color: #fbbf24; }
+.isl-pts-label  { font-size: .85rem; color: rgba(255,255,255,.7); font-weight: 700; margin-top: 2px; }
+.isl-streak     { font-size: .88rem; font-weight: 800; color: #fb923c; margin-top: 8px; }
+.isl-rew-prog   { margin-top: 12px; }
+.isl-rew-bar    { height: 8px; background: rgba(255,255,255,.15); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+.isl-rew-fill   { height: 100%; background: #fbbf24; border-radius: 4px; transition: width .4s; }
+.isl-rew-count  { font-size: .8rem; color: rgba(255,255,255,.7); font-weight: 700; }
+.isl-badges     { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.isl-badge      { border-radius: 16px; padding: 14px 12px; text-align: center; border: 2px solid transparent; }
+.isl-badge.earned { background: rgba(255,255,255,.12); border-color: var(--bc); }
+.isl-badge.locked { background: rgba(255,255,255,.05); opacity: .55; }
+.isl-badge-em   { font-size: 1.8rem; margin-bottom: 4px; }
+.isl-badge-name { font-size: .78rem; font-weight: 900; color: #fff; margin-bottom: 2px; }
+.isl-badge-desc { font-size: .65rem; color: rgba(255,255,255,.6); line-height: 1.4; }
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 480px) {
