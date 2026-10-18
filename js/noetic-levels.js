@@ -140,9 +140,9 @@ const NOETIC_G2 = [
         hint: 'Noah has the SMALLEST number — that\'s 7. Mia\'s number is a multiple of 7, but 7 is already taken by Noah. What other multiple of 7 is in the list? That leaves Pia with the last number.'
       },
       {
-        q: 'Three animals weigh different amounts:\n12 lbs · 18 lbs · 30 lbs\n\nThe cat weighs LESS than the dog.\nThe rabbit does NOT weigh 30 lbs.\nThe dog does NOT weigh 12 lbs.\n\nHow much does the cat weigh?',
+        q: 'Three animals weigh different amounts:\n12 lbs · 18 lbs · 30 lbs\n\nThe cat weighs LESS than the dog.\nThe cat weighs LESS than the rabbit.\nThe rabbit does NOT weigh 30 lbs.\nThe dog does NOT weigh 12 lbs.\n\nHow much does the cat weigh?',
         type: 'input', answer: 12, unit: 'lbs',
-        hint: 'Start with the dog: Dog ≠ 12, so Dog = 18 or 30. Test Dog = 18: then Cat < 18 means Cat = 12, and Rabbit = 30. But Rabbit ≠ 30 — contradiction! So Dog must be 30. Now Cat is the lightest of the two remaining weights.'
+        hint: 'Start with the dog: Dog ≠ 12, so Dog = 18 or 30. Test Dog = 18: Cat < 18 → Cat = 12, Rabbit = 30. But Rabbit ≠ 30 — contradiction! So Dog = 30. Remaining: 12 and 18 for Cat and Rabbit. Cat < Rabbit tells you which is which.'
       },
       {
         q: 'Lisa is 3 years OLDER than her brother.\nIn 2 years, Lisa will be 10 years old.\n\nHow old is her brother RIGHT NOW?',
@@ -237,12 +237,12 @@ const NOETIC_G2 = [
       },
       {
         q: 'Ben is 6th from the front of a line.\nHe is twice as far from the front as from the back.\n\nHow many people are in the line?',
-        type: 'input', answer: 9, unit: 'people',
-        hint: 'Ben is 6th from the front, so his distance from the front = 6. He is TWICE as far from the front as from the back → his distance from the back = 6 ÷ 2 = 3. Total = 6 + 3 − 1 = ? (Ben counts in both distances, so subtract 1)'
+        type: 'input', answer: 8, unit: 'people',
+        hint: 'Ben is 6th from the front (front-distance = 6). "Twice as far from the front as from the back" means front-distance = 2 × back-distance. So back-distance = 6 ÷ 2 = 3. Total = front-distance + back-distance − 1 = 6 + 3 − 1 = ?'
       },
       {
         q: 'A line has 22 people.\nAnna is 9th from the front.\nMark joins the line right BEHIND Anna.\n\nWhat position is Mark from the BACK?',
-        type: 'input', answer: 13, unit: 'th from back',
+        type: 'input', answer: 14, unit: 'th from back',
         hint: 'After Mark joins, the line has 23 people. Mark is right behind Anna (9th), so Mark is 10th from the front. Position from the back = 23 − 10 + 1 = ?'
       },
       {
@@ -278,7 +278,7 @@ const NOETIC_G2 = [
       },
       {
         q: 'A mango costs $2 and a kiwi costs $4.\nRosa bought 2 mangoes and 3 kiwis.\nShe paid with a $20 bill.\n\nHow much change did she receive?',
-        type: 'input', answer: 6, unit: '$',
+        type: 'input', answer: 4, unit: '$',
         hint: '2 mangoes = 2 × $2 = $4. 3 kiwis = 3 × $4 = $12. Total spent = $4 + $12 = $16. Change = $20 − $16 = ?'
       },
       {
