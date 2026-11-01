@@ -3170,6 +3170,7 @@ html, body {
 .req-hint-btn:hover { background: #fde68a; }
 .req-text { font-size: .88rem; font-weight: 600; color: var(--text); white-space: pre-wrap; line-height: 1.6; margin-bottom: 10px; }
 .req-hint { background: #fef9c3; color: #713f12; border-radius: 10px; padding: 10px 14px; font-size: .82rem; line-height: 1.5; font-weight: 600; margin-bottom: 10px; }
+.req-figure { margin: 10px 0; text-align: center; }
 .req-input {
   width: 100%;
   box-sizing: border-box;

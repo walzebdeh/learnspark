@@ -4426,6 +4426,7 @@ function renderNoeticRealExam(app) {
     const score    = s.score;
     const total    = exam.problems.length;
     const pct      = Math.round((score / total) * 100);
+    const grade    = pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'F';
     const medal    = pct === 100 ? '🥇' : pct >= 75 ? '🥈' : pct >= 50 ? '🥉' : '📝';
     const msg      = pct === 100 ? 'Perfect score! Outstanding! 🎊'
                    : pct >= 75  ? 'Great work! Really strong performance! 🎉'
@@ -4455,6 +4456,7 @@ function renderNoeticRealExam(app) {
         <button class="btn btn-ghost btn-sm" id="btn-exam-back">← Back</button>
         <h2>${medal} ${exam.title} Results</h2>
         <p class="nr-score-line">${score} / ${total} correct &nbsp;·&nbsp; ${pct}%</p>
+        <p style="font-size:2.2rem;font-weight:800;letter-spacing:2px;color:${grade==='A'?'#22c55e':grade==='B'?'#84cc16':grade==='C'?'#f59e0b':grade==='D'?'#f97316':'#ef4444'}">${grade}</p>
         <p style="font-weight:700;font-size:.95rem;color:var(--text)">${msg}</p>
       </div>
       <div class="noetic-review-list">${reviewHTML}</div>
@@ -4480,6 +4482,7 @@ function renderNoeticRealExam(app) {
           <button class="req-hint-btn" data-idx="${i}">💡 Hint</button>
         </div>
         <div class="req-text">${esc(prob.q).replace(/\n/g, '<br>')}</div>
+        ${prob.fig ? `<div class="req-figure">${prob.fig}</div>` : ''}
         <div class="req-hint" id="exam-hint-${i}" hidden>${esc(prob.hint)}</div>
         <input class="req-input" type="text" id="exam-ans-${i}"
                placeholder="Your answer…" autocomplete="off" autocorrect="off"
