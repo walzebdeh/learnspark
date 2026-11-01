@@ -3134,6 +3134,71 @@ html, body {
 #btn-noetic-skip  { background: #6b7280; }
 .nr-hint { background: #fef9c3; color: #713f12; border-radius: 10px; padding: 10px 14px; font-size: .88rem; line-height: 1.5; margin-top: 10px; font-weight: 600; }
 
+/* Official Exam Cards (on Noetic map) */
+.noetic-exams-section { margin: 0 16px 32px; }
+.noetic-exams-label { font-size: .78rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+.noetic-exams-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.noetic-exam-card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  border-top: 4px solid var(--nec, #5b34c4);
+  transition: transform .15s, box-shadow .15s;
+}
+.noetic-exam-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.14); }
+.nec-year  { font-size: 1.4rem; font-weight: 900; color: var(--nec, #5b34c4); line-height: 1; }
+.nec-title { font-size: .72rem; font-weight: 700; color: var(--muted); margin: 2px 0 6px; text-transform: uppercase; letter-spacing: .05em; }
+.nec-count { font-size: .72rem; color: var(--muted); }
+.nec-best  { font-size: .78rem; font-weight: 800; color: #f59e0b; margin-top: 4px; }
+.nec-new   { font-size: .72rem; font-weight: 700; color: #22c55e; margin-top: 4px; }
+
+/* Real Exam Screen */
+.real-exam-list { display: flex; flex-direction: column; gap: 0; margin: 0 16px 8px; }
+.real-exam-q {
+  background: var(--surface);
+  border-radius: 0;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.real-exam-q:first-child { border-radius: 16px 16px 0 0; }
+.real-exam-q:last-child  { border-radius: 0 0 16px 16px; border-bottom: none; }
+.req-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.req-num    { font-size: .78rem; font-weight: 900; color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, transparent); border-radius: 6px; padding: 2px 7px; }
+.req-hint-btn { margin-left: auto; background: #fef9c3; color: #713f12; border: none; border-radius: 8px; font-size: .72rem; font-weight: 700; padding: 4px 10px; cursor: pointer; }
+.req-hint-btn:hover { background: #fde68a; }
+.req-text { font-size: .88rem; font-weight: 600; color: var(--text); white-space: pre-wrap; line-height: 1.6; margin-bottom: 10px; }
+.req-hint { background: #fef9c3; color: #713f12; border-radius: 10px; padding: 10px 14px; font-size: .82rem; line-height: 1.5; font-weight: 600; margin-bottom: 10px; }
+.req-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: .95rem;
+  font-weight: 700;
+  outline: none;
+  transition: border-color .15s;
+}
+.req-input:focus { border-color: var(--primary); }
+.real-exam-submit-wrap { display: flex; justify-content: center; padding: 20px 16px 40px; }
+
+/* Review rows for real exam results */
+.nr-row { padding: 14px 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.nr-row:first-child { border-radius: 16px 16px 0 0; }
+.nr-row:last-child  { border-radius: 0 0 16px 16px; border-bottom: none; }
+.nr-row.nr-correct  { background: color-mix(in srgb, #22c55e 5%, var(--surface)); }
+.nr-row.nr-wrong    { background: color-mix(in srgb, #ef4444 5%, var(--surface)); }
+.nr-row-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.nr-qnum    { font-size: .75rem; font-weight: 900; color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, transparent); border-radius: 6px; padding: 2px 7px; }
+.nr-verdict { font-size: .8rem; font-weight: 800; }
+.nr-row.nr-correct .nr-verdict { color: #16a34a; }
+.nr-row.nr-wrong   .nr-verdict { color: #dc2626; }
+.nr-qtext   { font-size: .82rem; color: var(--text); opacity: .85; }
+
 /* ============================================================
    ISLAMIC TAB
    ============================================================ */

@@ -37,6 +37,7 @@ let state = {
   noeticDrill: null,
   noeticContest: null,
   noeticResult: null,
+  noeticRealExam: null,
   islamicScreen: 'salah',
 };
 
@@ -110,6 +111,7 @@ function render() {
       case 'noeticDrill':        renderNoeticDrill(app);        break;
       case 'noeticContest':      renderNoeticContest(app);      break;
       case 'noeticResults':      renderNoeticResults(app);      break;
+      case 'noeticRealExam':     renderNoeticRealExam(app);     break;
       case 'islamicMap':         renderIslamicTab(app);         break;
     }
   } catch(e) {
@@ -4036,6 +4038,20 @@ function renderNoeticMap(app) {
         ${mockBest !== undefined ? `<div class="nmb-best">🎖 Best score: ${mockBest}/20</div>` : ''}
       </div>
       <button class="btn btn-warn nmb-btn" id="btn-mock-go">Start Contest →</button>
+    </div>
+    <div class="noetic-exams-section">
+      <div class="noetic-exams-label">📝 Official Practice Exams</div>
+      <div class="noetic-exams-grid">
+        ${NOETIC_REAL_EXAMS.map(exam => {
+          const examBest = np[`exam_${exam.id}`];
+          return `<div class="noetic-exam-card" data-examid="${exam.id}" style="--nec:${exam.color}">
+            <div class="nec-year">${exam.year}</div>
+            <div class="nec-title">${exam.season}</div>
+            <div class="nec-count">20 questions</div>
+            ${examBest !== undefined ? `<div class="nec-best">Best: ${examBest}/20</div>` : '<div class="nec-new">New!</div>'}
+          </div>`;
+        }).join('')}
+      </div>
     </div>`;
 
   app.appendChild(div);
@@ -4055,6 +4071,13 @@ function renderNoeticMap(app) {
 
   div.querySelectorAll('.noetic-topic-card').forEach(card => {
     card.addEventListener('click', () => startNoeticDrill(parseInt(card.dataset.topic, 10)));
+  });
+
+  div.querySelectorAll('.noetic-exam-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const exam = NOETIC_REAL_EXAMS.find(e => e.id === card.dataset.examid);
+      if (exam) setState({ screen: 'noeticRealExam', noeticRealExam: { examId: exam.id, submitted: false, hintsShown: {} } });
+    });
   });
 }
 
@@ -4386,6 +4409,133 @@ function renderNoeticResults(app) {
   document.getElementById('btn-nr-map').onclick   = () => setState({ screen: 'noeticMap', noeticResult: null });
   document.getElementById('btn-nr-again').onclick = () => {
     if (isContest) startNoeticContest(); else startNoeticDrill(r.topicId);
+  };
+}
+
+// ── Noetic Real Exam ─────────────────────────────────────────
+function renderNoeticRealExam(app) {
+  const s    = state.noeticRealExam;
+  const exam = NOETIC_REAL_EXAMS.find(e => e.id === s.examId);
+  if (!exam) { setState({ screen: 'noeticMap' }); return; }
+
+  const p  = getProgress();
+  const np = p.noeticProgress || {};
+
+  if (s.submitted) {
+    // ── Results view ──────────────────────────────────────────
+    const score    = s.score;
+    const total    = exam.problems.length;
+    const pct      = Math.round((score / total) * 100);
+    const medal    = pct === 100 ? '🥇' : pct >= 75 ? '🥈' : pct >= 50 ? '🥉' : '📝';
+    const msg      = pct === 100 ? 'Perfect score! Outstanding! 🎊'
+                   : pct >= 75  ? 'Great work! Really strong performance! 🎉'
+                   : pct >= 50  ? 'Good effort! Keep practicing! 💪'
+                   :               'Don\'t give up — try it again! 🌟';
+
+    let reviewHTML = '';
+    exam.problems.forEach((prob, i) => {
+      const given   = s.answers[i] || '';
+      const correct = checkExamAnswer(given, prob.answer);
+      reviewHTML += `
+        <div class="nr-row ${correct ? 'nr-correct' : 'nr-wrong'}">
+          <div class="nr-row-head">
+            <span class="nr-qnum">Q${i + 1}</span>
+            <span class="nr-verdict">${correct ? '✓ Correct' : '✗ Wrong'}</span>
+            ${!correct ? `<span class="nr-expected">Answer: ${esc(String(prob.answer))}</span>` : ''}
+            ${!correct && given ? `<span style="opacity:.7;font-size:.8rem">You wrote: ${esc(given)}</span>` : ''}
+          </div>
+          <div class="nr-qtext" style="font-size:.82rem;opacity:.85;white-space:pre-wrap">${esc(prob.q)}</div>
+          ${!correct ? `<div class="nr-hint" style="margin-top:6px">💡 ${esc(prob.hint)}</div>` : ''}
+        </div>`;
+    });
+
+    const div = el('div', 'screen levelmap-screen');
+    div.innerHTML = `
+      <div class="levelmap-header">
+        <button class="btn btn-ghost btn-sm" id="btn-exam-back">← Back</button>
+        <h2>${medal} ${exam.title} Results</h2>
+        <p class="nr-score-line">${score} / ${total} correct &nbsp;·&nbsp; ${pct}%</p>
+        <p style="font-weight:700;font-size:.95rem;color:var(--text)">${msg}</p>
+      </div>
+      <div class="noetic-review-list">${reviewHTML}</div>
+      <div style="display:flex;gap:10px;justify-content:center;padding:16px 0 32px">
+        <button class="btn btn-primary" id="btn-exam-retry">🔄 Try Again</button>
+        <button class="btn btn-ghost" id="btn-exam-map">🏠 All Exams</button>
+      </div>`;
+    app.appendChild(div);
+    document.getElementById('btn-exam-back').onclick  = () => setState({ screen: 'noeticMap', noeticRealExam: null });
+    document.getElementById('btn-exam-map').onclick   = () => setState({ screen: 'noeticMap', noeticRealExam: null });
+    document.getElementById('btn-exam-retry').onclick = () =>
+      setState({ noeticRealExam: { examId: exam.id, submitted: false, hintsShown: {} } });
+    return;
+  }
+
+  // ── Exam view (all questions at once) ─────────────────────
+  let questionsHTML = '';
+  exam.problems.forEach((prob, i) => {
+    questionsHTML += `
+      <div class="real-exam-q" id="exam-q-${i}">
+        <div class="req-header">
+          <span class="req-num">Q${i + 1}</span>
+          <button class="req-hint-btn" data-idx="${i}">💡 Hint</button>
+        </div>
+        <div class="req-text">${esc(prob.q).replace(/\n/g, '<br>')}</div>
+        <div class="req-hint" id="exam-hint-${i}" hidden>${esc(prob.hint)}</div>
+        <input class="req-input" type="text" id="exam-ans-${i}"
+               placeholder="Your answer…" autocomplete="off" autocorrect="off"
+               inputmode="text" spellcheck="false" />
+      </div>`;
+  });
+
+  const div = el('div', 'screen levelmap-screen');
+  div.innerHTML = `
+    <div class="levelmap-header">
+      <button class="btn btn-ghost btn-sm" id="btn-exam-exit">← Exit</button>
+      <h2>📝 ${exam.title} Official Exam</h2>
+      <p>Answer all 20 questions, then press Submit</p>
+    </div>
+    <div class="real-exam-list">${questionsHTML}</div>
+    <div class="real-exam-submit-wrap">
+      <button class="btn btn-warn btn-large" id="btn-exam-submit">Submit All Answers →</button>
+    </div>`;
+  app.appendChild(div);
+
+  // Hint toggles (in-DOM, no setState)
+  div.querySelectorAll('.req-hint-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx      = btn.dataset.idx;
+      const hintDiv  = document.getElementById(`exam-hint-${idx}`);
+      const hidden   = hintDiv.hidden;
+      hintDiv.hidden = !hidden;
+      btn.textContent = hidden ? '💡 Hide Hint' : '💡 Hint';
+    });
+  });
+
+  document.getElementById('btn-exam-exit').onclick = () => {
+    if (confirm('Exit exam? Your answers will be lost.')) {
+      setState({ screen: 'noeticMap', noeticRealExam: null });
+    }
+  };
+
+  document.getElementById('btn-exam-submit').onclick = () => {
+    const answers = {};
+    exam.problems.forEach((_, i) => {
+      const inp = document.getElementById(`exam-ans-${i}`);
+      answers[i] = (inp ? inp.value.trim() : '');
+    });
+    const score = exam.problems.reduce((sum, prob, i) =>
+      sum + (checkExamAnswer(answers[i], prob.answer) ? 1 : 0), 0);
+
+    // Save best score
+    const np2 = p.noeticProgress || {};
+    const key  = `exam_${exam.id}`;
+    if (np2[key] === undefined || score > np2[key]) {
+      np2[key] = score;
+      p.noeticProgress = np2;
+      saveProgress(p);
+    }
+
+    setState({ noeticRealExam: { examId: exam.id, submitted: true, answers, score } });
   };
 }
 
