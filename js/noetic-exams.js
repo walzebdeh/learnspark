@@ -421,7 +421,7 @@ const NOETIC_REAL_EXAMS = [
         fig: `<div style="display:flex;justify-content:center;margin:10px 0">
   <table style="border-collapse:collapse;font-size:.9rem">
     <tr style="background:#f0fdf4"><th style="padding:8px 14px;border:2px solid #86efac;font-weight:800;color:#166534"></th><th style="padding:8px 14px;border:2px solid #86efac;font-weight:800;color:#166534">🍎 Apples</th><th style="padding:8px 14px;border:2px solid #86efac;font-weight:800;color:#166534">🍐 Pears</th></tr>
-    ${[['Ally',3,2],['Bernard',4,1],['Cole',2,3],['Diane',4,3]].map(([n,a,p])=>`<tr style="background:${p>a?'#fef9c3':'#fff'}"><td style="padding:8px 14px;border:2px solid #d1d5db;font-weight:700">${n}</td><td style="padding:8px 14px;border:2px solid #d1d5db;text-align:center">${a}</td><td style="padding:8px 14px;border:2px solid #d1d5db;text-align:center">${p}${p>a?' ⬅':'':''}${p>a?'':''}</td></tr>`).join('')}
+    ${[['Ally',3,2],['Bernard',4,1],['Cole',2,3],['Diane',4,3]].map(([n,a,p])=>`<tr style="background:${p>a?'#fef9c3':'#fff'}"><td style="padding:8px 14px;border:2px solid #d1d5db;font-weight:700">${n}</td><td style="padding:8px 14px;border:2px solid #d1d5db;text-align:center">${a}</td><td style="padding:8px 14px;border:2px solid #d1d5db;text-align:center">${p}${p>a?' ⬅':''}</td></tr>`).join('')}
   </table>
 </div>`,
         answer: 'Cole',
